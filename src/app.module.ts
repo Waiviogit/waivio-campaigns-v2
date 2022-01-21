@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { configService } from './common/config';
+import { CampaignModule } from './main/campaign/campaign.module';
+import { CONNECTION_MONGO } from './common/constants';
 
 @Module({
-  //#TODO normal connection string
-  imports: [MongooseModule.forRoot('mongodb://localhost:27017/waivio')],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    MongooseModule.forRoot(configService.getMongoWaivioConnectionString(), {
+      connectionName: CONNECTION_MONGO.WAIVIO,
+    }),
+    CampaignModule,
+  ],
 })
 export class AppModule {}
