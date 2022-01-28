@@ -27,6 +27,17 @@ class ConfigService {
     return `mongodb://${host}:${port}/${db}`;
   }
 
+  public getRabbitConnectionString(): string {
+    const user = this.getValue('RABBITMQ_USER');
+    const password = this.getValue('RABBITMQ_PASSWORD');
+    const host = this.getValue('RABBITMQ_HOST');
+    return `amqp://${user}:${password}@${host}`;
+  }
+
+  public getCampaignsQueue(): string {
+    return this.getValue('RABBITMQ_QUEUE_NAME');
+  }
+
   public getPort(): string {
     return this.getValue('PORT', true);
   }
