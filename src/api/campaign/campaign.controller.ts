@@ -31,6 +31,11 @@ export class CampaignController {
     return await this.campaignService.createCampaign(createCampaignDto);
   }
 
+  @Get('test')
+  async createTest(@Body() createCampaignDto: CreateCampaignDto) {
+    return await this.campaignService.createCampaign(createCampaignDto);
+  }
+
   @Get('send')
   async send() {
     console.log('sended -----------');

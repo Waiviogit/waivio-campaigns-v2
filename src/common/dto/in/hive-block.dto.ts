@@ -14,7 +14,7 @@ export class HiveTransactionDto {
   ref_block_num: number;
   ref_block_prefix: number;
   expiration: string;
-  operations: [][];
+  operations: [string, object][];
   extensions: [];
   signatures: string[];
   transaction_id: string;
