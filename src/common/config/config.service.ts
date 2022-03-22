@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-import { ENSURE_VALUES } from '../constants';
+import { ENSURE_VALUES, REDIS_CLIENT } from '../constants';
 
 dotenv.config({ path: `env/.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -27,15 +27,13 @@ class ConfigService {
     return `mongodb://${host}:${port}/${db}`;
   }
 
-  public getRabbitConnectionString(): string {
-    const user = this.getValue('RABBITMQ_USER');
-    const password = this.getValue('RABBITMQ_PASSWORD');
-    const host = this.getValue('RABBITMQ_HOST');
-    return `amqp://${user}:${password}@${host}`;
-  }
-
-  public getCampaignsQueue(): string {
-    return this.getValue('RABBITMQ_QUEUE_NAME');
+  public getRedisBlocksConfig() {
+    return {
+      host: this.getValue('REDIS_HOST'),
+      port: +this.getValue('REDIS_PORT') as number,
+      db: +this.getValue('REDIS_DB_BLOCKS') as number,
+      name: REDIS_CLIENT.BLOCK,
+    };
   }
 
   public getPort(): string {

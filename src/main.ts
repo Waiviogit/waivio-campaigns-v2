@@ -30,7 +30,7 @@ async function bootstrap(): Promise<void> {
   //   },
   // });
   // await app.startAllMicroservices();
-  console.log('------------------', configService.getPort())
+  console.log('------------------', configService.getPort());
   await app.listen(configService.getPort());
 }
 bootstrap();
