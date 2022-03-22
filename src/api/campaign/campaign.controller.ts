@@ -8,12 +8,16 @@ import {
   Transport,
 } from '@nestjs/microservices';
 import { configService } from '../../common/config';
+// import { TestCreate } from '../../domain/test/test.create';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
 export class CampaignController {
   client: ClientProxy;
-  constructor(private readonly campaignService: CampaignService) {
+  constructor(
+    private readonly campaignService: CampaignService,
+    // private readonly testCreate: TestCreate,
+  ) {
     this.client = ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
@@ -41,4 +45,10 @@ export class CampaignController {
     console.log('sended -----------');
     return this.client.send<number>({ cmd: 'test' }, 1231);
   }
+
+//   @Get('test')
+//   async test() {
+//     console.log('sended -----------');
+//     return this.testCreate.create('test');
+//   }
 }
