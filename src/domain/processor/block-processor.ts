@@ -4,17 +4,22 @@ import { REDIS_CLIENT, REDIS_KEY } from '../../common/constants';
 import { BlockClient } from '../../services/redis/block-client';
 
 @Injectable()
-export class BlockProcessor implements OnModuleInit {
+// export class BlockProcessor implements OnModuleInit {
+export class BlockProcessor {
   constructor(private readonly redisBlock: BlockClient) {}
 
   // private redisBlockClient = this.redisService.getClient(REDIS_CLIENT.BLOCK);
-  async onModuleInit() {
+  // async onModuleInit() {
+  //   await this.loadNextBlock();
+  // }
+  async start() {
     await this.loadNextBlock();
   }
 
   async loadNextBlock() {
     console.log('-----------yo');
     const blockNumber = await this.redisBlock.get(REDIS_KEY.LAST_BLOCK);
+
     await setTimeout(async () => this.loadNextBlock(), 2000);
   }
 }

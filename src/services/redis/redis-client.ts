@@ -1,15 +1,19 @@
 import { createClient } from 'redis';
 import { OnModuleInit } from '@nestjs/common';
 
-export class RedisClient implements OnModuleInit {
-  constructor(readonly url: string) {
-    this.url = url;
+export abstract class RedisClient implements OnModuleInit {
+  private client;
+  protected constructor(readonly url: string) {
+    this.client = createClient({
+      url,
+    });
+    this.client.on('error', (err) => console.log('Redis Client Error', err));
   }
-  private client = createClient({
-    url: this.url,
-  });
 
   async onModuleInit(): Promise<void> {
+    await this.client.connect();
+  }
+  async connect(): Promise<void> {
     await this.client.connect();
   }
 
