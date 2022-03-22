@@ -8,25 +8,25 @@ import {
   Transport,
 } from '@nestjs/microservices';
 import { configService } from '../../common/config';
-// import { TestCreate } from '../../domain/test/test.create';
+import { TestCreate } from '../../domain/test/test.create';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
 export class CampaignController {
-  client: ClientProxy;
+  // client: ClientProxy;
   constructor(
     private readonly campaignService: CampaignService,
-    // private readonly testCreate: TestCreate,
+    private readonly testCreate: TestCreate,
   ) {
-    this.client = ClientProxyFactory.create({
-      transport: Transport.RMQ,
-      options: {
-        urls: [configService.getRabbitConnectionString()],
-        queue: configService.getCampaignsQueue(),
-        queueOptions: { durable: true },
-        socketOptions: { noDelay: true },
-      },
-    });
+    // this.client = ClientProxyFactory.create({
+    //   transport: Transport.RMQ,
+    //   options: {
+    //     urls: [configService.getRabbitConnectionString()],
+    //     queue: configService.getCampaignsQueue(),
+    //     queueOptions: { durable: true },
+    //     socketOptions: { noDelay: true },
+    //   },
+    // });
   }
 
   @Post('create')
@@ -35,20 +35,20 @@ export class CampaignController {
     return await this.campaignService.createCampaign(createCampaignDto);
   }
 
+  // @Get('test')
+  // async createTest(@Body() createCampaignDto: CreateCampaignDto) {
+  //   return await this.campaignService.createCampaign(createCampaignDto);
+  // }
+
+  // @Get('send')
+  // async send() {
+  //   console.log('sended -----------');
+  //   return this.client.send<number>({ cmd: 'test' }, 1231);
+  // }
+
   @Get('test')
-  async createTest(@Body() createCampaignDto: CreateCampaignDto) {
-    return await this.campaignService.createCampaign(createCampaignDto);
-  }
-
-  @Get('send')
-  async send() {
+  async test() {
     console.log('sended -----------');
-    return this.client.send<number>({ cmd: 'test' }, 1231);
+    return this.testCreate.create('test');
   }
-
-//   @Get('test')
-//   async test() {
-//     console.log('sended -----------');
-//     return this.testCreate.create('test');
-//   }
 }

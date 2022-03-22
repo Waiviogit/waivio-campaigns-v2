@@ -7,7 +7,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('new-campaigns');
+  // app.setGlobalPrefix('new-campaigns');
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
@@ -19,17 +19,18 @@ async function bootstrap(): Promise<void> {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('new-campaigns/docs', app, document);
-  await app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [configService.getRabbitConnectionString()],
-      queue: configService.getCampaignsQueue(),
-      queueOptions: {
-        durable: true,
-      },
-    },
-  });
-  await app.startAllMicroservices();
+  // await app.connectMicroservice<MicroserviceOptions>({
+  //   transport: Transport.RMQ,
+  //   options: {
+  //     urls: [configService.getRabbitConnectionString()],
+  //     queue: configService.getCampaignsQueue(),
+  //     queueOptions: {
+  //       durable: true,
+  //     },
+  //   },
+  // });
+  // await app.startAllMicroservices();
+  console.log('------------------', configService.getPort())
   await app.listen(configService.getPort());
 }
 bootstrap();

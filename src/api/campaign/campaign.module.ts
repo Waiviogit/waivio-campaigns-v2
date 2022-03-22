@@ -6,13 +6,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DomainModule } from '../../domain/domain.module';
 
 @Module({
-  //remove
+  // remove
   imports: [
-    MongooseModule.forFeature(
-      [WAIVIO_MODELS.CAMPAIGN],
-      CONNECTION_MONGO.WAIVIO,
-    ),
-    // DomainModule,
+  //   MongooseModule.forFeature(
+  //     [WAIVIO_MODELS.CAMPAIGN],
+  //     CONNECTION_MONGO.WAIVIO,
+  //   ),
+    DomainModule,
   ],
   controllers: [CampaignController],
   providers: [CampaignService],

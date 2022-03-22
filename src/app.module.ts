@@ -13,7 +13,7 @@ import { DomainModule } from './domain/domain.module';
       connectionName: CONNECTION_MONGO.WAIVIO,
     }),
     PersistenceModule,
-      // DomainModule,
+    DomainModule,
     CampaignModule,
     RabbitmqModule,
   ],
