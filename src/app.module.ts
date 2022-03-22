@@ -7,7 +7,7 @@ import { RedisDbModule } from './services/redis/redis.module';
 
 @Module({
   imports: [
-    RedisDbModule,
+    // RedisDbModule,
     DatabaseModule,
     PersistenceModule,
     DomainModule,

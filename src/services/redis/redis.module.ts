@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
-import { Redis } from './redis';
+import { Global, Module } from '@nestjs/common';
+import { BlockClient } from './block-client';
+
 
 @Module({
-  providers: [Redis],
+  providers: [BlockClient],
+  exports: [BlockClient],
 })
 export class RedisDbModule {}
