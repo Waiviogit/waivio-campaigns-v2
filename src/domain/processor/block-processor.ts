@@ -1,25 +1,27 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { RedisService } from 'nestjs-redis';
-import { REDIS_CLIENT, REDIS_KEY } from '../../common/constants';
-import { BlockClient } from '../../services/redis/block-client';
+import { Inject, Injectable } from '@nestjs/common';
+
+import { REDIS_KEY } from '../../common/constants';
+import { RedisBlockClient } from '../../services/redis/block-client';
+import { TestRepository } from '../test/test-repository.interface';
+
+const TestRepo = () => Inject('TestRepo');
 
 @Injectable()
-// export class BlockProcessor implements OnModuleInit {
 export class BlockProcessor {
-  constructor(private readonly redisBlock: BlockClient) {}
+  constructor(
+    private readonly redisBlockClient: RedisBlockClient,
+    @TestRepo() private readonly testRepository: TestRepository,
+  ) {}
 
-  // private redisBlockClient = this.redisService.getClient(REDIS_CLIENT.BLOCK);
-  // async onModuleInit() {
-  //   await this.loadNextBlock();
-  // }
-  async start() {
+  async start(): Promise<void> {
     await this.loadNextBlock();
   }
 
-  async loadNextBlock() {
-    console.log('-----------yo');
-    const blockNumber = await this.redisBlock.get(REDIS_KEY.LAST_BLOCK);
+  async loadNextBlock(): Promise<void> {
 
+    const blockNumber = await this.redisBlockClient.get(REDIS_KEY.LAST_BLOCK);
+    const yo = await this.testRepository.create('yo');
+    console.log();
     await setTimeout(async () => this.loadNextBlock(), 2000);
   }
 }
