@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-import { ENSURE_VALUES, REDIS_CLIENT } from '../constants';
+import { ENSURE_VALUES } from '../constants';
 
 dotenv.config({ path: `env/.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -27,13 +27,12 @@ class ConfigService {
     return `mongodb://${host}:${port}/${db}`;
   }
 
-  public getRedisBlocksConfig() {
-    return {
-      host: this.getValue('REDIS_HOST'),
-      port: +this.getValue('REDIS_PORT') as number,
-      db: +this.getValue('REDIS_DB_BLOCKS') as number,
-      name: REDIS_CLIENT.BLOCK,
-    };
+  public getRedisBlocksConfig(): string {
+    const host = this.getValue('REDIS_HOST');
+    const port = this.getValue('REDIS_PORT');
+    const db = this.getValue('REDIS_DB_BLOCKS');
+
+    return `redis://${host}:${port}/${db}`;
   }
 
   public getPort(): string {

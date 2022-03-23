@@ -3,4 +3,7 @@ export const ENSURE_VALUES = [
   'MONGO_PORT',
   'WAIVIO_DB',
   'CURRENCIES_DB',
+  'REDIS_HOST',
+  'REDIS_PORT',
+  'REDIS_DB_BLOCKS',
 ];
