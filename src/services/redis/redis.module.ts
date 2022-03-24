@@ -1,10 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-
-import { RedisBlockClient } from './block-client';
+import { RedisBlockProvider } from './redis-client.provider';
 
 @Global()
 @Module({
-  providers: [RedisBlockClient],
-  exports: [RedisBlockClient],
+  providers: [RedisBlockProvider],
+  exports: [RedisBlockProvider],
 })
 export class RedisClientModule {}

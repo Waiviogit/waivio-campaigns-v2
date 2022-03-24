@@ -1,16 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { REDIS_KEY } from '../../common/constants';
-import { RedisBlockClient } from '../../services/redis/block-client';
+import { HIVE_PROVIDE, REDIS_KEY, REDIS_PROVIDE } from '../../common/constants';
 import { TestRepository } from '../test/test-repository.interface';
-
-const TestRepo = () => Inject('TestRepo');
+import { HiveClient } from '../../services/hive-api/interface/hive.client.interface';
+import { RedisClient } from '@nestjs/microservices/external/redis.interface';
 
 @Injectable()
 export class BlockProcessor {
   constructor(
-    private readonly redisBlockClient: RedisBlockClient,
-    @TestRepo() private readonly testRepository: TestRepository,
+    @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
+    private readonly redisBlockClient: RedisClient,
+    @Inject('TestRepo') private readonly testRepository: TestRepository,
+    @Inject(HIVE_PROVIDE.CLIENT) private readonly hiveClient: HiveClient,
   ) {}
 
   async start(): Promise<void> {
@@ -18,9 +19,9 @@ export class BlockProcessor {
   }
 
   async loadNextBlock(): Promise<void> {
-
     const blockNumber = await this.redisBlockClient.get(REDIS_KEY.LAST_BLOCK);
     const yo = await this.testRepository.create('yo');
+    const block = await this.hiveClient.getBlock(+blockNumber);
     console.log();
     await setTimeout(async () => this.loadNextBlock(), 2000);
   }
