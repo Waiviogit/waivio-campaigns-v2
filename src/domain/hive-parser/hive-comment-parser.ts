@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { HiveCommentDto, HiveCommentOptionsDto } from './dto/in';
+
 import _ from 'lodash';
 import { parseJSON } from '../../common/helpers';
+import { HiveComment, HiveCommentOptions } from '../../common/types';
 
 @Injectable()
-export class HiveCommentParserService {
+export class HiveCommentParser {
   constructor() {}
 
   async parse(
-    commentData: HiveCommentDto,
-    commentOptions: HiveCommentOptionsDto,
+    commentData: HiveComment,
+    commentOptions: HiveCommentOptions,
   ): Promise<void> {
     const beneficiaries = _.get(
       commentOptions,

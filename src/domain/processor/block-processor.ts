@@ -1,22 +1,35 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
-import { HIVE_PROVIDE, REDIS_KEY, REDIS_PROVIDE } from '../../common/constants';
+import {
+  HIVE_PARSER_PROVIDE,
+  HIVE_PROVIDE,
+  REDIS_KEY,
+  REDIS_PROVIDE,
+} from '../../common/constants';
 import { TestRepository } from '../test/test-repository.interface';
-import { HiveClient, RedisClient } from '../../common/interface';
+import {
+  HiveClient,
+  HiveMainParser,
+  RedisClient,
+} from '../../common/interface';
 import { DEFAULT_START_BLOCK_CAMPAIGN } from './constants';
 
 @Injectable()
 export class BlockProcessor {
   private currentBlock: number;
+  private readonly logger = new Logger(BlockProcessor.name);
   readonly redisBlockKey: string = REDIS_KEY.LAST_BLOCK_MAIN;
   readonly startDefaultBlock: number = DEFAULT_START_BLOCK_CAMPAIGN;
-  private readonly logger = new Logger(BlockProcessor.name);
 
   constructor(
     @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
     private readonly redisBlockClient: RedisClient,
-    @Inject('TestRepo') private readonly testRepository: TestRepository,
-    @Inject(HIVE_PROVIDE.CLIENT) private readonly hiveClient: HiveClient,
+    @Inject('TestRepo')
+    private readonly testRepository: TestRepository,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClient,
+    @Inject(HIVE_PARSER_PROVIDE.MAIN)
+    private readonly hiveMainParser: HiveMainParser,
   ) {}
 
   async start(): Promise<void> {
@@ -49,7 +62,7 @@ export class BlockProcessor {
       return true;
     }
     if (block && block.transactions && block.transactions[0]) {
-      await setTimeout(() => {}, 500);
+      await this.hiveMainParser.parseHiveBlock(block);
       return true;
     }
     return false;
