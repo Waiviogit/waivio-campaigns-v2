@@ -6,13 +6,10 @@ import {
   REDIS_KEY,
   REDIS_PROVIDE,
 } from '../../common/constants';
-import { TestRepository } from '../test/test-repository.interface';
-import {
-  HiveClient,
-  HiveMainParser,
-  RedisClient,
-} from '../../common/interface';
 import { DEFAULT_START_BLOCK_CAMPAIGN } from './constants';
+import { RedisClientInterface } from '../../services/redis/interface';
+import { HiveClientInterface } from '../../services/hive-api/interface';
+import { HiveMainParserInterface } from '../hive-parser/interface';
 
 @Injectable()
 export class BlockProcessor {
@@ -23,13 +20,11 @@ export class BlockProcessor {
 
   constructor(
     @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
-    private readonly redisBlockClient: RedisClient,
-    @Inject('TestRepo')
-    private readonly testRepository: TestRepository,
+    private readonly redisBlockClient: RedisClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
-    private readonly hiveClient: HiveClient,
+    private readonly hiveClient: HiveClientInterface,
     @Inject(HIVE_PARSER_PROVIDE.MAIN)
-    private readonly hiveMainParser: HiveMainParser,
+    private readonly hiveParser: HiveMainParserInterface,
   ) {}
 
   async start(): Promise<void> {
@@ -62,7 +57,7 @@ export class BlockProcessor {
       return true;
     }
     if (block && block.transactions && block.transactions[0]) {
-      await this.hiveMainParser.parseHiveBlock(block);
+      await this.hiveParser.parseHiveBlock(block);
       return true;
     }
     return false;

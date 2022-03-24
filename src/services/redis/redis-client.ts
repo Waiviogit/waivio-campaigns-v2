@@ -1,7 +1,10 @@
 import { createClient } from 'redis';
 import { OnModuleInit } from '@nestjs/common';
+import { RedisClientInterface } from './interface';
 
-export abstract class RedisClient implements OnModuleInit {
+export abstract class RedisClient
+  implements OnModuleInit, RedisClientInterface
+{
   private client;
   protected constructor(readonly url: string) {
     this.client = createClient({

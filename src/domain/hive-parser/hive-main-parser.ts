@@ -1,61 +1,44 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import {
-  HiveAccountUpdate,
-  HiveBlock,
-  HiveComment,
-  HiveCommentOptions,
-  HiveCustomJson,
-  HiveTransfer,
-  HiveVote,
-} from '../../common/types';
+import { HiveBlockType } from '../../common/types';
 import { HIVE_PARSER_PROVIDE } from '../../common/constants';
-import { HiveCommentParser } from './interface/hive-comment-parser.interface';
+import {
+  HiveCommentParserInterface,
+  HiveMainParserInterface,
+} from './interface';
 
 @Injectable()
-export class HiveMainParser {
+export class HiveMainParser implements HiveMainParserInterface {
   constructor(
     @Inject(HIVE_PARSER_PROVIDE.COMMENT)
-    private readonly hiveCommentParser: HiveCommentParser,
+    private readonly comment: HiveCommentParserInterface,
   ) {}
-  private votes = [];
 
-  async parseHiveBlock(block: HiveBlock): Promise<void> {
+  async parseHiveBlock(block: HiveBlockType): Promise<void> {
     const { transactions } = block;
     for (const transaction of transactions) {
       if (!transaction?.operations && !transaction.operations[0]) continue;
       for (const operation of transaction.operations) {
-        await (this[operation[0]] || this.default)(
-          operation[1],
-          transaction.operations[1],
-        );
+        const [parserType] = operation;
+        //check custom json
+
+        if (this.hasOwnProperty(parserType)) {
+          await this[parserType].parse(operation[1], transaction.operations[1]);
+        }
       }
-      await this.processVotes();
+      //await this.processVotes();
     }
   }
 
-  private vote(voteData: HiveVote): void {
-    this.votes.push(voteData);
-  }
-
-  private async processVotes(): Promise<void> {
-    // this._votes = [];
-  }
-
-  private async comment(
-    commentData: HiveComment,
-    commentOptions: HiveCommentOptions,
-  ): Promise<void> {
-    await this.hiveCommentParser.parse(commentData, commentOptions);
-  }
-
-  private async transfer(transferData: HiveTransfer): Promise<void> {}
-
-  private async custom_json(customData: HiveCustomJson): Promise<void> {}
-
-  private async account_update(
-    accountUpdateData: HiveAccountUpdate,
-  ): Promise<void> {}
-
-  private async default(): Promise<void> {}
+  // private vote(voteData: HiveVoteType): void {
+  //   this.votes.push(voteData);
+  // }
+  // private async processVotes(): Promise<void> {
+  //   // this._votes = [];
+  // }
+  // private async transfer(transferData: HiveTransferType): Promise<void> {}
+  // private async custom_json(customData: HiveCustomJsonType): Promise<void> {}
+  // private async account_update(
+  //   accountUpdateData: HiveAccountUpdateType,
+  // ): Promise<void> {}
 }

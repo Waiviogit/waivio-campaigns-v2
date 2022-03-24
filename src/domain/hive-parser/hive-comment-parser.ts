@@ -2,22 +2,25 @@ import { Injectable } from '@nestjs/common';
 
 import _ from 'lodash';
 import { parseJSON } from '../../common/helpers';
-import { HiveComment, HiveCommentOptions } from '../../common/types';
+import { HiveCommentOptionsType, HiveCommentType } from '../../common/types';
+import { HiveOperationParser } from './hive-operation-parser';
 
 @Injectable()
-export class HiveCommentParser {
-  constructor() {}
+export class HiveCommentParser extends HiveOperationParser {
+  constructor() {
+    super();
+  }
 
   async parse(
-    commentData: HiveComment,
-    commentOptions: HiveCommentOptions,
+    comment: HiveCommentType,
+    options: HiveCommentOptionsType,
   ): Promise<void> {
     const beneficiaries = _.get(
-      commentOptions,
+      options,
       '[1].extensions[0][1].beneficiaries',
       null,
     );
-    const metadata = parseJSON(commentData.json_metadata, {});
+    const metadata = parseJSON(comment.json_metadata, {});
     const app = metadata?.app;
     const hasActions = metadata?.waivioRewards;
     //#TODO add set demo post handle

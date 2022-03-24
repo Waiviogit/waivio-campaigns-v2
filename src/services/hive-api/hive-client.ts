@@ -2,10 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
 import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
-import { HiveBlock } from '../../common/types/hive-block.type';
+import { HiveBlockType } from '../../common/types';
+import { HiveClientInterface } from './interface';
 
 @Injectable()
-export class HiveClient {
+export class HiveClient implements HiveClientInterface {
   constructor() {}
   private readonly logger = new Logger(HiveClient.name);
   private readonly hiveNodes: string[] = HIVE_RPC_NODES;
@@ -38,7 +39,7 @@ export class HiveClient {
     }
   }
 
-  async getBlock(blockNumber: number): Promise<HiveBlock | undefined> {
+  async getBlock(blockNumber: number): Promise<HiveBlockType | undefined> {
     return this.hiveRequest(CONDENSER_API.GET_BLOCK, [blockNumber]);
   }
 }

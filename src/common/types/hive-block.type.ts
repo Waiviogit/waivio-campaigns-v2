@@ -1,4 +1,4 @@
-export type HiveBlock = {
+export type HiveBlockType = {
   previous: string;
   timestamp: string;
   witness: string;
@@ -6,11 +6,11 @@ export type HiveBlock = {
   extensions: [];
   witness_signature: string;
   block_id: string;
-  transactions: HiveTransaction[];
+  transactions: HiveTransactionType[];
   transaction_ids: string[];
 };
 
-export type HiveTransaction = {
+export type HiveTransactionType = {
   ref_block_num: number;
   ref_block_prefix: number;
   expiration: string;
@@ -22,7 +22,7 @@ export type HiveTransaction = {
   transaction_num: number;
 };
 
-export type HiveComment = {
+export type HiveCommentType = {
   parent_author: string;
   parent_permlink: string;
   author: string;
@@ -32,54 +32,54 @@ export type HiveComment = {
   json_metadata: string;
 };
 
-export type HiveCommentOptions = {
+export type HiveCommentOptionsType = {
   author: string;
   permlink: string;
-  max_accepted_payout: MaxAcceptedPayout;
+  max_accepted_payout: MaxAcceptedPayoutType;
   percent_hbd: number;
   allow_votes: boolean;
   allow_curation_rewards: boolean;
-  extensions: [number, { beneficiaries: Beneficiaries[] }][];
+  extensions: [number, { beneficiaries: BeneficiariesType[] }][];
 };
 
-export type MaxAcceptedPayout = {
+export type MaxAcceptedPayoutType = {
   amount: string;
   precision: number;
   nai: string;
 };
 
-export type Beneficiaries = {
+export type BeneficiariesType = {
   account: string;
   weight: number;
 };
 
-export type HiveVote = {
+export type HiveVoteType = {
   voter: string;
   author: string;
   permlink: string;
   weight: number;
 };
 
-export type HiveTransfer = {
+export type HiveTransferType = {
   from: string;
   to: string;
   amount: string;
   memo: number;
 };
 
-export type HiveCustomJson = {
+export type HiveCustomJsonType = {
   required_auths: string[];
   required_posting_auths: string[];
   id: string;
   json: string;
 };
 
-export type HiveAccountUpdate = {
+export type HiveAccountUpdateType = {
   account: string;
-  posting: Posting;
+  posting: PostingType;
 };
 
-export type Posting = {
+export type PostingType = {
   weight_threshold: string;
   account_auths: [];
   key_auths: [string, number][];
