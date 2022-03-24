@@ -3,8 +3,8 @@ export const HIVE_PROVIDE = {
 };
 
 export const HIVE_RPC_NODES = [
-  'https://api.hive.blog',
-  'https://rpc.esteem.app',
+  // 'https://api.hive.blog',
+ // 'https://rpc.esteem.app',
   'https://hive-api.arcange.eu',
   'https://rpc.ausbit.dev',
   'https://hive.roelandp.nl',

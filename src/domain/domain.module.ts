@@ -5,7 +5,10 @@ import { BlockProcessorModule } from './processor/block-processor.module';
 
 
 @Module({
-  imports: [TestModule, BlockProcessorModule],
+  imports: [
+      TestModule,
+    BlockProcessorModule
+  ],
   exports: [TestModule],
 })
 export class DomainModule {}

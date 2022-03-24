@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { configService } from './common/config';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { BlockProcessor } from './domain/processor/block-processor';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -19,18 +19,9 @@ async function bootstrap(): Promise<void> {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('new-campaigns/docs', app, document);
-  // await app.connectMicroservice<MicroserviceOptions>({
-  //   transport: Transport.RMQ,
-  //   options: {
-  //     urls: [configService.getRabbitConnectionString()],
-  //     queue: configService.getCampaignsQueue(),
-  //     queueOptions: {
-  //       durable: true,
-  //     },
-  //   },
-  // });
-  // await app.startAllMicroservices();
-  console.log('------------------', configService.getPort());
+  const blockProcessor = app.get(BlockProcessor);
+
   await app.listen(configService.getPort());
+  await blockProcessor.start();
 }
 bootstrap();

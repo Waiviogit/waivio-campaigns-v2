@@ -17,4 +17,8 @@ export abstract class RedisClient implements OnModuleInit {
   async get(key: string): Promise<string> {
     return this.client.get(key);
   }
+
+  async set(key: string, value: string): Promise<string> {
+    return this.client.set(key, value);
+  }
 }
