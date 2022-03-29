@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { CAMPAIGN_PROVIDE } from '../../common/constants';
 import { CreateCampaignDto } from '../../common/dto/in';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { CreateCampaignInterface } from './interface/create-campaign.interface';
+import { Campaign } from '../../persistance/campaign/campaign.schema';
 
 @Injectable()
 export class CreateCampaign implements CreateCampaignInterface {

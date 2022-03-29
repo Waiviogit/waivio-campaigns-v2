@@ -18,7 +18,7 @@ export abstract class RedisClient
     try {
       await this.client.connect();
     } catch (error) {
-      this.logger.error(error.message());
+      this.logger.error(error.message);
     }
   }
 

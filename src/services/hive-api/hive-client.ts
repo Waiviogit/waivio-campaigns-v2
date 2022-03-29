@@ -33,8 +33,8 @@ export class HiveClient implements HiveClientInterface {
         this.changeNode();
       }
       return resp?.data?.result;
-    } catch (err) {
-      this.logger.error(err.message);
+    } catch (error) {
+      this.logger.error(error.message);
       this.changeNode();
     }
   }

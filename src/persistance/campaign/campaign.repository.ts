@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Campaign, CampaignDocumentType } from './campaign.schema';
@@ -7,6 +7,7 @@ import { CreateCampaignDto } from '../../common/dto/in';
 
 @Injectable()
 export class CampaignRepository implements CampaignRepositoryInterface {
+  private readonly logger = new Logger(CampaignRepository.name);
   constructor(
     @InjectModel(Campaign.name)
     private readonly model: Model<CampaignDocumentType>,
@@ -14,11 +15,9 @@ export class CampaignRepository implements CampaignRepositoryInterface {
 
   async create(campaign: CreateCampaignDto): Promise<Campaign> {
     try {
-      return await new this.model(campaign).save();
+      return await this.model.create(campaign);
     } catch (error) {
-      console.log()
+      this.logger.error(error.message);
     }
-
-
   }
 }

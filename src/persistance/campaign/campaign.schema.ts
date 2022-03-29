@@ -77,6 +77,9 @@ class User {
 
 @Schema({ timestamps: true })
 class Payment {
+  @Transform(({ value }) => value.toString())
+  _id: string;
+
   @Prop({ type: Types.ObjectId, required: true })
   reservationId: string;
 
