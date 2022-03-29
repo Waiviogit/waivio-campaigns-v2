@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, ObjectId } from 'mongoose';
+import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 import { Transform } from 'class-transformer';
 
 import {
@@ -11,94 +11,53 @@ import {
 } from '../../common/constants';
 import { configService } from '../../common/config';
 
-@Schema({ id: false })
-class Requirements {
-  @Prop({ required: true })
-  minPhotos: number;
-
-  @Prop({ default: false })
-  receiptPhoto: boolean;
-}
-
-@Schema({ id: false })
-class UserRequirements {
-  @Prop({ default: 0 })
-  minPosts: number;
-
-  @Prop({ default: 0 })
-  minFollowers: number;
-
-  @Prop({ default: 0 })
-  minExpertise: number;
-}
-
-@Schema({ id: false })
-class ReservationTimetable {
-  @Prop({ default: true })
-  monday: boolean;
-
-  @Prop({ default: true })
-  tuesday: boolean;
-
-  @Prop({ default: true })
-  wednesday: boolean;
-
-  @Prop({ default: true })
-  thursday: boolean;
-
-  @Prop({ default: true })
-  friday: boolean;
-
-  @Prop({ default: true })
-  saturday: boolean;
-
-  @Prop({ default: true })
-  sunday: boolean;
-}
-
 @Schema({ timestamps: true })
 class User {
-  @Prop({ required: true })
+  @Transform(({ value }) => value.toString())
+  _id: string;
+
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   objectPermlink: string;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   reservationPermlink: string;
 
-  @Prop()
+  @Prop({ type: String })
   referralServer: string;
 
-  @Prop()
+  @Prop({ type: String })
   unReservationPermlink: string;
 
-  @Prop()
+  @Prop({ type: String })
   rootName: string;
 
-  @Prop({ default: 0 })
+  @Prop({ type: String, default: 0 })
   children: string;
 
-  @Prop()
+  @Prop({ type: String })
   riseRewardPermlink: string;
 
-  @Prop({ default: 0 })
+  @Prop({ type: Number, default: 0 })
   rewardRaisedBy: number;
 
-  @Prop()
+  @Prop({ type: String })
   reduceRewardPermlink: string;
 
-  @Prop({ default: 0 })
+  @Prop({ type: Number, default: 0 })
   rewardReducedBy: number;
 
-  @Prop()
+  @Prop({ type: String })
   rejectionPermlink: string;
   // #TODO ??? is it price in USD?
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   reservationTokenRateUSD: number;
   // hiveCurrency: number;
 
   @Prop({
+    type: String,
     required: true,
     enum: Object.values(RESERVATION_STATUS),
     default: RESERVATION_STATUS.ASSIGNED,
@@ -106,47 +65,50 @@ class User {
   })
   status: string;
 
-  @Prop()
+  @Prop({ type: Boolean })
   fraudSuspicion: boolean;
 
-  @Prop()
+  @Prop({ type: Boolean })
   fraudCodes: boolean;
 
-  @Prop()
+  @Prop({ type: Date })
   completedAt: Date;
 }
 
 @Schema({ timestamps: true })
 class Payment {
-  @Prop({ required: true })
-  // reservationId: ObjectId;
+  @Prop({ type: Types.ObjectId, required: true })
   reservationId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   userName: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   objectPermlink: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   rootAuthor: string;
 
-  @Prop()
+  @Prop({ type: String })
   paymentPermlink: string;
 
-  @Prop()
+  @Prop({ type: String })
   rejectionPermlink: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   postTitle: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   postPermlink: string;
 
-  @Prop()
+  @Prop({ type: String })
   app: string;
 
-  @Prop({ default: PAYMENT_STATUS.ACTIVE, enum: Object.values(PAYMENT_STATUS) })
+  @Prop({
+    type: String,
+    default: PAYMENT_STATUS.ACTIVE,
+    enum: Object.values(PAYMENT_STATUS),
+  })
   status: string;
 }
 
@@ -155,108 +117,131 @@ export class Campaign {
   @Transform(({ value }) => value.toString())
   _id: string;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   guideName: string;
 
-  @Prop({ required: true, maxlength: 256, index: true })
+  @Prop({ type: String, required: true, maxlength: 256, index: true })
   name: string;
 
-  @Prop({ maxlength: 512 })
+  @Prop({ type: String, maxlength: 512 })
   description: string;
 
-  @Prop({ required: true, enum: Object.values(CAMPAIGN_TYPE) })
+  @Prop({ type: String, required: true, enum: Object.values(CAMPAIGN_TYPE) })
   type: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: Object.values(CAMPAIGN_STATUS),
     default: CAMPAIGN_STATUS.PENDING,
   })
   status: string;
 
-  @Prop({ maxlength: 512 })
+  @Prop({ type: String, maxlength: 512 })
   note: string;
 
-  @Prop()
+  @Prop({ type: String })
   compensationAccount: string;
 
-  @Prop({ default: () => configService.getAppHost() })
+  @Prop({ type: String, default: () => configService.getAppHost() })
   campaignServer: string;
-  //decimal 128 transform
-  @Prop({ required: true, min: 0.001, max: 10000 })
+
+  @Prop({ type: Number, required: true, min: 0.001, max: 10000 })
   budget: number;
-  //decimal 128 transform
-  @Prop({ required: true, min: 0.001, max: 500 })
+
+  @Prop({ type: Number, required: true, min: 0.001, max: 500 })
   reward: number;
 
-  @Prop({ default: 1 })
+  @Prop({ type: Number, required: true, min: 0.001, max: 50000 })
+  rewardInCurrency: number;
+
+  @Prop({ type: Number, default: 1 })
   countReservationDays: number;
 
-  @Prop()
+  @Prop({ type: [String] })
   agreementObjects: string[];
 
-  @Prop({ maxlength: 2000 })
+  @Prop({ type: [String], maxlength: 2000 })
   usersLegalNotice: string[];
 
-  @Prop({ min: 0.05, max: 1, default: 0.05 })
+  @Prop({ type: Number, min: 0.05, max: 1, default: 0.05 })
   commissionAgreement: number;
 
-  @Prop()
-  requirements: Requirements;
+  @Prop(
+    raw({
+      minPhotos: { type: Number, required: true },
+      receiptPhoto: { type: Boolean, default: false },
+    }),
+  )
+  requirements: Record<string, unknown>;
 
-  @Prop()
-  userRequirements: UserRequirements;
+  @Prop(
+    raw({
+      minPosts: { type: Number, default: 0 },
+      minFollowers: { type: Number, default: 0 },
+      minExpertise: { type: Number, default: 0 },
+    }),
+  )
+  userRequirements: Record<string, number>;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   requiredObject: string;
 
-  @Prop({ validate: /\S+/, required: true })
+  @Prop({ type: [String], validate: /\S+/, required: true })
   objects: string[];
 
   @Prop()
   users: User[];
 
-  @Prop()
+  @Prop({ type: [String] })
   blacklistUsers: string[];
 
-  @Prop()
+  @Prop({ type: [String] })
   whitelistUsers: string[];
 
-  @Prop({ index: true })
+  @Prop({ type: String, index: true })
   activationPermlink: string;
 
-  @Prop({ index: true })
+  @Prop({ type: String, index: true })
   deactivationPermlink: string;
 
-  @Prop()
+  @Prop({ type: [String] })
   matchBots: string[];
 
-  @Prop({ max: 300, default: 0 })
+  @Prop({ type: Number, max: 300, default: 0 })
   frequencyAssign: number;
 
   @Prop()
   payments: Payment[];
 
-  @Prop()
-  reservationTimetable: ReservationTimetable;
+  @Prop(
+    raw({
+      monday: { type: Boolean, default: true },
+      tuesday: { type: Boolean, default: true },
+      wednesday: { type: Boolean, default: true },
+      thursday: { type: Boolean, default: true },
+      friday: { type: Boolean, default: true },
+      saturday: { type: Boolean, default: true },
+      sunday: { type: Boolean, default: true },
+    }),
+  )
+  reservationTimetable: Record<string, boolean>;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   app: string;
 
-  @Prop()
+  @Prop({ type: Date })
   expiredAt: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   stoppedAt: Date;
 
   @Prop({
+    type: String,
     default: SUPPORTED_CURRENCY.USD,
     enum: Object.values(SUPPORTED_CURRENCY),
   })
   currency: string;
-
-  @Prop({ required: true, min: 0.001, max: 50000 })
-  rewardInCurrency: number;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
