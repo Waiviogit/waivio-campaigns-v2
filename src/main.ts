@@ -7,7 +7,7 @@ import { BlockProcessor } from './domain/processor/block-processor';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  // app.setGlobalPrefix('new-campaigns');
+  app.setGlobalPrefix('campaigns-v2');
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
@@ -18,7 +18,7 @@ async function bootstrap(): Promise<void> {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('new-campaigns/docs', app, document);
+  SwaggerModule.setup('campaigns-v2/docs', app, document);
   const blockProcessor = app.get(BlockProcessor);
 
   await app.listen(configService.getPort());

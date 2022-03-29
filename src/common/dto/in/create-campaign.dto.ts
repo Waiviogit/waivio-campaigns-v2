@@ -8,11 +8,14 @@ import {
   IsBoolean,
   IsArray,
   ValidateNested,
-  IsEnum,
+  IsIn,
+  Min,
+  Max,
+  Matches,
 } from 'class-validator';
-import { SupportedCurrencies } from '../../../../common/enum';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { CAMPAIGN_TYPE, SUPPORTED_CURRENCY } from '../../constants';
 
 class ReservationTimetableDto {
   @IsOptional()
@@ -77,11 +80,6 @@ class UserRequirementsDto {
 }
 
 export class CreateCampaignDto {
-  @IsOptional()
-  @IsString()
-  @ApiProperty({ type: String, required: false })
-  id: string;
-
   @IsNotEmpty()
   @IsString()
   @ApiProperty({ type: String })
@@ -95,12 +93,18 @@ export class CreateCampaignDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(512)
   @ApiProperty({ type: String, required: false })
   description: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  @ApiProperty({ type: String, required: false })
+  @IsIn(Object.values(CAMPAIGN_TYPE))
+  @ApiProperty({
+    type: String,
+    required: true,
+    enum: Object.values(CAMPAIGN_TYPE),
+  })
   type: string;
 
   @IsOptional()
@@ -108,15 +112,23 @@ export class CreateCampaignDto {
   @ApiProperty({ type: String, required: false })
   note: string;
 
-  @IsOptional()
   @IsNumber()
-  @ApiProperty({ type: Number, required: false })
+  @Min(0.001)
+  @Max(10000)
+  @ApiProperty({ type: Number, required: true })
   budget: number;
 
-  @IsOptional()
   @IsNumber()
-  @ApiProperty({ type: Number, required: false })
+  @Min(0.001)
+  @Max(500)
+  @ApiProperty({ type: Number, required: true })
   reward: number;
+
+  @IsNumber()
+  @Min(0.001)
+  @Max(50000)
+  @ApiProperty({ type: Number, required: true })
+  rewardInCurrency: number;
 
   @ValidateNested()
   @Type(() => RequirementsDto)
@@ -128,9 +140,8 @@ export class CreateCampaignDto {
   @ApiProperty({ type: () => UserRequirementsDto })
   userRequirements: UserRequirementsDto;
 
-  @IsOptional()
   @IsString()
-  @ApiProperty({ type: String, required: false })
+  @ApiProperty({ type: String, required: true })
   requiredObject: string;
 
   @IsOptional()
@@ -167,10 +178,10 @@ export class CreateCampaignDto {
   @ApiProperty({ type: () => ReservationTimetableDto, required: false })
   reservationTimetable: ReservationTimetableDto;
 
-  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @ApiProperty({ type: [String], required: false })
+  @Matches(/\S+/, { each: true })
+  @ApiProperty({ type: [String], required: true })
   objects: string[];
 
   @IsOptional()
@@ -189,7 +200,10 @@ export class CreateCampaignDto {
   @ApiProperty({ type: String, required: false })
   usersLegalNotice: string;
 
+  @IsOptional()
   @IsNumber()
+  @Min(0.05)
+  @Max(1)
   @ApiProperty({ type: Number })
   commissionAgreement: number;
 
@@ -205,7 +219,12 @@ export class CreateCampaignDto {
   expiredAt: Date;
 
   @IsOptional()
-  @IsEnum(SupportedCurrencies)
-  @ApiProperty({ type: String, enum: SupportedCurrencies, required: false })
-  currency: SupportedCurrencies;
+  @IsIn(Object.values(SUPPORTED_CURRENCY))
+  @ApiProperty({
+    type: String,
+    enum: Object.values(SUPPORTED_CURRENCY),
+    required: false,
+    default: SUPPORTED_CURRENCY.USD,
+  })
+  currency: string;
 }

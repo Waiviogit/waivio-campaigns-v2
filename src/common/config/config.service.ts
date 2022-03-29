@@ -38,6 +38,10 @@ class ConfigService {
   public getPort(): string {
     return this.getValue('PORT', true);
   }
+
+  public getAppHost(): string {
+    return this.getValue('APP_HOST', true);
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues(

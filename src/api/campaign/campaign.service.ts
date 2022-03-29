@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCampaignDto } from './dto';
+import { CreateCampaignDto } from '../../common/dto/in';
 
 @Injectable()
 export class CampaignService {
-  constructor(
-    // @InjectModel(Todo.name)
-    // private readonly model: Model<TodoDocument>,
-  ) {}
+  constructor() {}
 
   async createCampaign(createCampaignDto: CreateCampaignDto) {
     console.log('created _________');

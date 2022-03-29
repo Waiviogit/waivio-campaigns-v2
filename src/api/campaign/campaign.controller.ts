@@ -1,50 +1,25 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
-import { CampaignService } from './campaign.service';
-import { CreateCampaignDto } from './dto';
+import { Controller, Post, Body, Get, Inject } from '@nestjs/common';
+
 import { CampaignControllerDocs } from './campaign.controller.doc';
-import {
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
-import { configService } from '../../common/config';
 import { TestCreate } from '../../domain/test/test.create';
+import { CreateCampaignDto } from '../../common/dto/in';
+import { CreateCampaignInterface } from '../../domain/campaign/interface/create-campaign.interface';
+import { CAMPAIGN_PROVIDE } from '../../common/constants';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
 export class CampaignController {
-  // client: ClientProxy;
   constructor(
-    private readonly campaignService: CampaignService,
     private readonly testCreate: TestCreate,
-  ) {
-    // this.client = ClientProxyFactory.create({
-    //   transport: Transport.RMQ,
-    //   options: {
-    //     urls: [configService.getRabbitConnectionString()],
-    //     queue: configService.getCampaignsQueue(),
-    //     queueOptions: { durable: true },
-    //     socketOptions: { noDelay: true },
-    //   },
-    // });
-  }
+    @Inject(CAMPAIGN_PROVIDE.CREATE_CAMPAIGN)
+    private readonly createCampaign: CreateCampaignInterface,
+  ) {}
 
-  @Post('create')
+  @Post()
   @CampaignControllerDocs.createCampaign()
   async create(@Body() createCampaignDto: CreateCampaignDto) {
-    return await this.campaignService.createCampaign(createCampaignDto);
+    return await this.createCampaign.create(createCampaignDto);
   }
-
-  // @Get('test')
-  // async createTest(@Body() createCampaignDto: CreateCampaignDto) {
-  //   return await this.campaignService.createCampaign(createCampaignDto);
-  // }
-
-  // @Get('send')
-  // async send() {
-  //   console.log('sended -----------');
-  //   return this.client.send<number>({ cmd: 'test' }, 1231);
-  // }
 
   @Get('test')
   async test() {

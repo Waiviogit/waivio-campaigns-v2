@@ -1,15 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { Transform } from 'class-transformer';
-import {
-  CampaignStatuses,
-  CampaignTypes,
-  PaymentStatuses,
-  ReservationStatuses,
-  SupportedCurrencies,
-} from '../../../common/enum';
 
-export type campaignDocument = Campaign & Document;
+import {
+  CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
+  PAYMENT_STATUS,
+  RESERVATION_STATUS,
+  SUPPORTED_CURRENCY,
+} from '../../common/constants';
+import { configService } from '../../common/config';
 
 @Schema({ id: false })
 class Requirements {
@@ -98,8 +98,13 @@ class User {
   reservationTokenRateUSD: number;
   // hiveCurrency: number;
 
-  @Prop({ required: true, default: ReservationStatuses.ASSIGNED, index: true })
-  status: ReservationStatuses;
+  @Prop({
+    required: true,
+    enum: Object.values(RESERVATION_STATUS),
+    default: RESERVATION_STATUS.ASSIGNED,
+    index: true,
+  })
+  status: string;
 
   @Prop()
   fraudSuspicion: boolean;
@@ -141,8 +146,8 @@ class Payment {
   @Prop()
   app: string;
 
-  @Prop({ default: PaymentStatuses.ACTIVE })
-  status: PaymentStatuses;
+  @Prop({ default: PAYMENT_STATUS.ACTIVE, enum: Object.values(PAYMENT_STATUS) })
+  status: string;
 }
 
 @Schema({ timestamps: true })
@@ -159,19 +164,23 @@ export class Campaign {
   @Prop({ maxlength: 512 })
   description: string;
 
-  @Prop({ required: true })
-  type: CampaignTypes;
+  @Prop({ required: true, enum: Object.values(CAMPAIGN_TYPE) })
+  type: string;
 
-  @Prop({ required: true })
-  status: CampaignStatuses;
+  @Prop({
+    required: true,
+    enum: Object.values(CAMPAIGN_STATUS),
+    default: CAMPAIGN_STATUS.PENDING,
+  })
+  status: string;
 
   @Prop({ maxlength: 512 })
   note: string;
 
   @Prop()
   compensationAccount: string;
-  //#TODO  default: config.appHost
-  @Prop()
+
+  @Prop({ default: () => configService.getAppHost() })
   campaignServer: string;
   //decimal 128 transform
   @Prop({ required: true, min: 0.001, max: 10000 })
@@ -240,11 +249,15 @@ export class Campaign {
   @Prop()
   stoppedAt: Date;
 
-  @Prop({ default: SupportedCurrencies.USD })
-  currency: SupportedCurrencies;
+  @Prop({
+    default: SUPPORTED_CURRENCY.USD,
+    enum: Object.values(SUPPORTED_CURRENCY),
+  })
+  currency: string;
 
   @Prop({ required: true, min: 0.001, max: 50000 })
   rewardInCurrency: number;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
+export type CampaignDocumentType = Campaign & Document;

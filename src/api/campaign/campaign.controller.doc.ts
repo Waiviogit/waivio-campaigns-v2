@@ -1,6 +1,6 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { CreateCampaignDto } from './dto';
+import { CreateCampaignDto } from '../../common/dto/in';
 
 export class CampaignControllerDocs {
   static main(): ClassDecorator {

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TestCreate } from './test.create';
 
-import { TestRepositoryModule } from '../../persistance/test/test-repository.module';
+import { PersistenceModule } from '../../persistance/persistence.module';
 
 @Module({
-  imports: [TestRepositoryModule],
+  imports: [PersistenceModule],
   providers: [TestCreate],
   exports: [TestCreate],
 })
