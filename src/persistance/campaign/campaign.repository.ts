@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Campaign, CampaignDocumentType } from './campaign.schema';
 import { CampaignRepositoryInterface } from './interface';
 import { CreateCampaignDto } from '../../common/dto/in';
+import { CampaignFindOneType } from './types';
 
 @Injectable()
 export class CampaignRepository implements CampaignRepositoryInterface {
@@ -16,6 +17,18 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   async create(campaign: CreateCampaignDto): Promise<Campaign> {
     try {
       return await this.model.create(campaign);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async findOne({
+    filter,
+    projection,
+    options,
+  }: CampaignFindOneType): Promise<Campaign> {
+    try {
+      return this.model.findOne(filter, projection, options).lean();
     } catch (error) {
       this.logger.error(error.message);
     }

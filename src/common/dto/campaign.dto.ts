@@ -81,12 +81,6 @@ class UserRequirementsDto {
 }
 
 export class CampaignDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ type: String })
-  _id: string;
-
   @IsNotEmpty()
   @MaxLength(16)
   @IsString()
@@ -233,7 +227,6 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   compensationAccount: string;
 
-  @IsOptional()
   @ApiProperty({ type: Date, required: false })
   expiredAt: Date;
 }

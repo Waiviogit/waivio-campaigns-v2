@@ -42,6 +42,13 @@ class ConfigService {
   public getAppHost(): string {
     return this.getValue('APP_HOST', true);
   }
+
+  public getGuestValidationURL(): string {
+    return `https://${this.getValue('APP_HOST', true)}${this.getValue(
+      'VALIDATE_GUEST_TOKEN_ROUTE',
+      true,
+    )}`;
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues(

@@ -1,4 +1,4 @@
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { Campaign } from '../../persistance/campaign/campaign.schema';
 
@@ -23,6 +23,15 @@ export class CampaignControllerDocs {
 
   static createCampaign(): MethodDecorator {
     return applyDecorators(
+      ApiHeader({
+        name: 'access-token',
+        required: true,
+      }),
+      ApiHeader({
+        name: 'account',
+        required: true,
+        description: 'authorized account',
+      }),
       ApiOperation({
         summary: 'request for create campaign',
         description: 'campaign object',
