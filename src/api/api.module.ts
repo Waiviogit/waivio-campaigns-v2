@@ -2,9 +2,10 @@ import { CampaignController } from './campaign/campaign.controller';
 import { CampaignService } from './campaign/campaign.service';
 import { Module } from '@nestjs/common';
 import { DomainModule } from '../domain/domain.module';
+import { PersistenceModule } from '../persistance/persistence.module';
 
 @Module({
-  imports: [DomainModule],
+  imports: [DomainModule, PersistenceModule],
   controllers: [CampaignController],
   providers: [CampaignService],
 })

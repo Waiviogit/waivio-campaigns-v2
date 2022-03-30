@@ -4,3 +4,5 @@ export * from './redis';
 export * from './hive-client';
 export * from './hive-parser';
 export * from './campaign';
+export * from './user';
+export * from './languages';

@@ -1,6 +1,6 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { CreateCampaignDto } from '../../common/dto/in';
+import { Campaign } from '../../persistance/campaign/campaign.schema';
 
 export class CampaignControllerDocs {
   static main(): ClassDecorator {
@@ -30,8 +30,7 @@ export class CampaignControllerDocs {
       ApiResponse({
         status: HttpStatus.OK,
         description: 'campaign',
-        //todo output dto
-        type: CreateCampaignDto,
+        type: Campaign,
       }),
     );
   }

@@ -12,7 +12,7 @@ import {
 import { configService } from '../../common/config';
 
 @Schema({ timestamps: true })
-class User {
+class CampaignUser {
   @Transform(({ value }) => value.toString())
   _id: string;
 
@@ -75,8 +75,11 @@ class User {
   completedAt: Date;
 }
 
+export const CampaignUserSchema = SchemaFactory.createForClass(CampaignUser);
+export type CampaignUserDocumentType = CampaignUser & Document;
+
 @Schema({ timestamps: true })
-class Payment {
+class CampaignPayment {
   @Transform(({ value }) => value.toString())
   _id: string;
 
@@ -114,6 +117,10 @@ class Payment {
   })
   status: string;
 }
+
+export const CampaignPaymentSchema =
+  SchemaFactory.createForClass(CampaignPayment);
+export type CampaignPaymentDocumentType = CampaignPayment & Document;
 
 @Schema({ timestamps: true })
 export class Campaign {
@@ -193,8 +200,8 @@ export class Campaign {
   @Prop({ type: [String], validate: /\S+/, required: true })
   objects: string[];
 
-  @Prop()
-  users: User[];
+  @Prop({ type: [CampaignUserSchema], default: [] })
+  users: CampaignUserDocumentType[];
 
   @Prop({ type: [String] })
   blacklistUsers: string[];
@@ -214,8 +221,8 @@ export class Campaign {
   @Prop({ type: Number, max: 300, default: 0 })
   frequencyAssign: number;
 
-  @Prop()
-  payments: Payment[];
+  @Prop({ type: [CampaignPaymentSchema], default: [] })
+  payments: CampaignPaymentDocumentType[];
 
   @Prop(
     raw({

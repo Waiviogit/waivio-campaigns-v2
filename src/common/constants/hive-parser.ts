@@ -1,4 +1,4 @@
-export const HIVE_PARSER_PROVIDE = {
+export const HIVE_PARSER_PROVIDE = Object.freeze({
   MAIN: 'HiveMainParser',
   COMMENT: 'HiveCommentParser',
-};
+});
