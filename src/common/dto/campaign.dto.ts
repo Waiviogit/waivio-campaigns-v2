@@ -12,7 +12,7 @@ import {
   Min,
   Max,
   Matches,
-  IsMongoId,
+  IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -227,6 +227,7 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   compensationAccount: string;
 
-  @ApiProperty({ type: Date, required: false })
+  @IsDateString()
+  @ApiProperty({ type: Date, required: true })
   expiredAt: Date;
 }

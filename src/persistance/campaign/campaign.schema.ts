@@ -1,5 +1,5 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, ObjectId, Types } from 'mongoose';
 import { Transform } from 'class-transformer';
 
 import {
@@ -159,8 +159,7 @@ export type CampaignPaymentDocumentType = CampaignPayment & Document;
 @Schema({ timestamps: true })
 export class Campaign {
   @ApiProperty({ type: String })
-  @Transform(({ value }) => value.toString())
-  _id: string;
+  _id: ObjectId;
 
   @ApiProperty({ type: String })
   @Prop({ type: String, required: true, index: true })
@@ -307,7 +306,7 @@ export class Campaign {
   app: string;
 
   @ApiProperty({ type: Date })
-  @Prop({ type: Date })
+  @Prop({ type: Date, required: true })
   expiredAt: Date;
 
   @ApiProperty({ type: Date })

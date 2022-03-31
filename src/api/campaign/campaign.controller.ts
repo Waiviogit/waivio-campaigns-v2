@@ -5,7 +5,7 @@ import { CreateCampaignDto } from '../../common/dto/in';
 import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { CampaignService } from './campaign.service';
 import { UpdateCampaignDto } from '../../common/dto/in/update-campaign.dto';
-import { AuthGuard } from '../guards/auth.guard';
+import { AuthGuard, ChangeCampaignGuard } from '../guards';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
@@ -20,11 +20,12 @@ export class CampaignController {
   ): Promise<Campaign> {
     return this.campaignService.create(createCampaignDto);
   }
-  //TODO add param account from header check guide name in separate guard
+
   //@UseGuards(AuthGuard)
   @Patch()
+  @UseGuards(ChangeCampaignGuard)
   @CampaignControllerDocs.updateCampaign()
   async update(@Body() updateCampaignDto: UpdateCampaignDto) {
-    console.log('yo');
+    return this.campaignService.update(updateCampaignDto);
   }
 }

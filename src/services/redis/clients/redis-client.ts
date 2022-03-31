@@ -37,4 +37,12 @@ export abstract class RedisClient
       this.logger.error(error.message());
     }
   }
+
+  async setex(key: string, expire: number, value: string): Promise<string> {
+    try {
+      return this.client.SETEX(key, expire, value);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }

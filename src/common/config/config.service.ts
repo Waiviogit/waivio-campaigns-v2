@@ -35,6 +35,18 @@ class ConfigService {
     return `redis://${host}:${port}/${db}`;
   }
 
+  public getRedisCampaignsConfig(): string {
+    const host = this.getValue('REDIS_HOST');
+    const port = this.getValue('REDIS_PORT');
+    const db = this.getValue('REDIS_DB_CAMPAIGNS');
+
+    return `redis://${host}:${port}/${db}`;
+  }
+
+  public getRedisCampaignsDB(): string {
+    return this.getValue('REDIS_DB_CAMPAIGNS');
+  }
+
   public getPort(): string {
     return this.getValue('PORT', true);
   }

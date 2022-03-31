@@ -1,9 +1,14 @@
 export type ValidateRequestType = {
-  headers: HeadersRequest;
+  headers: HeadersRequestType;
+  body: BodyRequest;
 };
 
-type HeadersRequest = {
+type HeadersRequestType = {
   'access-token'?: string;
   account?: string;
   'waivio-auth': string;
+};
+
+type BodyRequest = {
+  _id?: string;
 };

@@ -45,4 +45,5 @@ export const PAYMENT_STATUS = Object.freeze({
 export const CAMPAIGN_PROVIDE = Object.freeze({
   REPOSITORY: 'CampaignRepository',
   CREATE_CAMPAIGN: 'CreateCampaign',
+  CAMPAIGN_HELPER: 'CampaignHelper',
 });

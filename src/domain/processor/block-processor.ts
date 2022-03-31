@@ -7,7 +7,7 @@ import {
   REDIS_PROVIDE,
 } from '../../common/constants';
 import { DEFAULT_START_BLOCK_CAMPAIGN } from './constants';
-import { RedisClientInterface } from '../../services/redis/interface';
+import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { HiveClientInterface } from '../../services/hive-api/interface';
 import { HiveMainParserInterface } from '../hive-parser/interface';
 

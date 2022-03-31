@@ -3,7 +3,6 @@ import { CreateCampaignDto } from '../../common/dto/in';
 import { Campaign } from '../../persistance/campaign/campaign.schema';
 import {
   CAMPAIGN_PROVIDE,
-  CAMPAIGN_STATUS,
   USER_PROVIDE,
 } from '../../common/constants';
 import { CreateCampaignInterface } from '../../domain/campaign/interface/create-campaign.interface';
@@ -38,9 +37,6 @@ export class CampaignService {
   }
 
   async update(updateCampaignDto: UpdateCampaignDto) {
-    const campaign = await this.campaignRepository.findOne({
-      filter: { _id: updateCampaignDto._id, status: CAMPAIGN_STATUS.PENDING },
-      projection: { _id: 1 },
-    });
+    console.log();
   }
 }

@@ -1,9 +1,17 @@
 import { Global, Module } from '@nestjs/common';
-import { RedisBlockProvider } from './redis-client.provider';
+import {
+  RedisBlockProvider,
+  RedisCampaignProvider,
+} from './redis-client.provider';
+import { RedisCampaignSubscriber } from './subscribers/campaign-subscriber';
 
 @Global()
 @Module({
-  providers: [RedisBlockProvider],
-  exports: [RedisBlockProvider],
+  providers: [
+    RedisBlockProvider,
+    RedisCampaignProvider,
+    RedisCampaignSubscriber,
+  ],
+  exports: [RedisBlockProvider, RedisCampaignProvider],
 })
 export class RedisClientModule {}
