@@ -33,7 +33,30 @@ export class CampaignControllerDocs {
         description: 'authorized account',
       }),
       ApiOperation({
-        summary: 'request for create campaign',
+        summary: 'endpoint for create campaign',
+        description: 'campaign object',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        description: 'campaign',
+        type: Campaign,
+      }),
+    );
+  }
+
+  static updateCampaign(): MethodDecorator {
+    return applyDecorators(
+      ApiHeader({
+        name: 'access-token',
+        required: true,
+      }),
+      ApiHeader({
+        name: 'account',
+        required: true,
+        description: 'authorized account',
+      }),
+      ApiOperation({
+        summary: 'endpoint for update pending campaign',
         description: 'campaign object',
       }),
       ApiResponse({

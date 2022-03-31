@@ -11,7 +11,7 @@ import { AuthGuard } from '../guards/auth.guard';
 @CampaignControllerDocs.main()
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
-
+  //TODO
   //@UseGuards(AuthGuard)
   @Post()
   @CampaignControllerDocs.createCampaign()
@@ -20,9 +20,10 @@ export class CampaignController {
   ): Promise<Campaign> {
     return this.campaignService.create(createCampaignDto);
   }
-
+  //TODO add param account from header check guide name in separate guard
   //@UseGuards(AuthGuard)
   @Patch()
+  @CampaignControllerDocs.updateCampaign()
   async update(@Body() updateCampaignDto: UpdateCampaignDto) {
     console.log('yo');
   }
