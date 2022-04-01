@@ -1,6 +1,10 @@
 import { CreateCampaignDto } from '../../../common/dto/in';
 import { Campaign } from '../campaign.schema';
-import { CampaignFindOneType } from '../types';
+import {
+  CampaignFindOneAndDeleteType,
+  CampaignFindOneType,
+  CampaignUpdateOneType,
+} from '../types';
 
 export interface CampaignRepositoryInterface {
   create(campaign: CreateCampaignDto): Promise<Campaign>;
@@ -9,4 +13,13 @@ export interface CampaignRepositoryInterface {
     projection,
     options,
   }: CampaignFindOneType): Promise<Campaign>;
+  findOneAndUpdate({
+    filter,
+    update,
+    options,
+  }: CampaignUpdateOneType): Promise<Campaign>;
+  findOneAndDelete({
+    filter,
+    options,
+  }: CampaignFindOneAndDeleteType): Promise<Campaign>;
 }

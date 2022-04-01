@@ -22,4 +22,8 @@ export class CampaignHelper implements CampaignHelperInterface {
       '',
     );
   }
+
+  async deleteCampaignKey(key: string): Promise<void> {
+    await this.campaignRedisClient.deleteKey(key);
+  }
 }

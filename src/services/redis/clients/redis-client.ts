@@ -45,4 +45,12 @@ export abstract class RedisClient
       this.logger.error(error.message);
     }
   }
+
+  async deleteKey(key: string): Promise<string> {
+    try {
+      return this.client.del(key);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }

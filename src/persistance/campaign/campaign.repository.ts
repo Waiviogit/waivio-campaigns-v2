@@ -4,7 +4,11 @@ import { Model } from 'mongoose';
 import { Campaign, CampaignDocumentType } from './campaign.schema';
 import { CampaignRepositoryInterface } from './interface';
 import { CreateCampaignDto } from '../../common/dto/in';
-import { CampaignFindOneType } from './types';
+import {
+  CampaignFindOneAndDeleteType,
+  CampaignFindOneType,
+  CampaignUpdateOneType,
+} from './types';
 
 @Injectable()
 export class CampaignRepository implements CampaignRepositoryInterface {
@@ -29,6 +33,28 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }: CampaignFindOneType): Promise<Campaign> {
     try {
       return this.model.findOne(filter, projection, options).lean();
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+  async findOneAndUpdate({
+    filter,
+    update,
+    options,
+  }: CampaignUpdateOneType): Promise<Campaign> {
+    try {
+      return this.model.findOneAndUpdate(filter, update, options).lean();
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async findOneAndDelete({
+    filter,
+    options,
+  }: CampaignFindOneAndDeleteType): Promise<Campaign> {
+    try {
+      return this.model.findOneAndDelete(filter, options).lean();
     } catch (error) {
       this.logger.error(error.message);
     }

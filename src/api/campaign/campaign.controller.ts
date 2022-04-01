@@ -1,19 +1,29 @@
-import { Controller, Post, Body, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import { CampaignControllerDocs } from './campaign.controller.doc';
-import { CreateCampaignDto } from '../../common/dto/in';
-
+import {
+  CreateCampaignDto,
+  DeleteCampaignDto,
+  UpdateCampaignDto,
+} from '../../common/dto/in';
 import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { CampaignService } from './campaign.service';
-import { UpdateCampaignDto } from '../../common/dto/in/update-campaign.dto';
+
 import { AuthGuard, ChangeCampaignGuard } from '../guards';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
-  //TODO
-  //@UseGuards(AuthGuard)
+
   @Post()
+  @UseGuards(AuthGuard)
   @CampaignControllerDocs.createCampaign()
   async create(
     @Body() createCampaignDto: CreateCampaignDto,
@@ -21,11 +31,21 @@ export class CampaignController {
     return this.campaignService.create(createCampaignDto);
   }
 
-  //@UseGuards(AuthGuard)
   @Patch()
-  @UseGuards(ChangeCampaignGuard)
+  @UseGuards(ChangeCampaignGuard, AuthGuard)
   @CampaignControllerDocs.updateCampaign()
-  async update(@Body() updateCampaignDto: UpdateCampaignDto) {
+  async update(
+    @Body() updateCampaignDto: UpdateCampaignDto,
+  ): Promise<Campaign> {
     return this.campaignService.update(updateCampaignDto);
+  }
+
+  @Delete()
+  @UseGuards(ChangeCampaignGuard, AuthGuard)
+  @CampaignControllerDocs.updateCampaign()
+  async delete(
+    @Body() deleteCampaignDto: DeleteCampaignDto,
+  ): Promise<Campaign> {
+    return this.campaignService.delete(deleteCampaignDto);
   }
 }
