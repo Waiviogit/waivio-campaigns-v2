@@ -14,6 +14,10 @@ export const USER_PROVIDE = Object.freeze({
   REPOSITORY: 'UserRepository',
 });
 
+export const POST_PROVIDE = Object.freeze({
+  REPOSITORY: 'PostRepository',
+});
+
 export const REDIS_PROVIDE = Object.freeze({
   BLOCK_CLIENT: 'RedisBlockClient',
   CAMPAIGN_CLIENT: 'RedisCampaignClient',

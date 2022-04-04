@@ -8,4 +8,5 @@ export const COLLECTION = Object.freeze({
   WOBJECTS: 'wobjects',
   USER_SUBSCRIPTIONS: 'subscriptions',
   WOBJECT_SUBSCRIPTIONS: 'wobjectsubscriptions',
+  POSTS: 'posts',
 });
