@@ -1,3 +1,6 @@
+import { Document } from 'mongoose';
+import { Referral, User, UserMetadata } from '../user.schema';
+
 export type UserMetadataSettingsType = {
   exitPageSetting: boolean;
   locale: string;
@@ -33,3 +36,9 @@ export type AuthType = {
   id: string;
   provider: string;
 };
+
+export type ReferralDocumentType = Referral & Document;
+
+export type UserMetadataDocumentType = UserMetadata & Document;
+
+export type UserDocumentType = User & Document;

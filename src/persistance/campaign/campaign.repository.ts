@@ -1,14 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Campaign, CampaignDocumentType } from './campaign.schema';
+import { Campaign } from './campaign.schema';
 import { CampaignRepositoryInterface } from './interface';
 import { CreateCampaignDto } from '../../common/dto/in';
 import {
+  ActivateCampaignType,
+  CampaignDocumentType,
   CampaignFindOneAndDeleteType,
   CampaignFindOneType,
   CampaignUpdateOneType,
 } from './types';
+import { CAMPAIGN_STATUS } from '../../common/constants';
 
 @Injectable()
 export class CampaignRepository implements CampaignRepositoryInterface {
@@ -58,5 +61,45 @@ export class CampaignRepository implements CampaignRepositoryInterface {
     } catch (error) {
       this.logger.error(error.message);
     }
+  }
+
+  /*
+  Domain
+   */
+
+  async findOneSuspended(guideName: string): Promise<Campaign> {
+    return this.findOne({
+      filter: { guideName, status: CAMPAIGN_STATUS.SUSPENDED },
+    });
+  }
+
+  async findOnePending(guideName: string, _id: string): Promise<Campaign> {
+    return this.findOne({
+      filter: { _id, status: CAMPAIGN_STATUS.PENDING, guideName },
+    });
+  }
+
+  async findActiveByActivationLink(
+    activation_permlink: string,
+  ): Promise<Campaign> {
+    return this.findOne({
+      filter: {
+        activation_permlink,
+        status: CAMPAIGN_STATUS.ACTIVE,
+      },
+    });
+  }
+
+  async activateCampaign({
+    _id,
+    status,
+    guideName,
+    permlink,
+  }: ActivateCampaignType): Promise<Campaign> {
+    return this.findOneAndUpdate({
+      filter: { _id, status: CAMPAIGN_STATUS.PENDING, guideName },
+      update: { status, activation_permlink: permlink },
+      options: { new: true },
+    });
   }
 }

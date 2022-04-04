@@ -5,6 +5,7 @@ import { CreateCampaign } from './create-campaign';
 import { CampaignHelper } from './campaign-helper';
 import { UpdateCampaign } from './update-campaign';
 import { DeleteCampaign } from './delete-campaign';
+import { CampaignActivation } from './campaign-activation';
 
 export const CreateCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CREATE_CAMPAIGN,
@@ -19,6 +20,11 @@ export const UpdateCampaignProvider: Provider = {
 export const DeleteCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.DELETE_CAMPAIGN,
   useClass: DeleteCampaign,
+};
+
+export const CampaignActivationProvider: Provider = {
+  provide: CAMPAIGN_PROVIDE.ACTIVATE_CAMPAIGN,
+  useClass: CampaignActivation,
 };
 
 export const CampaignProviderHelper: Provider = {

@@ -1,6 +1,7 @@
 import { CreateCampaignDto } from '../../../common/dto/in';
 import { Campaign } from '../campaign.schema';
 import {
+  ActivateCampaignType,
   CampaignFindOneAndDeleteType,
   CampaignFindOneType,
   CampaignUpdateOneType,
@@ -22,4 +23,14 @@ export interface CampaignRepositoryInterface {
     filter,
     options,
   }: CampaignFindOneAndDeleteType): Promise<Campaign>;
+
+  findOneSuspended(guideName: string): Promise<Campaign>;
+  findActiveByActivationLink(activation_permlink: string): Promise<Campaign>;
+  activateCampaign({
+    _id,
+    status,
+    guideName,
+    permlink,
+  }: ActivateCampaignType): Promise<Campaign>;
+  findOnePending(guideName: string, _id: string): Promise<Campaign>;
 }

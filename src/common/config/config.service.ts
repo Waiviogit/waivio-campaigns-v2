@@ -61,6 +61,17 @@ class ConfigService {
       true,
     )}`;
   }
+
+  public getNotificationsKey(): string {
+    return this.getValue('API_KEY', true);
+  }
+
+  public getNotificationsRoute(): string {
+    return `https://${this.getValue('APP_HOST', true)}${this.getValue(
+      'NOTIFICATIONS_SET',
+      true,
+    )}`;
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues(

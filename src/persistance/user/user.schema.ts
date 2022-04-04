@@ -8,11 +8,17 @@ import {
   REWARD_SETTINGS,
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
-import {AuthType, UserDraftType, UserMetadataSettingsType} from './types';
+import {
+  AuthType,
+  ReferralDocumentType,
+  UserDraftType,
+  UserMetadataDocumentType,
+  UserMetadataSettingsType
+} from './types';
 import { Document } from 'mongoose';
 
 @Schema({ _id: false })
-class Referral {
+export class Referral {
   @Prop({ type: String, index: true })
   agent: string;
 
@@ -26,10 +32,9 @@ class Referral {
   type: string;
 }
 export const ReferralSchema = SchemaFactory.createForClass(Referral);
-export type ReferralDocumentType = Referral & Document;
 
 @Schema({ _id: false })
-class UserMetadata {
+export class UserMetadata {
   @Prop({ type: Number, default: 0 })
   notifications_last_timestamp: number;
 
@@ -98,7 +103,6 @@ class UserMetadata {
   new_user: boolean;
 }
 export const UserMetadataSchema = SchemaFactory.createForClass(UserMetadata);
-export type UserMetadataDocumentType = UserMetadata & Document;
 
 @Schema({ timestamps: true })
 export class User {
@@ -167,4 +171,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-export type UserDocumentType = User & Document;

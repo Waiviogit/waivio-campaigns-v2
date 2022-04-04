@@ -6,4 +6,5 @@ export const ENSURE_VALUES = [
   'REDIS_HOST',
   'REDIS_PORT',
   'REDIS_DB_BLOCKS',
+  'API_KEY',
 ];

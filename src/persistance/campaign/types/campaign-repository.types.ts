@@ -4,7 +4,7 @@ import {
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
-import { CampaignDocumentType } from '../campaign.schema';
+import { CampaignDocumentType } from './campaign.types';
 
 export type CampaignFindOneType = {
   filter: FilterQuery<CampaignDocumentType>;
@@ -21,4 +21,11 @@ export type CampaignUpdateOneType = {
 export type CampaignFindOneAndDeleteType = {
   filter: FilterQuery<CampaignDocumentType>;
   options?: QueryOptions;
+};
+
+export type ActivateCampaignType = {
+  _id: string;
+  guideName: string;
+  status: string;
+  permlink: string;
 };

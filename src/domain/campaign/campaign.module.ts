@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import {
+  CampaignActivationProvider,
   CampaignProviderHelper,
   CreateCampaignProvider,
   DeleteCampaignProvider,
@@ -14,11 +15,13 @@ import { PersistenceModule } from '../../persistance/persistence.module';
     CampaignProviderHelper,
     UpdateCampaignProvider,
     DeleteCampaignProvider,
+    CampaignActivationProvider,
   ],
   exports: [
     CreateCampaignProvider,
     UpdateCampaignProvider,
     DeleteCampaignProvider,
+    CampaignActivationProvider,
   ],
 })
 export class CampaignModule {}

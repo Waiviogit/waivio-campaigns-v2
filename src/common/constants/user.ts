@@ -13,7 +13,3 @@ export const REWARD_SETTINGS = Object.freeze({
   FIFTY_FIFTY: '50',
   STEEM: 'STEEM',
 });
-
-export const USER_PROVIDE = Object.freeze({
-  REPOSITORY: 'UserRepository',
-});

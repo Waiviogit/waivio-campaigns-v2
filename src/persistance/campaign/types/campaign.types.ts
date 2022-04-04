@@ -1,3 +1,6 @@
+import { Document } from 'mongoose';
+import { Campaign, CampaignPayment, CampaignUser } from '../campaign.schema';
+
 export type ReviewRequirementsType = {
   minPhotos: number;
   receiptPhoto: boolean;
@@ -18,3 +21,9 @@ export type ReservationTimetableType = {
   saturday: boolean;
   sunday: boolean;
 };
+
+export type CampaignUserDocumentType = CampaignUser & Document;
+
+export type CampaignPaymentDocumentType = CampaignPayment & Document;
+
+export type CampaignDocumentType = Campaign & Document;

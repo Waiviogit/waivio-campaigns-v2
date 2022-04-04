@@ -12,13 +12,15 @@ import {
 import { configService } from '../../common/config';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  CampaignPaymentDocumentType,
+  CampaignUserDocumentType,
   ReservationTimetableType,
   ReviewRequirementsType,
   UserRequirementsType,
 } from './types';
 
 @Schema({ timestamps: true })
-class CampaignUser {
+export class CampaignUser {
   @ApiProperty({ type: String })
   @Transform(({ value }) => value.toString())
   _id: string;
@@ -99,10 +101,9 @@ class CampaignUser {
 }
 
 export const CampaignUserSchema = SchemaFactory.createForClass(CampaignUser);
-export type CampaignUserDocumentType = CampaignUser & Document;
 
 @Schema({ timestamps: true })
-class CampaignPayment {
+export class CampaignPayment {
   @ApiProperty({ type: String })
   @Transform(({ value }) => value.toString())
   _id: string;
@@ -154,7 +155,6 @@ class CampaignPayment {
 
 export const CampaignPaymentSchema =
   SchemaFactory.createForClass(CampaignPayment);
-export type CampaignPaymentDocumentType = CampaignPayment & Document;
 
 @Schema({ timestamps: true })
 export class Campaign {
@@ -323,4 +323,3 @@ export class Campaign {
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
-export type CampaignDocumentType = Campaign & Document;

@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import * as _ from 'lodash';
 
-import _ from 'lodash';
 import { parseJSON } from '../../common/helpers';
 import { HiveCommentOptionsType, HiveCommentType } from '../../common/types';
 import { HiveOperationParser } from './hive-operation-parser';
 import { MetadataType } from './types';
+import { parserValidator } from './validators';
+import { CAMPAIGN_PROVIDE } from '../../common/constants';
+import { CampaignActivationInterface } from '../campaign/interface/campaign-activation.interface';
+import { ActivateCampaignType } from '../campaign/types/campaign-activation.types';
 
 @Injectable()
 export class HiveCommentParser extends HiveOperationParser {
-  constructor() {
+  constructor(
+    @Inject(CAMPAIGN_PROVIDE.ACTIVATE_CAMPAIGN)
+    private readonly campaignActivation: CampaignActivationInterface,
+  ) {
     super();
   }
 
@@ -16,16 +23,27 @@ export class HiveCommentParser extends HiveOperationParser {
     comment: HiveCommentType,
     options: HiveCommentOptionsType,
   ): Promise<void> {
-    // const beneficiaries = _.get(
-    //   options,
-    //   '[1].extensions[0][1].beneficiaries',
-    //   null,
-    // );
+    const beneficiaries = _.get(
+      options,
+      '[1].extensions[0][1].beneficiaries',
+      null,
+    );
     const metadata = parseJSON(comment.json_metadata, {});
     const app = metadata?.app;
 
     //#TODO add set demo post handle
     //#TODO add parse review
+
+    // await this.parseActions(
+    //   comment,
+    //   {
+    //     waivioRewards: {
+    //       type: 'activateCampaign',
+    //       campaignId: '6245ae3efdaa0f106fcc6911',
+    //     },
+    //   },
+    //   app,
+    // );
     if (metadata?.waivioRewards) {
       await this.parseActions(comment, metadata, app);
     }
@@ -42,12 +60,18 @@ export class HiveCommentParser extends HiveOperationParser {
 
     switch (type) {
       case 'activateCampaign':
-        // 'waivio_activate_campaign'
-        const activate = {
-          campaignId: metadata.waivioRewards.campaign_id,
-          author,
-          permlink,
-        };
+        const activationParams =
+          await parserValidator.validateCampaignActivation(
+            metadata.waivioRewards.campaignId,
+            author,
+            permlink,
+          );
+        if (activationParams) {
+          await this.campaignActivation.activate(
+            activationParams as ActivateCampaignType,
+          );
+        }
+
         //TODO inside activation
         // await notificationsRequest.activateCampaign(
         //   metadata.waivioRewards.campaign_id,
@@ -130,7 +154,6 @@ export class HiveCommentParser extends HiveOperationParser {
           permlink: permlink,
         };
         break;
-
     }
   }
 }

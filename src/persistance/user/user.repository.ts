@@ -1,9 +1,9 @@
-import { UserRepositoryInterface } from './interface/user.repository.interface';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, QueryOptions } from 'mongoose';
-import { User, UserDocumentType } from './user.schema';
-import { UserFindOneType } from './types';
+import { Model } from 'mongoose';
+import { User } from './user.schema';
+import { UserDocumentType, UserFindOneType } from './types';
+import { UserRepositoryInterface } from './interface';
 
 @Injectable()
 export class UserRepository implements UserRepositoryInterface {

@@ -1,7 +1,3 @@
-export const HIVE_PROVIDE = Object.freeze({
-  CLIENT: 'HiveClient',
-});
-
 export const HIVE_RPC_NODES = [
   'https://api.hive.blog',
   'https://rpc.esteem.app',

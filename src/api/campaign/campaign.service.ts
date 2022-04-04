@@ -7,7 +7,7 @@ import {
 import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { CAMPAIGN_PROVIDE, USER_PROVIDE } from '../../common/constants';
 import { CreateCampaignInterface } from '../../domain/campaign/interface/create-campaign.interface';
-import { UserRepositoryInterface } from '../../persistance/user/interface/user.repository.interface';
+import { UserRepositoryInterface } from '../../persistance/user/interface';
 import {
   CampaignServerException,
   UserForbiddenException,

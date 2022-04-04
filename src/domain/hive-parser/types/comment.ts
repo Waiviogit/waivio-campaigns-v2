@@ -12,7 +12,7 @@ type MetadataWaivioRewardsType = {
   type: string;
   approved_object?: string;
   currencyId?: string;
-  campaign_id?: string;
+  campaignId?: string;
   reduceAmount?: number;
   riseAmount?: number;
   reservation_permlink?: string;
