@@ -7,9 +7,10 @@ import {
   UpdateCampaignProvider,
 } from './campaign.provider';
 import { PersistenceModule } from '../../persistance/persistence.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [PersistenceModule],
+  imports: [PersistenceModule, NotificationsModule],
   providers: [
     CreateCampaignProvider,
     CampaignProviderHelper,

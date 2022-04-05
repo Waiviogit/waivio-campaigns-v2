@@ -1,6 +1,11 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId, Types } from 'mongoose';
-import {AuthorityDocumentType, FieldActiveVotesDocumentType, MapSchemaType, WobjectFieldsDocumentType} from './types';
+import {
+  AuthorityDocumentType,
+  FieldActiveVotesDocumentType,
+  MapSchemaType,
+  WobjectFieldsDocumentType,
+} from './types';
 
 @Schema({ _id: false })
 export class Authority {
@@ -10,7 +15,6 @@ export class Authority {
   ownership: string[];
 }
 export const AuthoritySchema = SchemaFactory.createForClass(Authority);
-
 
 @Schema({ _id: false })
 export class FieldActiveVotes {
@@ -26,7 +30,6 @@ export class FieldActiveVotes {
 
 export const FieldActiveVotesSchema =
   SchemaFactory.createForClass(FieldActiveVotes);
-
 
 @Schema({ _id: false })
 export class WobjectFields {
@@ -55,7 +58,6 @@ export class WobjectFields {
 }
 
 export const WobjectFieldsSchema = SchemaFactory.createForClass(WobjectFields);
-
 
 @Schema()
 export class Wobject {

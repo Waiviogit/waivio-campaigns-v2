@@ -7,5 +7,5 @@ export interface UserSubscriptionRepositoryInterface {
     projection,
     options,
   }: UserSubscriptionsFindType): Promise<UserSubscriptions[]>;
-  findUserSubscriptions(userName: string): Promise<UserSubscriptions[]>;
+  findUserSubscriptions(userName: string): Promise<string[]>;
 }

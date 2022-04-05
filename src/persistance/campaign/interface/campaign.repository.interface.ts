@@ -23,7 +23,9 @@ export interface CampaignRepositoryInterface {
     filter,
     options,
   }: CampaignFindOneAndDeleteType): Promise<Campaign>;
-
+  /*
+Domain
+ */
   findOneSuspended(guideName: string): Promise<Campaign>;
   findActiveByActivationLink(activation_permlink: string): Promise<Campaign>;
   activateCampaign({
@@ -33,4 +35,5 @@ export interface CampaignRepositoryInterface {
     permlink,
   }: ActivateCampaignType): Promise<Campaign>;
   findOnePending(guideName: string, _id: string): Promise<Campaign>;
+  findCampaignById(_id: string): Promise<Campaign>;
 }

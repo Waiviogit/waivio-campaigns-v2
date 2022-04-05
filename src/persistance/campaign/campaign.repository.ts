@@ -102,4 +102,10 @@ export class CampaignRepository implements CampaignRepositoryInterface {
       options: { new: true },
     });
   }
+
+  async findCampaignById(_id: string): Promise<Campaign> {
+    return this.findOne({
+      filter: { _id },
+    });
+  }
 }

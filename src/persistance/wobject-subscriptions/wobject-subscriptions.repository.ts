@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as _ from 'lodash';
 
 import {
   WobjectSubscriptionsDocumentType,
@@ -32,9 +33,10 @@ export class WobjectSubscriptionsRepository
   /*
     Domain
      */
-  async findUserSubscriptions(
-    userName: string,
-  ): Promise<WobjectSubscriptions[]> {
-    return this.find({ filter: { following: userName } });
+  async findUserSubscriptions(objectLink: string): Promise<string[]> {
+    const subscriptions = await this.find({
+      filter: { following: objectLink },
+    });
+    return _.map(subscriptions, 'follower');
   }
 }

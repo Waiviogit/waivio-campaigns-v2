@@ -9,10 +9,12 @@ import { CampaignActivationInterface } from './interface/campaign-activation.int
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  NOTIFICATIONS_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../common/constants';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
+import { NotificationsInterface } from '../notifications/interface';
 
 @Injectable()
 export class CampaignActivation implements CampaignActivationInterface {
@@ -21,6 +23,8 @@ export class CampaignActivation implements CampaignActivationInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
+    @Inject(NOTIFICATIONS_PROVIDE.SERVICE)
+    private readonly notifications: NotificationsInterface,
   ) {}
 
   async activate({
@@ -50,6 +54,7 @@ export class CampaignActivation implements CampaignActivationInterface {
         activatedCampaign.requiredObject,
         ...activatedCampaign.objects,
       ]);
+      await this.notifications.activateCampaign(_id);
     }
   }
 

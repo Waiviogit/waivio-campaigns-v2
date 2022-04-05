@@ -7,5 +7,8 @@ export interface WobjectSubscriptionsRepositoryInterface {
     projection,
     options,
   }: WobjectSubscriptionsFindType): Promise<WobjectSubscriptions[]>;
-  findUserSubscriptions(userName: string): Promise<WobjectSubscriptions[]>;
+  /*
+Domain
+ */
+  findUserSubscriptions(objectLink: string): Promise<string[]>;
 }
