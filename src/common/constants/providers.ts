@@ -8,10 +8,15 @@ export const WOBJECT_SUBSCRIPTION_PROVIDE = Object.freeze({
 
 export const WOBJECT_PROVIDE = Object.freeze({
   REPOSITORY: 'WobjectRepository',
+  HELPER: 'WobjectHelper',
 });
 
 export const USER_PROVIDE = Object.freeze({
   REPOSITORY: 'UserRepository',
+});
+
+export const APP_PROVIDE = Object.freeze({
+  REPOSITORY: 'AppRepository',
 });
 
 export const POST_PROVIDE = Object.freeze({

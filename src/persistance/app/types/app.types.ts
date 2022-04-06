@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import {
+  App,
   AppBot,
   AppCity,
   AppColors,
@@ -22,20 +23,22 @@ export type ChosenPostType = {
   title: string;
 };
 
-export type AppMapPointsType = AppMapPoints & Document;
+export type AppMapPointsDocumentType = AppMapPoints & Document;
 
-export type AppCityType = AppCity & Document;
+export type AppCityDocumentType = AppCity & Document;
 
-export type AppColorsType = AppColors & Document;
+export type AppColorsDocumentType = AppColors & Document;
 
-export type AppConfigurationType = AppConfiguration & Document;
+export type AppConfigurationDocumentType = AppConfiguration & Document;
 
-export type AppTopUsersType = AppTopUsers & Document;
+export type AppTopUsersDocumentType = AppTopUsers & Document;
 
-export type AppBotType = AppBot & Document;
+export type AppBotDocumentType = AppBot & Document;
 
-export type AppCommissionsType = AppCommissions & Document;
+export type AppCommissionsDocumentType = AppCommissions & Document;
 
-export type ReferralTimersType = ReferralTimers & Document;
+export type ReferralTimersDocumentType = ReferralTimers & Document;
 
-export type AppTagsDataType = AppTagsData & Document;
+export type AppTagsDataDocumentType = AppTagsData & Document;
+
+export type AppDocumentType = App & Document;

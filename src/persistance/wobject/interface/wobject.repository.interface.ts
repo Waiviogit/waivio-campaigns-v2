@@ -20,8 +20,9 @@ export interface WobjectRepositoryInterface {
    */
   findUnavailableByLink(author_permlink: string): Promise<Wobject>;
   updateCampaignsCount(
-      _id: string,
-      status: string,
-      links: string[],
+    _id: string,
+    status: string,
+    links: string[],
   ): Promise<void>;
+  findOneByPermlink(author_permlink: string): Promise<Wobject>;
 }

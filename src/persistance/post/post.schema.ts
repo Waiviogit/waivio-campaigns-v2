@@ -118,14 +118,12 @@ export class Post {
   allow_curation_rewards: boolean;
 
   @Prop(
-    raw({
-      type: [
-        {
-          account: { type: String },
-          weight: { type: Number },
-        },
-      ],
-    }),
+    raw([
+      {
+        account: { type: String },
+        weight: { type: Number },
+      },
+    ]),
   )
   beneficiaries: BeneficiariesType;
 
@@ -148,29 +146,24 @@ export class Post {
   body_length: number;
 
   @Prop(
-    raw({
-      type: [
-        {
-          voter: { type: String },
-          weight: { type: Number },
-          percent: { type: Number },
-        },
-      ],
-      default: [],
-    }),
+    raw([
+      {
+        voter: { type: String },
+        weight: { type: Number },
+        percent: { type: Number },
+      },
+    ]),
   )
   active_votes: ActiveVotesType[];
 
   @Prop(
-    raw({
-      type: [
-        {
-          author_permlink: { type: String, index: true },
-          percent: { type: Number },
-          tagged: { type: String },
-        },
-      ],
-    }),
+    raw([
+      {
+        author_permlink: { type: String, index: true },
+        percent: { type: Number },
+        tagged: { type: String },
+      },
+    ]),
   )
   wobjects: PostWobjects[];
 
@@ -179,10 +172,8 @@ export class Post {
 
   @Prop(
     raw({
-      type: {
-        author: { type: String },
-        permlink: { type: String },
-      },
+      author: { type: String },
+      permlink: { type: String },
     }),
   )
   reblog_to: ReblogToType;

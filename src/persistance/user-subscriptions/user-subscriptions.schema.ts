@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
 
 @Schema({ versionKey: false })
 export class UserSubscriptions {
@@ -15,7 +14,6 @@ export class UserSubscriptions {
 
 export const UserSubscriptionsSchema =
   SchemaFactory.createForClass(UserSubscriptions);
-
 
 UserSubscriptionsSchema.index({ follower: 1, following: 1 }, { unique: true });
 UserSubscriptionsSchema.index({ following: 1 });

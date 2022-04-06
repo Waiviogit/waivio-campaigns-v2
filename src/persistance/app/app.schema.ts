@@ -2,16 +2,16 @@ import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId, Types } from 'mongoose';
 import {
   AppBeneficiaryType,
-  AppBotType,
-  AppCityType,
-  AppColorsType,
-  AppCommissionsType,
-  AppConfigurationType,
-  AppMapPointsType,
-  AppTagsDataType,
-  AppTopUsersType,
+  AppBotDocumentType,
+  AppCityDocumentType,
+  AppColorsDocumentType,
+  AppCommissionsDocumentType,
+  AppConfigurationDocumentType,
+  AppMapPointsDocumentType,
+  AppTagsDataDocumentType,
+  AppTopUsersDocumentType,
   ChosenPostType,
-  ReferralTimersType,
+  ReferralTimersDocumentType,
 } from './types';
 import {
   APP_STATUS,
@@ -171,16 +171,16 @@ export class AppConfiguration {
   aboutObject: string;
 
   @Prop({ type: AppMapPointsSchema })
-  desktopMap: AppMapPointsType;
+  desktopMap: AppMapPointsDocumentType;
 
   @Prop({ type: AppMapPointsSchema })
-  mobileMap: AppMapPointsType;
+  mobileMap: AppMapPointsDocumentType;
 
   @Prop({ type: [AppCitySchema], default: [] })
-  availableCities: AppCityType[];
+  availableCities: AppCityDocumentType[];
 
   @Prop({ type: AppColorsSchema, default: () => ({}) })
-  colors: AppColorsType;
+  colors: AppColorsDocumentType;
 }
 export const AppConfigurationSchema =
   SchemaFactory.createForClass(AppConfiguration);
@@ -207,7 +207,7 @@ export class App {
   beneficiary: AppBeneficiaryType;
 
   @Prop({ type: AppConfigurationSchema, default: () => ({}) })
-  configuration: AppConfigurationType;
+  configuration: AppConfigurationDocumentType;
 
   @Prop({
     type: String,
@@ -270,10 +270,10 @@ export class App {
   supported_objects: string[];
 
   @Prop({ type: [AppMapPointsSchema], default: [] })
-  mapCoordinates: AppMapPointsType;
+  mapCoordinates: AppMapPointsDocumentType;
 
   @Prop({ type: [AppTopUsersSchema] })
-  top_users: AppTopUsersType[];
+  top_users: AppTopUsersDocumentType[];
 
   @Prop(
     raw({
@@ -294,16 +294,16 @@ export class App {
   weekly_chosen_post: ChosenPostType;
 
   @Prop({ type: [AppBotSchema], default: [], select: false })
-  service_bots: AppBotType[];
+  service_bots: AppBotDocumentType[];
 
   @Prop({ type: AppCommissionsSchema })
-  app_commissions: AppCommissionsType;
+  app_commissions: AppCommissionsDocumentType;
 
   @Prop({ type: [ReferralTimersSchema], default: [] })
-  referralsData: ReferralTimersType[];
+  referralsData: ReferralTimersDocumentType[];
 
   @Prop({ type: AppTagsDataSchema })
-  tagsData: AppTagsDataType;
+  tagsData: AppTagsDataDocumentType;
 
   @Prop({
     type: String,
@@ -320,3 +320,4 @@ export class App {
   @Prop({ type: [String] })
   prefetches: string[];
 }
+export const AppSchema = SchemaFactory.createForClass(App);

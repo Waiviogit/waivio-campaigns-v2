@@ -110,4 +110,12 @@ export class WobjectRepository implements WobjectRepositoryInterface {
       });
     }
   }
+
+  findOneByPermlink(author_permlink: string): Promise<Wobject> {
+    return this.findOne({
+      filter: {
+        author_permlink,
+      },
+    });
+  }
 }

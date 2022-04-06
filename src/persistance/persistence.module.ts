@@ -6,6 +6,7 @@ import { WobjectPersistenceModule } from './wobject/wobject.persistence.module';
 import { UserSubscriptionsPersistenceModule } from './user-subscriptions/user-subscriptions.persistence.module';
 import { WobjectSubscriptionsPersistenceModule } from './wobject-subscriptions/wobject-subscriptions.persistence.module';
 import { PostPersistenceModule } from './post/post.persistence.module';
+import { AppPersistenceModule } from './app/app.persistence.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PostPersistenceModule } from './post/post.persistence.module';
     UserSubscriptionsPersistenceModule,
     WobjectSubscriptionsPersistenceModule,
     PostPersistenceModule,
+    AppPersistenceModule,
   ],
   exports: [
     CampaignPersistenceModule,
@@ -23,6 +25,7 @@ import { PostPersistenceModule } from './post/post.persistence.module';
     UserSubscriptionsPersistenceModule,
     WobjectSubscriptionsPersistenceModule,
     PostPersistenceModule,
+    AppPersistenceModule,
   ],
 })
 export class PersistenceModule {}
