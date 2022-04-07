@@ -30,10 +30,10 @@ import { WobjectFieldsDocumentType } from '../../persistance/wobject/types';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
 import { AppRepositoryInterface } from '../../persistance/app/interface';
 import { configService } from '../../common/config';
-import { AppDocumentType } from '../../persistance/app/types';
+import { WobjectHelperInterface } from './interface';
 
 @Injectable()
-export class WobjectHelper {
+export class WobjectHelper implements WobjectHelperInterface {
   constructor(
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
@@ -506,7 +506,7 @@ export class WobjectHelper {
     const processed = this.processWobjects({
       wobjects: wobject as ProcessedWobjectType,
       fields: [FIELDS_NAMES.NAME],
-      app: app as AppDocumentType,
+      app,
     });
     return processed.name || wobject.default_name;
   }

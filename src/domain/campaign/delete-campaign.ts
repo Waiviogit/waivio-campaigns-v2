@@ -1,15 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import {
-  CAMPAIGN_PROVIDE,
-  CAMPAIGN_STATUS,
-  REDIS_KEY,
-} from '../../common/constants';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
+import { CAMPAIGN_PROVIDE, REDIS_KEY } from '../../common/constants';
 import { CampaignHelperInterface } from './interface/campaign-helper.interface';
-import { DeleteCampaignDto } from '../../common/dto/in';
+
 import { DeleteCampaignInterface } from './interface/delete-campaign.interface';
+import {
+  CampaignDocumentType,
+  DeleteCampaignType,
+} from '../../persistance/campaign/types';
 
 @Injectable()
 export class DeleteCampaign implements DeleteCampaignInterface {
@@ -20,11 +19,9 @@ export class DeleteCampaign implements DeleteCampaignInterface {
     private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
-  async delete({ _id }: DeleteCampaignDto): Promise<Campaign> {
-    const filter = { _id, status: CAMPAIGN_STATUS.PENDING };
-
-    const deleted = await this.campaignRepository.findOneAndDelete({
-      filter,
+  async delete({ _id }: DeleteCampaignType): Promise<CampaignDocumentType> {
+    const deleted = await this.campaignRepository.deleteCampaignById({
+      _id,
     });
     if (deleted) {
       await this.campaignHelper.deleteCampaignKey(

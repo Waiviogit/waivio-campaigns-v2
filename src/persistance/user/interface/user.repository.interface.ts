@@ -1,6 +1,9 @@
-import { UserFindOneType } from '../types';
-import { User } from '../user.schema';
+import { UserDocumentType, UserFindOneType } from '../types';
 
 export interface UserRepositoryInterface {
-  findOne({ filter, projection, options }: UserFindOneType): Promise<User>;
+  findOne({
+    filter,
+    projection,
+    options,
+  }: UserFindOneType): Promise<UserDocumentType>;
 }

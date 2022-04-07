@@ -12,10 +12,14 @@ import {
   DeleteCampaignDto,
   UpdateCampaignDto,
 } from '../../common/dto/in';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { CampaignService } from './campaign.service';
 
 import { AuthGuard, ChangeCampaignGuard } from '../guards';
+import {
+  CreateCampaignOutDto,
+  DeleteCampaignOutDto,
+  UpdateCampaignOutDto,
+} from '../../common/dto/out';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
@@ -27,7 +31,7 @@ export class CampaignController {
   @CampaignControllerDocs.createCampaign()
   async create(
     @Body() createCampaignDto: CreateCampaignDto,
-  ): Promise<Campaign> {
+  ): Promise<CreateCampaignOutDto> {
     return this.campaignService.create(createCampaignDto);
   }
 
@@ -36,16 +40,16 @@ export class CampaignController {
   @CampaignControllerDocs.updateCampaign()
   async update(
     @Body() updateCampaignDto: UpdateCampaignDto,
-  ): Promise<Campaign> {
+  ): Promise<UpdateCampaignOutDto> {
     return this.campaignService.update(updateCampaignDto);
   }
 
   @Delete()
   @UseGuards(ChangeCampaignGuard, AuthGuard)
-  @CampaignControllerDocs.updateCampaign()
+  @CampaignControllerDocs.deleteCampaign()
   async delete(
     @Body() deleteCampaignDto: DeleteCampaignDto,
-  ): Promise<Campaign> {
+  ): Promise<DeleteCampaignOutDto> {
     return this.campaignService.delete(deleteCampaignDto);
   }
 }

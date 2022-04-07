@@ -13,10 +13,141 @@ import {
   Max,
   Matches,
   IsDateString,
+  IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { CAMPAIGN_TYPE, SUPPORTED_CURRENCY } from '../constants';
+import {
+  CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
+  PAYMENT_STATUS,
+  RESERVATION_STATUS,
+  SUPPORTED_CURRENCY,
+} from '../constants';
+import {
+  CampaignPaymentDocumentType,
+  CampaignUserDocumentType,
+} from '../../persistance/campaign/types';
+import { ObjectId, Types } from 'mongoose';
+import { Prop } from '@nestjs/mongoose';
+
+export class CampaignPaymentDto {
+  @IsString()
+  @ApiProperty({ type: String })
+  _id: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  reservationId: string;
+  @IsString()
+  @ApiProperty({ type: String })
+  userName: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  objectPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  rootAuthor: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  paymentPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  rejectionPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  postTitle: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  postPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  app: string;
+
+  @IsString()
+  @ApiProperty({ type: String, enum: Object.values(PAYMENT_STATUS) })
+  status: string;
+}
+
+export class CampaignUserDto {
+  @IsString()
+  @ApiProperty({ type: String })
+  _id: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  name: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  objectPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  reservationPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  referralServer: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  unReservationPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  rootName: string;
+
+  @IsNumber()
+  @ApiProperty({ type: Number })
+  children: number;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  riseRewardPermlink: string;
+
+  @IsNumber()
+  @ApiProperty({ type: Number })
+  rewardRaisedBy: number;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  reduceRewardPermlink: string;
+
+  @IsNumber()
+  @ApiProperty({ type: Number })
+  rewardReducedBy: number;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  rejectionPermlink: string;
+
+  @IsNumber()
+  @ApiProperty({ type: Number })
+  reservationTokenRateUSD: number;
+
+  @IsString()
+  @ApiProperty({ type: String, enum: Object.values(RESERVATION_STATUS) })
+  status: string;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  fraudSuspicion: boolean;
+
+  @IsArray()
+  @ApiProperty({ type: [Number] })
+  fraudCodes: number[];
+
+  @ApiProperty({ type: Date })
+  completedAt: Date;
+}
 
 class ReservationTimetableDto {
   @IsOptional()
@@ -81,6 +212,12 @@ class UserRequirementsDto {
 }
 
 export class CampaignDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ type: String })
+  _id: ObjectId;
+
   @IsNotEmpty()
   @MaxLength(16)
   @IsString()
@@ -109,10 +246,23 @@ export class CampaignDto {
   })
   type: string;
 
+  @IsString()
+  @ApiProperty({ type: String, enum: Object.values(CAMPAIGN_STATUS) })
+  status: string;
+
   @IsOptional()
   @IsString()
   @ApiProperty({ type: String, required: false })
   note: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ type: String, required: false })
+  compensationAccount: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  campaignServer: string;
 
   @IsNumber()
   @Min(0.001)
@@ -134,7 +284,7 @@ export class CampaignDto {
 
   @IsOptional()
   @IsNumber()
-  @ApiProperty({ type: Number, required: false })
+  @ApiProperty({ type: Number, required: false, default: 1 })
   countReservationDays: number;
 
   @IsOptional()
@@ -176,6 +326,11 @@ export class CampaignDto {
   @ApiProperty({ type: [String], required: true })
   objects: string[];
 
+  @ValidateNested()
+  @Type(() => CampaignUserDto)
+  @ApiProperty({ type: () => [CampaignUserDto] })
+  users: CampaignUserDocumentType[];
+
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -188,6 +343,14 @@ export class CampaignDto {
   @ApiProperty({ type: [String], required: false })
   whitelistUsers: string[];
 
+  @IsString()
+  @ApiProperty({ type: String })
+  activationPermlink: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  deactivationPermlink: string;
+
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -198,6 +361,11 @@ export class CampaignDto {
   @IsNumber()
   @ApiProperty({ type: Number, required: false })
   frequencyAssign: number;
+
+  @ValidateNested()
+  @Type(() => CampaignPaymentDto)
+  @ApiProperty({ type: () => [CampaignPaymentDto] })
+  payments: CampaignPaymentDocumentType[];
 
   @IsOptional()
   @ValidateNested()
@@ -212,6 +380,14 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   app: string;
 
+  @IsDateString()
+  @ApiProperty({ type: Date, required: true })
+  expiredAt: Date;
+
+  @IsDateString()
+  @ApiProperty({ type: Date })
+  stoppedAt: Date;
+
   @IsOptional()
   @IsIn(Object.values(SUPPORTED_CURRENCY))
   @ApiProperty({
@@ -221,13 +397,4 @@ export class CampaignDto {
     default: SUPPORTED_CURRENCY.USD,
   })
   currency: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty({ type: String, required: false })
-  compensationAccount: string;
-
-  @IsDateString()
-  @ApiProperty({ type: Date, required: true })
-  expiredAt: Date;
 }

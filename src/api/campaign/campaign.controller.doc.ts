@@ -1,6 +1,11 @@
 import { ApiOperation, ApiResponse, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { Campaign } from '../../persistance/campaign/campaign.schema';
+import {
+  CreateCampaignOutDto,
+  DeleteCampaignOutDto,
+  UpdateCampaignOutDto,
+} from '../../common/dto/out';
 
 export class CampaignControllerDocs {
   static main(): ClassDecorator {
@@ -39,7 +44,7 @@ export class CampaignControllerDocs {
       ApiResponse({
         status: HttpStatus.OK,
         description: 'campaign',
-        type: Campaign,
+        type: CreateCampaignOutDto,
       }),
     );
   }
@@ -62,7 +67,30 @@ export class CampaignControllerDocs {
       ApiResponse({
         status: HttpStatus.OK,
         description: 'campaign',
-        type: Campaign,
+        type: UpdateCampaignOutDto,
+      }),
+    );
+  }
+
+  static deleteCampaign(): MethodDecorator {
+    return applyDecorators(
+      ApiHeader({
+        name: 'access-token',
+        required: true,
+      }),
+      ApiHeader({
+        name: 'account',
+        required: true,
+        description: 'authorized account',
+      }),
+      ApiOperation({
+        summary: 'endpoint for update pending campaign',
+        description: 'campaign object',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        description: 'campaign',
+        type: DeleteCampaignOutDto,
       }),
     );
   }

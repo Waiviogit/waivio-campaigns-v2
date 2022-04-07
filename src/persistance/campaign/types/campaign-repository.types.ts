@@ -5,6 +5,7 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 import { CampaignDocumentType } from './campaign.types';
+import { Campaign } from '../campaign.schema';
 
 export type CampaignFindOneType = {
   filter: FilterQuery<CampaignDocumentType>;
@@ -29,3 +30,31 @@ export type ActivateCampaignType = {
   status: string;
   permlink: string;
 };
+
+export type CreateCampaignType = Omit<
+  Campaign,
+  | '_id'
+  | 'status'
+  | 'campaignServer'
+  | 'users'
+  | 'activationPermlink'
+  | 'deactivationPermlink'
+  | 'payments'
+  | 'stoppedAt'
+>;
+
+export type UpdateCampaignType = Partial<
+  Omit<
+    Campaign,
+    | 'guideName'
+    | 'status'
+    | 'campaignServer'
+    | 'users'
+    | 'activationPermlink'
+    | 'deactivationPermlink'
+    | 'payments'
+    | 'stoppedAt'
+  >
+>;
+
+export type DeleteCampaignType = Pick<Campaign, '_id'>;

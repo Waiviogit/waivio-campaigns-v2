@@ -33,6 +33,7 @@ export class BlockProcessor {
 
   private async loadNextBlock(): Promise<void> {
     this.currentBlock = await this.getBlockNumber();
+    process.env[`BLOCK_NUM_${BlockProcessor.name}`] = String(this.currentBlock);
 
     const start = process.hrtime();
     const processed = await this.processBlock(this.currentBlock);

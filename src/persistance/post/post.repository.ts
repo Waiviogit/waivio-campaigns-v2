@@ -14,7 +14,11 @@ export class PostRepository implements PostRepositoryInterface {
     private readonly model: Model<PostDocumentType>,
   ) {}
 
-  async findOne({ filter, projection, options }: PostFindType): Promise<Post> {
+  async findOne({
+    filter,
+    projection,
+    options,
+  }: PostFindType): Promise<PostDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {

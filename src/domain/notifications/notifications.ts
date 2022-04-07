@@ -8,9 +8,11 @@ import {
   SendNotificationType,
 } from './types/notification.types';
 import {
+  BLOCK_MAIN_PROCESSOR,
   CAMPAIGN_PROVIDE,
   NOTIFICATION_ID,
   USER_SUBSCRIPTION_PROVIDE,
+  WOBJECT_PROVIDE,
   WOBJECT_SUBSCRIPTION_PROVIDE,
 } from '../../common/constants';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
@@ -18,6 +20,7 @@ import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { UserSubscriptionRepositoryInterface } from '../../persistance/user-subscriptions/interface';
 import { WobjectSubscriptionsRepositoryInterface } from '../../persistance/wobject-subscriptions/interface';
 import { NotificationsInterface } from './interface';
+import { WobjectHelperInterface } from '../wobject/interface';
 
 @Injectable()
 export class Notifications implements NotificationsInterface {
@@ -28,6 +31,8 @@ export class Notifications implements NotificationsInterface {
     private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
     @Inject(WOBJECT_SUBSCRIPTION_PROVIDE.REPOSITORY)
     private readonly wobjectSubscriptionsRepository: WobjectSubscriptionsRepositoryInterface,
+    @Inject(WOBJECT_PROVIDE.HELPER)
+    private readonly wobjectHelper: WobjectHelperInterface,
   ) {}
 
   private async notificationRequest(data: unknown): Promise<void> {
@@ -46,8 +51,7 @@ export class Notifications implements NotificationsInterface {
   }: SendNotificationType): Promise<void> => {
     const reqData = {
       id: id,
-      //#TODO
-      block: process.env.BLOCK_NUM,
+      block: process.env[BLOCK_MAIN_PROCESSOR],
       data,
     };
 
@@ -80,12 +84,12 @@ export class Notifications implements NotificationsInterface {
         await this.wobjectSubscriptionsRepository.findUserSubscriptions(object);
 
       if (_.isEmpty(users)) continue;
-      //TODO
-      //const { objectName } = await getWobjectName(object);
+
+      const objectName = await this.wobjectHelper.getWobjectName(object);
       await this.sendNotification({
         id: NOTIFICATION_ID.BELL_WOBJ_REWARDS,
         data: {
-          // objectName,
+          objectName,
           objectPermlink: object,
           users,
           primaryObject,
@@ -101,14 +105,17 @@ export class Notifications implements NotificationsInterface {
     const users = await this.getUsersSubscribedOnCampaign(campaign);
     if (_.isEmpty(users)) return;
 
+    const object_name = await this.wobjectHelper.getWobjectName(
+      campaign.requiredObject,
+    );
+
     await this.sendNotification({
       id: NOTIFICATION_ID.ACTIVATION_CAMPAIGN,
       data: {
         guide: campaign.guideName,
         users,
         author_permlink: campaign.requiredObject,
-        //TODO
-        //object_name: objectName,
+        object_name,
       },
     });
     await this.sendBellNotification({
@@ -126,14 +133,17 @@ export class Notifications implements NotificationsInterface {
         campaign.requiredObject,
       );
 
+    const object_name = await this.wobjectHelper.getWobjectName(
+      campaign.requiredObject,
+    );
+
     await this.sendNotification({
       id: NOTIFICATION_ID.DEACTIVATION_CAMPAIGN,
       data: {
         guide: campaign.guideName,
         users: _.uniq([...users, campaign.guideName]),
         author_permlink: campaign.requiredObject,
-        //TODO
-        // object_name: objectName,
+        object_name,
       },
     });
   }

@@ -17,7 +17,7 @@ export class UserRepository implements UserRepositoryInterface {
     filter,
     projection,
     options,
-  }: UserFindOneType): Promise<User> {
+  }: UserFindOneType): Promise<UserDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {

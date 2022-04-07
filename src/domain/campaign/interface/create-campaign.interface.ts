@@ -1,6 +1,8 @@
-import { CreateCampaignDto } from '../../../common/dto/in';
-import { Campaign } from '../../../persistance/campaign/campaign.schema';
+import {
+  CampaignDocumentType,
+  CreateCampaignType,
+} from '../../../persistance/campaign/types';
 
 export interface CreateCampaignInterface {
-  create(campaign: CreateCampaignDto): Promise<Campaign>;
+  create(campaign: CreateCampaignType): Promise<CampaignDocumentType>;
 }

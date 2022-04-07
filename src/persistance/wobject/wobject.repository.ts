@@ -24,7 +24,7 @@ export class WobjectRepository implements WobjectRepositoryInterface {
     filter,
     projection,
     options,
-  }: WobjectFindType): Promise<Wobject> {
+  }: WobjectFindType): Promise<WobjectDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {
@@ -36,7 +36,7 @@ export class WobjectRepository implements WobjectRepositoryInterface {
     filter,
     projection,
     options,
-  }: WobjectFindType): Promise<Wobject[]> {
+  }: WobjectFindType): Promise<WobjectDocumentType[]> {
     try {
       return this.model.find(filter, projection, options).lean();
     } catch (error) {
@@ -70,7 +70,9 @@ export class WobjectRepository implements WobjectRepositoryInterface {
   /*
   Domain
    */
-  async findUnavailableByLink(author_permlink: string): Promise<Wobject> {
+  async findUnavailableByLink(
+    author_permlink: string,
+  ): Promise<WobjectDocumentType> {
     return this.findOne({
       filter: {
         author_permlink,
@@ -111,7 +113,7 @@ export class WobjectRepository implements WobjectRepositoryInterface {
     }
   }
 
-  findOneByPermlink(author_permlink: string): Promise<Wobject> {
+  findOneByPermlink(author_permlink: string): Promise<WobjectDocumentType> {
     return this.findOne({
       filter: {
         author_permlink,

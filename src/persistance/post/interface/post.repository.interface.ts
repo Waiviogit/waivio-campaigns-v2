@@ -1,6 +1,9 @@
-import { PostFindType } from '../types';
-import { Post } from '../post.schema';
+import { PostDocumentType, PostFindType } from '../types';
 
 export interface PostRepositoryInterface {
-  findOne({ filter, projection, options }: PostFindType): Promise<Post>;
+  findOne({
+    filter,
+    projection,
+    options,
+  }: PostFindType): Promise<PostDocumentType>;
 }

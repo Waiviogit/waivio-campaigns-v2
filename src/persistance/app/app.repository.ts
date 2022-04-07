@@ -15,7 +15,7 @@ export class AppRepository implements AppRepositoryInterface {
     private readonly model: Model<AppDocumentType>,
   ) {}
 
-  async findOne({ filter, projection, options }: AppFindType): Promise<App> {
+  async findOne({ filter, projection, options }: AppFindType): Promise<AppDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {
@@ -23,7 +23,7 @@ export class AppRepository implements AppRepositoryInterface {
     }
   }
 
-  async findOneByHost(host: string): Promise<App> {
+  async findOneByHost(host: string): Promise<AppDocumentType> {
     return this.findOne({ filter: { host } });
   }
 }

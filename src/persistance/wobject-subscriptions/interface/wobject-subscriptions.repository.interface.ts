@@ -1,12 +1,14 @@
-import { WobjectSubscriptionsFindType } from '../types';
-import { WobjectSubscriptions } from '../wobject-subscriptions.schema';
+import {
+  WobjectSubscriptionsDocumentType,
+  WobjectSubscriptionsFindType,
+} from '../types';
 
 export interface WobjectSubscriptionsRepositoryInterface {
   find({
     filter,
     projection,
     options,
-  }: WobjectSubscriptionsFindType): Promise<WobjectSubscriptions[]>;
+  }: WobjectSubscriptionsFindType): Promise<WobjectSubscriptionsDocumentType[]>;
   /*
 Domain
  */

@@ -1,11 +1,13 @@
-import { UserSubscriptionsFindType } from '../types';
-import { UserSubscriptions } from '../user-subscriptions.schema';
+import {
+  UserSubscriptionsDocumentType,
+  UserSubscriptionsFindType,
+} from '../types';
 
 export interface UserSubscriptionRepositoryInterface {
   find({
     filter,
     projection,
     options,
-  }: UserSubscriptionsFindType): Promise<UserSubscriptions[]>;
+  }: UserSubscriptionsFindType): Promise<UserSubscriptionsDocumentType[]>;
   findUserSubscriptions(userName: string): Promise<string[]>;
 }

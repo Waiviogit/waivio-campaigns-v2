@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { CAMPAIGN_PROVIDE } from '../../common/constants';
-import { CreateCampaignDto } from '../../common/dto/in';
 import { CreateCampaignInterface } from './interface/create-campaign.interface';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
 import { CampaignHelperInterface } from './interface/campaign-helper.interface';
+import {
+  CampaignDocumentType,
+  CreateCampaignType,
+} from '../../persistance/campaign/types';
 
 @Injectable()
 export class CreateCampaign implements CreateCampaignInterface {
@@ -15,7 +17,7 @@ export class CreateCampaign implements CreateCampaignInterface {
     private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
-  async create(campaign: CreateCampaignDto): Promise<Campaign> {
+  async create(campaign: CreateCampaignType): Promise<CampaignDocumentType> {
     const createdCampaign = await this.campaignRepository.create(campaign);
     if (createdCampaign) {
       await this.campaignHelper.setExpireTTLCampaign(

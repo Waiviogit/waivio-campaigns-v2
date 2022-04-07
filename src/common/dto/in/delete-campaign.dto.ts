@@ -1,10 +1,4 @@
-import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { PickType } from '@nestjs/swagger';
+import { CampaignDto } from '../campaign.dto';
 
-export class DeleteCampaignDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ type: String })
-  _id: string;
-}
+export class DeleteCampaignDto extends PickType(CampaignDto, ['_id']) {}

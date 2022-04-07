@@ -1,10 +1,21 @@
-import { WobjectFindType, WobjectUpdateType } from '../types';
-import { Wobject } from '../wobject.schema';
+import {
+  WobjectDocumentType,
+  WobjectFindType,
+  WobjectUpdateType,
+} from '../types';
 import { UpdateWriteOpResult } from 'mongoose';
 
 export interface WobjectRepositoryInterface {
-  findOne({ filter, projection, options }: WobjectFindType): Promise<Wobject>;
-  find({ filter, projection, options }: WobjectFindType): Promise<Wobject[]>;
+  findOne({
+    filter,
+    projection,
+    options,
+  }: WobjectFindType): Promise<WobjectDocumentType>;
+  find({
+    filter,
+    projection,
+    options,
+  }: WobjectFindType): Promise<WobjectDocumentType[]>;
   updateMany({
     filter,
     update,
@@ -18,11 +29,11 @@ export interface WobjectRepositoryInterface {
   /*
   Domain
    */
-  findUnavailableByLink(author_permlink: string): Promise<Wobject>;
+  findUnavailableByLink(author_permlink: string): Promise<WobjectDocumentType>;
   updateCampaignsCount(
     _id: string,
     status: string,
     links: string[],
   ): Promise<void>;
-  findOneByPermlink(author_permlink: string): Promise<Wobject>;
+  findOneByPermlink(author_permlink: string): Promise<WobjectDocumentType>;
 }

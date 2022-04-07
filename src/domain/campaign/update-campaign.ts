@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as _ from 'lodash';
 
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import { CAMPAIGN_PROVIDE, CAMPAIGN_STATUS } from '../../common/constants';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
+import { CAMPAIGN_PROVIDE } from '../../common/constants';
 import { CampaignHelperInterface } from './interface/campaign-helper.interface';
 import { UpdateCampaignInterface } from './interface/update-campaign.interface';
-import { UpdateCampaignDto } from '../../common/dto/in';
+import {
+  CampaignDocumentType,
+  UpdateCampaignType,
+} from '../../persistance/campaign/types';
 
 @Injectable()
 export class UpdateCampaign implements UpdateCampaignInterface {
@@ -17,15 +18,10 @@ export class UpdateCampaign implements UpdateCampaignInterface {
     private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
-  async update(campaign: UpdateCampaignDto): Promise<Campaign> {
-    const filter = { _id: campaign._id, status: CAMPAIGN_STATUS.PENDING };
-    const update = _.omit(campaign, ['_id']);
-    const options = { new: true };
-    const updatedCampaign = await this.campaignRepository.findOneAndUpdate({
-      filter,
-      update,
-      options,
-    });
+  async update(campaign: UpdateCampaignType): Promise<CampaignDocumentType> {
+    const updatedCampaign = await this.campaignRepository.updateCampaign(
+      campaign,
+    );
     if (updatedCampaign) {
       await this.campaignHelper.setExpireTTLCampaign(
         updatedCampaign.expiredAt,

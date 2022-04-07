@@ -1,10 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  CreateCampaignDto,
-  DeleteCampaignDto,
-  UpdateCampaignDto,
-} from '../../common/dto/in';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
+
 import { CAMPAIGN_PROVIDE, USER_PROVIDE } from '../../common/constants';
 import { CreateCampaignInterface } from '../../domain/campaign/interface/create-campaign.interface';
 import { UserRepositoryInterface } from '../../persistance/user/interface';
@@ -16,6 +11,12 @@ import {
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { UpdateCampaignInterface } from '../../domain/campaign/interface/update-campaign.interface';
 import { DeleteCampaignInterface } from '../../domain/campaign/interface/delete-campaign.interface';
+import {
+  CampaignDocumentType,
+  CreateCampaignType,
+  DeleteCampaignType,
+  UpdateCampaignType,
+} from '../../persistance/campaign/types';
 
 @Injectable()
 export class CampaignService {
@@ -32,7 +33,9 @@ export class CampaignService {
     private readonly campaignRepository: CampaignRepositoryInterface,
   ) {}
 
-  async create(createCampaignDto: CreateCampaignDto): Promise<Campaign> {
+  async create(
+    createCampaignDto: CreateCampaignType,
+  ): Promise<CampaignDocumentType> {
     const user = await this.userRepository.findOne({
       filter: { name: createCampaignDto.guideName },
       projection: { auth: 1 },
@@ -45,13 +48,17 @@ export class CampaignService {
     return campaign;
   }
 
-  async update(updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
+  async update(
+    updateCampaignDto: UpdateCampaignType,
+  ): Promise<CampaignDocumentType> {
     const campaign = await this.updateCampaign.update(updateCampaignDto);
     if (!campaign) throw new CampaignServerException();
     return campaign;
   }
 
-  async delete(deleteCampaignDto: DeleteCampaignDto): Promise<Campaign> {
+  async delete(
+    deleteCampaignDto: DeleteCampaignType,
+  ): Promise<CampaignDocumentType> {
     const campaign = await this.deleteCampaign.delete(deleteCampaignDto);
     if (!campaign) throw new CampaignServerException();
     return campaign;

@@ -23,7 +23,9 @@ export class WobjectSubscriptionsRepository
     filter,
     projection,
     options,
-  }: WobjectSubscriptionsFindType): Promise<WobjectSubscriptions[]> {
+  }: WobjectSubscriptionsFindType): Promise<
+    WobjectSubscriptionsDocumentType[]
+  > {
     try {
       return this.model.find(filter, projection, options).lean();
     } catch (error) {

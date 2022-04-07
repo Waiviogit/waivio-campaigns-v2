@@ -24,7 +24,7 @@ export class UserSubscriptionsRepository
     filter,
     projection,
     options,
-  }: UserSubscriptionsFindType): Promise<UserSubscriptions[]> {
+  }: UserSubscriptionsFindType): Promise<UserSubscriptionsDocumentType[]> {
     try {
       return this.model.find(filter, projection, options).lean();
     } catch (error) {
