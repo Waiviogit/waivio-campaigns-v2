@@ -15,7 +15,9 @@ export class HiveMainParser implements HiveMainParserInterface {
   ) {}
 
   async parseHiveBlock(block: HiveBlockType): Promise<void> {
-    const { transactions } = block;
+    const { transactions, timestamp } = block;
+    process.env.BLOCK_MAIN_NUMBER = String(transactions[0].block_num);
+    process.env.BLOCK_MAIN_TIMESTAMP = timestamp;
     for (const transaction of transactions) {
       if (!transaction?.operations && !transaction.operations[0]) continue;
       for (const operation of transaction.operations) {

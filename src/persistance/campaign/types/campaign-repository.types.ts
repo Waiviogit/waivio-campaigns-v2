@@ -58,3 +58,9 @@ export type UpdateCampaignType = Partial<
 >;
 
 export type DeleteCampaignType = Pick<Campaign, '_id'>;
+
+export type findCampaignByStatusGuideNameActivation = {
+  statuses: string[];
+  guideName: string;
+  activation_permlink: string;
+};

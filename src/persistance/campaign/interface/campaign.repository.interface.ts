@@ -6,8 +6,10 @@ import {
   CampaignUpdateOneType,
   CreateCampaignType,
   DeleteCampaignType,
+  findCampaignByStatusGuideNameActivation,
   UpdateCampaignType,
 } from '../types';
+import { UpdateWriteOpResult } from 'mongoose';
 
 export interface CampaignRepositoryInterface {
   create(campaign: CreateCampaignType): Promise<CampaignDocumentType>;
@@ -25,6 +27,11 @@ export interface CampaignRepositoryInterface {
     filter,
     options,
   }: CampaignFindOneAndDeleteType): Promise<CampaignDocumentType>;
+  updateOne({
+    filter,
+    update,
+    options,
+  }: CampaignUpdateOneType): Promise<UpdateWriteOpResult>;
   /*
 Domain
  */
@@ -44,4 +51,9 @@ Domain
   deleteCampaignById({
     _id,
   }: DeleteCampaignType): Promise<CampaignDocumentType>;
+  findCampaignByStatusGuideNameActivation({
+    statuses,
+    guideName,
+    activation_permlink,
+  }: findCampaignByStatusGuideNameActivation): Promise<CampaignDocumentType>;
 }

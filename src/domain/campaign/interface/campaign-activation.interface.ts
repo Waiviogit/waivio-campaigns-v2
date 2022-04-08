@@ -1,7 +1,7 @@
 import {
   ActivateCampaignType,
-  validateActivationResponseType,
-} from '../types/campaign-activation.types';
+  validateActivationDeactivationType,
+} from '../types';
 
 export interface CampaignActivationInterface {
   activate({ _id, guideName, permlink }: ActivateCampaignType): Promise<void>;
@@ -9,5 +9,5 @@ export interface CampaignActivationInterface {
     _id,
     guideName,
     permlink,
-  }: ActivateCampaignType): Promise<validateActivationResponseType>;
+  }: ActivateCampaignType): Promise<validateActivationDeactivationType>;
 }

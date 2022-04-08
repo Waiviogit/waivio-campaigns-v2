@@ -1,10 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 
-import {
-  ActivateCampaignType,
-  validateActivationResponseType,
-} from './types/campaign-activation.types';
 import { CampaignActivationInterface } from './interface/campaign-activation.interface';
 import {
   CAMPAIGN_PROVIDE,
@@ -15,6 +11,10 @@ import {
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
 import { NotificationsInterface } from '../notifications/interface';
+import {
+  validateActivationDeactivationType,
+  ActivateCampaignType,
+} from './types';
 
 @Injectable()
 export class CampaignActivation implements CampaignActivationInterface {
@@ -62,7 +62,7 @@ export class CampaignActivation implements CampaignActivationInterface {
     _id,
     guideName,
     permlink,
-  }: ActivateCampaignType): Promise<validateActivationResponseType> {
+  }: ActivateCampaignType): Promise<validateActivationDeactivationType> {
     const campaign = await this.campaignRepository.findOnePending(
       _id,
       guideName,

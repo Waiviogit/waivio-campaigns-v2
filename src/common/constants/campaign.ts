@@ -10,6 +10,11 @@ export const CAMPAIGN_STATUS = Object.freeze({
   SUSPENDED: 'suspended',
 });
 
+export const ACTIVE_CAMPAIGN_STATUSES = [
+  CAMPAIGN_STATUS.ACTIVE,
+  CAMPAIGN_STATUS.REACHED_LIMIT,
+];
+
 export const RESERVATION_STATUS = Object.freeze({
   ASSIGNED: 'assigned',
   UNASSIGNED: 'unassigned',

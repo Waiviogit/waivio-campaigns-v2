@@ -3,8 +3,3 @@ export type ActivateCampaignType = {
   guideName: string;
   permlink: string;
 };
-
-export type validateActivationResponseType = {
-  isValid: boolean;
-  message: string;
-};

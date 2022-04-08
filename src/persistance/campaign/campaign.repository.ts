@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, UpdateWriteOpResult } from 'mongoose';
 import * as _ from 'lodash';
 
 import { Campaign } from './campaign.schema';
@@ -13,6 +13,7 @@ import {
   CampaignUpdateOneType,
   CreateCampaignType,
   DeleteCampaignType,
+  findCampaignByStatusGuideNameActivation,
   UpdateCampaignType,
 } from './types';
 import { CAMPAIGN_STATUS } from '../../common/constants';
@@ -62,6 +63,17 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }: CampaignFindOneAndDeleteType): Promise<CampaignDocumentType> {
     try {
       return this.model.findOneAndDelete(filter, options).lean();
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+  async updateOne({
+    filter,
+    update,
+    options,
+  }: CampaignUpdateOneType): Promise<UpdateWriteOpResult> {
+    try {
+      return this.model.updateOne(filter, update, options);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -131,6 +143,16 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }: DeleteCampaignType): Promise<CampaignDocumentType> {
     return this.findOneAndDelete({
       filter: { _id, status: CAMPAIGN_STATUS.PENDING },
+    });
+  }
+
+  async findCampaignByStatusGuideNameActivation({
+    statuses,
+    guideName,
+    activation_permlink,
+  }: findCampaignByStatusGuideNameActivation): Promise<CampaignDocumentType> {
+    return this.findOne({
+      filter: { guideName, activation_permlink, status: { $in: statuses } },
     });
   }
 }

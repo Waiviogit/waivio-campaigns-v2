@@ -8,7 +8,6 @@ import {
   SendNotificationType,
 } from './types/notification.types';
 import {
-  BLOCK_MAIN_PROCESSOR,
   CAMPAIGN_PROVIDE,
   NOTIFICATION_ID,
   USER_SUBSCRIPTION_PROVIDE,
@@ -51,7 +50,7 @@ export class Notifications implements NotificationsInterface {
   }: SendNotificationType): Promise<void> => {
     const reqData = {
       id: id,
-      block: process.env[BLOCK_MAIN_PROCESSOR],
+      block: process.env.BLOCK_MAIN_NUMBER,
       data,
     };
 

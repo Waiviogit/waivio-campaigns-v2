@@ -47,5 +47,6 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
   UPDATE_CAMPAIGN: 'UpdateCampaign',
   DELETE_CAMPAIGN: 'DeleteCampaign',
   ACTIVATE_CAMPAIGN: 'ActivateCampaign',
+  DEACTIVATE_CAMPAIGN: 'DeactivateCampaign',
   CAMPAIGN_HELPER: 'CampaignHelper',
 });

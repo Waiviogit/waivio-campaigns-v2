@@ -7,14 +7,19 @@ import { HiveOperationParser } from './hive-operation-parser';
 import { MetadataType } from './types';
 import { parserValidator } from './validators';
 import { CAMPAIGN_PROVIDE } from '../../common/constants';
-import { CampaignActivationInterface } from '../campaign/interface/campaign-activation.interface';
-import { ActivateCampaignType } from '../campaign/types/campaign-activation.types';
+import {
+  CampaignActivationInterface,
+  CampaignDeactivationInterface,
+} from '../campaign/interface';
+import { ActivateCampaignType } from '../campaign/types';
 
 @Injectable()
 export class HiveCommentParser extends HiveOperationParser {
   constructor(
     @Inject(CAMPAIGN_PROVIDE.ACTIVATE_CAMPAIGN)
     private readonly campaignActivation: CampaignActivationInterface,
+    @Inject(CAMPAIGN_PROVIDE.DEACTIVATE_CAMPAIGN)
+    private readonly campaignDeactivation: CampaignDeactivationInterface,
   ) {
     super();
   }
@@ -38,8 +43,7 @@ export class HiveCommentParser extends HiveOperationParser {
     //   comment,
     //   {
     //     waivioRewards: {
-    //       type: 'activateCampaign',
-    //       campaignId: '6245ae3efdaa0f106fcc6911',
+    //       type: 'stopCampaign',
     //     },
     //   },
     //   app,
@@ -58,6 +62,7 @@ export class HiveCommentParser extends HiveOperationParser {
     const { type } = metadata.waivioRewards;
     const postAuthor = metadata?.comment?.userId || author;
 
+    //validate if get params from json metadata
     switch (type) {
       case 'activateCampaign':
         const activationParams =
@@ -71,25 +76,13 @@ export class HiveCommentParser extends HiveOperationParser {
             activationParams as ActivateCampaignType,
           );
         }
-
-        //TODO inside activation
-        // await notificationsRequest.activateCampaign(
-        //   metadata.waivioRewards.campaign_id,
-        // );
         break;
       case 'stopCampaign':
-        //'waivio_stop_campaign':
-        const inactivate = {
-          campaign_permlink: parent_permlink,
-          guide_name: postAuthor,
-          permlink: permlink,
-          //TODO get from block
-          //stoppedAt: _.get(post, 'json_metadata.stoppedAt'),
-        };
-        //TODO inside stop campaign
-        // await notificationsRequest.deactivateCampaign(
-        //   metadata.waivioRewards.campaign_id,
-        // );
+        await this.campaignDeactivation.deactivate({
+          activation_permlink: parent_permlink,
+          deactivation_permlink: permlink,
+          guideName: postAuthor,
+        });
         break;
       case 'reserveCampaign':
         //waivio_assign_campaign

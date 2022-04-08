@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import {
   CampaignActivationProvider,
+  CampaignDeactivationProvider,
   CampaignProviderHelper,
   CreateCampaignProvider,
   DeleteCampaignProvider,
@@ -17,12 +18,14 @@ import { NotificationsModule } from '../notifications/notifications.module';
     UpdateCampaignProvider,
     DeleteCampaignProvider,
     CampaignActivationProvider,
+    CampaignDeactivationProvider,
   ],
   exports: [
     CreateCampaignProvider,
     UpdateCampaignProvider,
     DeleteCampaignProvider,
     CampaignActivationProvider,
+    CampaignDeactivationProvider,
   ],
 })
 export class CampaignModule {}
