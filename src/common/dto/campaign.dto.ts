@@ -21,6 +21,7 @@ import {
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
   PAYMENT_STATUS,
+  PAYOUT_TOKEN,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
 } from '../constants';
@@ -397,4 +398,14 @@ export class CampaignDto {
     default: SUPPORTED_CURRENCY.USD,
   })
   currency: string;
+
+  @IsString()
+  @IsIn(Object.values(PAYOUT_TOKEN))
+  @ApiProperty({
+    type: String,
+    enum: Object.values(PAYOUT_TOKEN),
+    required: false,
+    default: PAYOUT_TOKEN.WAIV,
+  })
+  payoutToken: string;
 }

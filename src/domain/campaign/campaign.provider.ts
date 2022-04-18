@@ -6,7 +6,7 @@ import { CampaignHelper } from './campaign-helper';
 import { UpdateCampaign } from './update-campaign';
 import { DeleteCampaign } from './delete-campaign';
 import { CampaignActivation } from './campaign-activation';
-import {CampaignDeactivation} from "./campaign-deactivation";
+import { CampaignDeactivation } from './campaign-deactivation';
 
 export const CreateCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CREATE_CAMPAIGN,

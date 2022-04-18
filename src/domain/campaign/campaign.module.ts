@@ -9,6 +9,7 @@ import {
 } from './campaign.provider';
 import { PersistenceModule } from '../../persistance/persistence.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AssignReservationProvider } from './reservation/reservation.providers';
 
 @Module({
   imports: [PersistenceModule, NotificationsModule],
@@ -19,6 +20,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     DeleteCampaignProvider,
     CampaignActivationProvider,
     CampaignDeactivationProvider,
+    AssignReservationProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -26,6 +28,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     DeleteCampaignProvider,
     CampaignActivationProvider,
     CampaignDeactivationProvider,
+    AssignReservationProvider,
   ],
 })
 export class CampaignModule {}

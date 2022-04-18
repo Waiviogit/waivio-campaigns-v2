@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, UpdateWriteOpResult } from 'mongoose';
+import { Aggregate, Model, UpdateWriteOpResult } from 'mongoose';
 import * as _ from 'lodash';
 
 import { Campaign } from './campaign.schema';
 import { CampaignRepositoryInterface } from './interface';
 import {
   ActivateCampaignType,
+  AggregateType,
   CampaignDocumentType,
   CampaignFindOneAndDeleteType,
   CampaignFindOneType,
@@ -74,6 +75,16 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }: CampaignUpdateOneType): Promise<UpdateWriteOpResult> {
     try {
       return this.model.updateOne(filter, update, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async aggregate({
+    pipeline,
+  }: AggregateType): Promise<Aggregate<Array<never>>> {
+    try {
+      return this.model.aggregate(pipeline);
     } catch (error) {
       this.logger.error(error.message);
     }

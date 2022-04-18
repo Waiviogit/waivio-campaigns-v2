@@ -1,10 +1,12 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId, Types } from 'mongoose';
+import * as _ from 'lodash';
 
 import {
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
   PAYMENT_STATUS,
+  PAYOUT_TOKEN,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
@@ -56,10 +58,10 @@ export class CampaignUser {
 
   @Prop({ type: String })
   rejectionPermlink: string;
-  // #TODO ??? is it price in USD?
+
   @Prop({ type: Number, required: true })
-  reservationTokenRateUSD: number;
-  // hiveCurrency: number;
+  payoutTokenRateUSD: number;
+
   @Prop({
     type: String,
     required: true,
@@ -252,6 +254,41 @@ export class Campaign {
     enum: Object.values(SUPPORTED_CURRENCY),
   })
   currency: string;
+
+  canAssign: boolean;
+
+  @Prop({
+    type: String,
+    default: PAYOUT_TOKEN.WAIV,
+    enum: Object.values(PAYOUT_TOKEN),
+  })
+  payoutToken: string;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
+
+CampaignSchema.index({ createdAt: -1 });
+CampaignSchema.index({ reward: -1 });
+CampaignSchema.index({ userName: 1, postPermlink: 1 });
+
+CampaignSchema.virtual('canAssign').get(function () {
+  const countAssigns = this.budget / this.reward;
+  const filterUsers = _.filter(
+    this.users,
+    (user) =>
+      ['assigned', 'completed'].includes(user.status) &&
+      new Date(user.createdAt).getMonth() === new Date().getMonth(),
+  );
+
+  return countAssigns > filterUsers.length;
+});
+
+//TODO validate in dto
+// CampaignSchema.pre('save', function (next) {
+//   if (this.reward > this.budget) {
+//     const error = new Error('Reward more than budget');
+//
+//     return next(error);
+//   }
+//   next();
+// });

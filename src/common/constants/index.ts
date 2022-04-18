@@ -10,3 +10,4 @@ export * from './providers';
 export * from './notifications';
 export * from './app-constants';
 export * from './currencies';
+export * from './hive-engine';

@@ -1,5 +1,6 @@
 import {
   FilterQuery,
+  PipelineStage,
   QueryOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline,
@@ -41,6 +42,7 @@ export type CreateCampaignType = Omit<
   | 'deactivationPermlink'
   | 'payments'
   | 'stoppedAt'
+  | 'canAssign'
 >;
 
 export type UpdateCampaignType = Partial<
@@ -54,6 +56,7 @@ export type UpdateCampaignType = Partial<
     | 'deactivationPermlink'
     | 'payments'
     | 'stoppedAt'
+    | 'canAssign'
   >
 >;
 
@@ -63,4 +66,9 @@ export type findCampaignByStatusGuideNameActivation = {
   statuses: string[];
   guideName: string;
   activation_permlink: string;
+};
+
+export type AggregateType = {
+  pipeline: PipelineStage[];
+  options?: unknown;
 };

@@ -13,7 +13,7 @@ import {
   ReferralDocumentType,
   UserDraftType,
   UserMetadataDocumentType,
-  UserMetadataSettingsType
+  UserMetadataSettingsType,
 } from './types';
 import { Document } from 'mongoose';
 

@@ -1,5 +1,6 @@
 import {
   ActivateCampaignType,
+  AggregateType,
   CampaignDocumentType,
   CampaignFindOneAndDeleteType,
   CampaignFindOneType,
@@ -9,7 +10,7 @@ import {
   findCampaignByStatusGuideNameActivation,
   UpdateCampaignType,
 } from '../types';
-import { UpdateWriteOpResult } from 'mongoose';
+import { Aggregate, UpdateWriteOpResult } from 'mongoose';
 
 export interface CampaignRepositoryInterface {
   create(campaign: CreateCampaignType): Promise<CampaignDocumentType>;
@@ -32,6 +33,7 @@ export interface CampaignRepositoryInterface {
     update,
     options,
   }: CampaignUpdateOneType): Promise<UpdateWriteOpResult>;
+  aggregate({ pipeline }: AggregateType): Promise<Aggregate<Array<never>>>;
   /*
 Domain
  */

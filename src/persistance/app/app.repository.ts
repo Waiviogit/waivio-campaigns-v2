@@ -15,7 +15,11 @@ export class AppRepository implements AppRepositoryInterface {
     private readonly model: Model<AppDocumentType>,
   ) {}
 
-  async findOne({ filter, projection, options }: AppFindType): Promise<AppDocumentType> {
+  async findOne({
+    filter,
+    projection,
+    options,
+  }: AppFindType): Promise<AppDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {

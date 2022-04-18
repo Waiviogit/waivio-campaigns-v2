@@ -46,3 +46,8 @@ export const PAYMENT_STATUS = Object.freeze({
   REJECTED: 'rejected',
   PAYED: 'payed',
 });
+
+export const PAYOUT_TOKEN = Object.freeze({
+  HIVE: 'HIVE',
+  WAIV: 'WAIV',
+});
