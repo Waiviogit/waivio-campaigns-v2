@@ -1,5 +1,6 @@
 export const CONNECTION_MONGO = Object.freeze({
   WAIVIO: 'WAIVIO',
+  CURRENCIES: 'CURRENCIES',
 });
 
 export const COLLECTION = Object.freeze({
@@ -10,4 +11,5 @@ export const COLLECTION = Object.freeze({
   WOBJECT_SUBSCRIPTIONS: 'wobjectsubscriptions',
   POSTS: 'posts',
   APPS: 'apps',
+  CURRENCY_RATES: 'currencies-rates',
 });

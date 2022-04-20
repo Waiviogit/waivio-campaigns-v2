@@ -165,7 +165,7 @@ export class Campaign {
   reward: number;
 
   @Prop({ type: Number, required: true, min: 0.001, max: 50000 })
-  rewardInCurrency: number;
+  rewardInUSD: number;
 
   @Prop({ type: Number, default: 1 })
   countReservationDays: number;
@@ -269,6 +269,7 @@ export const CampaignSchema = SchemaFactory.createForClass(Campaign);
 
 CampaignSchema.index({ createdAt: -1 });
 CampaignSchema.index({ reward: -1 });
+CampaignSchema.index({ rewardInUSD: -1 });
 CampaignSchema.index({ userName: 1, postPermlink: 1 });
 
 CampaignSchema.virtual('canAssign').get(function () {

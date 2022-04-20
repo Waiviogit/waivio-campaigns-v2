@@ -8,6 +8,9 @@ import { CONNECTION_MONGO } from '../common/constants';
     MongooseModule.forRoot(configService.getMongoWaivioConnectionString(), {
       connectionName: CONNECTION_MONGO.WAIVIO,
     }),
+    MongooseModule.forRoot(configService.getMongoCurrenciesConnectionString(), {
+      connectionName: CONNECTION_MONGO.CURRENCIES,
+    }),
   ],
 })
 export class DatabaseModule {}

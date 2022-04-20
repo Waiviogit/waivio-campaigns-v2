@@ -6,11 +6,13 @@ import BigNumber from 'bignumber.js';
 
 import {
   CAMPAIGN_PROVIDE,
+  CURRENCY_RATES_PROVIDE,
   ENGINE_MARKETPOOLS,
   HIVE_ENGINE_PROVIDE,
   PAYOUT_TOKEN,
   REDIS_KEY,
   REDIS_PROVIDE,
+  SUPPORTED_CURRENCY,
 } from '../../common/constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { CampaignHelperInterface } from './interface';
@@ -23,6 +25,7 @@ import {
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import axios from 'axios';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
+import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -34,6 +37,8 @@ export class CampaignHelper implements CampaignHelperInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(HIVE_ENGINE_PROVIDE.CLIENT)
     private readonly hiveEngineClient: HiveEngineClientInterface,
+    @Inject(CURRENCY_RATES_PROVIDE.REPOSITORY)
+    private readonly currencyRatesRepository: CurrencyRatesRepositoryInterface,
   ) {}
 
   async setExpireTTLCampaign(expiredAt: Date, _id: ObjectId): Promise<void> {
@@ -154,5 +159,17 @@ export class CampaignHelper implements CampaignHelperInterface {
     });
     const hiveRate = await this.getHiveRateUSD();
     return new BigNumber(pool.quotePrice).times(hiveRate).toNumber();
+  }
+
+  async getRewardInUSD(currency: string, reward: number): Promise<number> {
+    if (currency === SUPPORTED_CURRENCY.USD) return reward;
+    const result = this.currencyRatesRepository.findOne({
+      filter: { base: SUPPORTED_CURRENCY.USD },
+      projection: { [`rates.${currency}`]: 1 },
+      options: { sort: { dateString: -1 } },
+    });
+    return new BigNumber(reward)
+      .dividedBy(_.get(result, `rates.${currency}`))
+      .toNumber();
   }
 }

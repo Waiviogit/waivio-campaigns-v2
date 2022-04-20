@@ -23,6 +23,10 @@ export const POST_PROVIDE = Object.freeze({
   REPOSITORY: 'PostRepository',
 });
 
+export const CURRENCY_RATES_PROVIDE = Object.freeze({
+  REPOSITORY: 'CurrencyRatesRepository',
+});
+
 export const REDIS_PROVIDE = Object.freeze({
   BLOCK_CLIENT: 'RedisBlockClient',
   CAMPAIGN_CLIENT: 'RedisCampaignClient',

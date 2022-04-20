@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { CAMPAIGN_PROVIDE } from '../../common/constants';
-import { CampaignHelperInterface } from './interface/campaign-helper.interface';
-import { UpdateCampaignInterface } from './interface/update-campaign.interface';
+import { CampaignHelperInterface } from './interface';
+import { UpdateCampaignInterface } from './interface';
 import {
   CampaignDocumentType,
   UpdateCampaignType,
@@ -19,6 +19,12 @@ export class UpdateCampaign implements UpdateCampaignInterface {
   ) {}
 
   async update(campaign: UpdateCampaignType): Promise<CampaignDocumentType> {
+    if (campaign.reward) {
+      campaign.rewardInUSD = await this.campaignHelper.getRewardInUSD(
+        campaign.currency,
+        campaign.reward,
+      );
+    }
     const updatedCampaign = await this.campaignRepository.updateCampaign(
       campaign,
     );

@@ -277,12 +277,6 @@ export class CampaignDto {
   @ApiProperty({ type: Number, required: true })
   reward: number;
 
-  @IsNumber()
-  @Min(0.001)
-  @Max(50000)
-  @ApiProperty({ type: Number, required: true })
-  rewardInCurrency: number;
-
   @IsOptional()
   @IsNumber()
   @ApiProperty({ type: Number, required: false, default: 1 })

@@ -27,6 +27,13 @@ class ConfigService {
     return `mongodb://${host}:${port}/${db}`;
   }
 
+  public getMongoCurrenciesConnectionString(): string {
+    const host = this.getValue('MONGO_HOST');
+    const port = this.getValue('MONGO_PORT');
+    const db = this.getValue('CURRENCIES_DB');
+    return `mongodb://${host}:${port}/${db}`;
+  }
+
   public getRedisBlocksConfig(): string {
     const host = this.getValue('REDIS_HOST');
     const port = this.getValue('REDIS_PORT');

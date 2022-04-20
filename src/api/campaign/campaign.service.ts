@@ -34,7 +34,7 @@ export class CampaignService {
   ) {}
 
   async create(
-    createCampaignDto: CreateCampaignType,
+    createCampaignDto: Omit<CreateCampaignType, 'rewardInUSD'>,
   ): Promise<CampaignDocumentType> {
     const user = await this.userRepository.findOne({
       filter: { name: createCampaignDto.guideName },
