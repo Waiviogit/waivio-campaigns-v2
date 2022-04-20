@@ -1,8 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import axios from 'axios';
-
-// @ts-ignore
 import * as sc2 from 'sc2-sdk';
 
 import { configService } from '../../common/config';
