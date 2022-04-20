@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 
 import { ENSURE_VALUES } from '../constants';
 
-dotenv.config({ path: `env/.env.${process.env.NODE_ENV || 'development'}` });
+dotenv.config({ path: `env/${process.env.NODE_ENV || 'development'}.env` });
 
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
