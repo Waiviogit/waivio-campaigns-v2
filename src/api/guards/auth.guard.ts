@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import axios from 'axios';
 
 // @ts-ignore
-import sc2 from 'sc2-sdk';
+import * as sc2 from 'sc2-sdk';
 
 import { configService } from '../../common/config';
 import { ValidateRequestType } from './types/auth.guard.types';
