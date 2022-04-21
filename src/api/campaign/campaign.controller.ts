@@ -11,7 +11,7 @@ import {
   CreateCampaignDto,
   DeleteCampaignDto,
   UpdateCampaignDto,
-} from '../../common/dto/in';
+} from '../../common/dto/campaign/in';
 import { CampaignService } from './campaign.service';
 
 import { AuthGuard, ChangeCampaignGuard } from '../guards';
@@ -19,7 +19,7 @@ import {
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
-} from '../../common/dto/out';
+} from '../../common/dto/campaign/out';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()

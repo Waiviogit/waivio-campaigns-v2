@@ -20,7 +20,7 @@ export class UpdateCampaign implements UpdateCampaignInterface {
 
   async update(campaign: UpdateCampaignType): Promise<CampaignDocumentType> {
     if (campaign.reward) {
-      campaign.rewardInUSD = await this.campaignHelper.getRewardInUSD(
+      campaign.rewardInUSD = await this.campaignHelper.getCurrencyInUSD(
         campaign.currency,
         campaign.reward,
       );

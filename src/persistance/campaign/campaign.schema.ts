@@ -248,6 +248,8 @@ export class Campaign {
   @Prop({ type: Date })
   stoppedAt: Date;
 
+  createdAt?: Date;
+
   @Prop({
     type: String,
     default: SUPPORTED_CURRENCY.USD,

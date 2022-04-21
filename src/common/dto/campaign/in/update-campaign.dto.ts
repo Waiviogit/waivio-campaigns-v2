@@ -13,6 +13,8 @@ export class UpdateCampaignDto extends PartialType(
     'deactivationPermlink',
     'payments',
     'stoppedAt',
+    'rewardInUSD',
+    'createdAt',
   ]),
 ) {
   @IsMongoId()

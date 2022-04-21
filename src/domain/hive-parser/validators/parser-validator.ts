@@ -1,6 +1,6 @@
 import { validate, ValidatorOptions } from 'class-validator';
 import * as _ from 'lodash';
-import { ActivateCampaignDto } from '../../../common/dto/in';
+import { ActivateCampaignDto } from '../../../common/dto/campaign/in';
 
 class ParserValidator {
   async validateCampaignActivation(

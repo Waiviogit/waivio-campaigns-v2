@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+
 import { Campaign, CampaignPayment, CampaignUser } from '../campaign.schema';
 
 export type ReviewRequirementsType = {

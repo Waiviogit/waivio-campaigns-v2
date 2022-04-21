@@ -20,7 +20,7 @@ export class CreateCampaign implements CreateCampaignInterface {
   async create(
     campaign: Omit<CreateCampaignType, 'rewardInUSD'>,
   ): Promise<CampaignDocumentType> {
-    const rewardInUSD = await this.campaignHelper.getRewardInUSD(
+    const rewardInUSD = await this.campaignHelper.getCurrencyInUSD(
       campaign.currency,
       campaign.reward,
     );

@@ -57,6 +57,7 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
   ACTIVATE_CAMPAIGN: 'ActivateCampaign',
   DEACTIVATE_CAMPAIGN: 'DeactivateCampaign',
   CAMPAIGN_HELPER: 'CampaignHelper',
+  GUIDE_CAMPAIGNS: 'GuideCampaigns',
 });
 
 export const RESERVATION_PROVIDE = Object.freeze({

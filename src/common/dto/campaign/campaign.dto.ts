@@ -24,11 +24,11 @@ import {
   PAYOUT_TOKEN,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
-} from '../constants';
+} from '../../constants';
 import {
   CampaignPaymentDocumentType,
   CampaignUserDocumentType,
-} from '../../persistance/campaign/types';
+} from '../../../persistance/campaign/types';
 import { ObjectId, Types } from 'mongoose';
 import { Prop } from '@nestjs/mongoose';
 
@@ -277,6 +277,12 @@ export class CampaignDto {
   @ApiProperty({ type: Number, required: true })
   reward: number;
 
+  @IsNumber()
+  @Min(0.001)
+  @Max(500)
+  @ApiProperty({ type: Number, required: true })
+  rewardInUSD: number;
+
   @IsOptional()
   @IsNumber()
   @ApiProperty({ type: Number, required: false, default: 1 })
@@ -382,6 +388,11 @@ export class CampaignDto {
   @IsDateString()
   @ApiProperty({ type: Date })
   stoppedAt: Date;
+
+  @IsOptional()
+  @IsDateString()
+  @ApiProperty({ type: Date, required: false })
+  createdAt?: Date;
 
   @IsOptional()
   @IsIn(Object.values(SUPPORTED_CURRENCY))

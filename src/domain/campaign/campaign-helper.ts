@@ -161,14 +161,14 @@ export class CampaignHelper implements CampaignHelperInterface {
     return new BigNumber(pool.quotePrice).times(hiveRate).toNumber();
   }
 
-  async getRewardInUSD(currency: string, reward: number): Promise<number> {
-    if (currency === SUPPORTED_CURRENCY.USD) return reward;
+  async getCurrencyInUSD(currency: string, amount: number): Promise<number> {
+    if (currency === SUPPORTED_CURRENCY.USD) return amount;
     const result = this.currencyRatesRepository.findOne({
       filter: { base: SUPPORTED_CURRENCY.USD },
       projection: { [`rates.${currency}`]: 1 },
       options: { sort: { dateString: -1 } },
     });
-    return new BigNumber(reward)
+    return new BigNumber(amount)
       .dividedBy(_.get(result, `rates.${currency}`))
       .toNumber();
   }

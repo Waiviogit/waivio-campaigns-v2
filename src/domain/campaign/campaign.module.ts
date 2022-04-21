@@ -5,6 +5,7 @@ import {
   CampaignProviderHelper,
   CreateCampaignProvider,
   DeleteCampaignProvider,
+  GuideCampaignsProvider,
   UpdateCampaignProvider,
 } from './campaign.provider';
 import { PersistenceModule } from '../../persistance/persistence.module';
@@ -21,6 +22,7 @@ import { AssignReservationProvider } from './reservation/reservation.providers';
     CampaignActivationProvider,
     CampaignDeactivationProvider,
     AssignReservationProvider,
+    GuideCampaignsProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -29,6 +31,7 @@ import { AssignReservationProvider } from './reservation/reservation.providers';
     CampaignActivationProvider,
     CampaignDeactivationProvider,
     AssignReservationProvider,
+    GuideCampaignsProvider,
   ],
 })
 export class CampaignModule {}

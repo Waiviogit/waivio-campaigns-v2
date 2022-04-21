@@ -1,11 +1,11 @@
 import { ApiOperation, ApiResponse, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { Campaign } from '../../persistance/campaign/campaign.schema';
+
 import {
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
-} from '../../common/dto/out';
+} from '../../common/dto/campaign/out';
 
 export class CampaignControllerDocs {
   static main(): ClassDecorator {
@@ -84,7 +84,7 @@ export class CampaignControllerDocs {
         description: 'authorized account',
       }),
       ApiOperation({
-        summary: 'endpoint for update pending campaign',
+        summary: 'endpoint for delete pending campaign',
         description: 'campaign object',
       }),
       ApiResponse({

@@ -1,5 +1,5 @@
 import { Campaign } from '../../../persistance/campaign/campaign.schema';
-import { UpdateCampaignDto } from '../../../common/dto/in';
+import { UpdateCampaignDto } from '../../../common/dto/campaign/in';
 import {
   CampaignDocumentType,
   UpdateCampaignType,

@@ -21,5 +21,5 @@ export interface CampaignHelperInterface {
     reservationTime,
   }: SetExpireAssignType): Promise<void>;
   getPayoutTokenRateUSD(token: string): Promise<number>;
-  getRewardInUSD(currency: string, reward: number): Promise<number>;
+  getCurrencyInUSD(currency: string, amount: number): Promise<number>;
 }
