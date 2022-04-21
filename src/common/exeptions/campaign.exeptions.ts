@@ -5,3 +5,9 @@ export class CampaignServerException extends HttpException {
     super('internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
+
+export class CampaignCustomException extends HttpException {
+  constructor(response: string, status: number) {
+    super(response, status);
+  }
+}

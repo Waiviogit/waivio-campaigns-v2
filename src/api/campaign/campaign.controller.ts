@@ -11,6 +11,8 @@ import {
   CreateCampaignDto,
   DeleteCampaignDto,
   UpdateCampaignDto,
+  ValidateActivationDto,
+  ValidateDeactivationDto,
 } from '../../common/dto/campaign/in';
 import { CampaignService } from './campaign.service';
 
@@ -19,6 +21,7 @@ import {
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
+  ValidationResponseDto,
 } from '../../common/dto/campaign/out';
 
 @Controller('campaign')
@@ -51,5 +54,21 @@ export class CampaignController {
     @Body() deleteCampaignDto: DeleteCampaignDto,
   ): Promise<DeleteCampaignOutDto> {
     return this.campaignService.delete(deleteCampaignDto);
+  }
+
+  @Post('activate')
+  @CampaignControllerDocs.validateActivation()
+  async validateActivation(
+    @Body() params: ValidateActivationDto,
+  ): Promise<ValidationResponseDto> {
+    return this.campaignService.validateActivation(params);
+  }
+
+  @Post('deactivate')
+  @CampaignControllerDocs.validateDeactivation()
+  async validateDeactivation(
+    @Body() params: ValidateDeactivationDto,
+  ): Promise<ValidationResponseDto> {
+    return this.campaignService.validateDeactivation(params);
   }
 }

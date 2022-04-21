@@ -5,6 +5,7 @@ import {
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
+  ValidationResponseDto,
 } from '../../common/dto/campaign/out';
 
 export class CampaignControllerDocs {
@@ -91,6 +92,29 @@ export class CampaignControllerDocs {
         status: HttpStatus.OK,
         description: 'campaign',
         type: DeleteCampaignOutDto,
+      }),
+    );
+  }
+  static validateActivation(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'endpoint for validate activation pending campaign',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: ValidationResponseDto,
+      }),
+    );
+  }
+
+  static validateDeactivation(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'endpoint for validate deactivation pending campaign',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: ValidationResponseDto,
       }),
     );
   }

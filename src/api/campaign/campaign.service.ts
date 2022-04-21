@@ -1,22 +1,31 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 
 import { CAMPAIGN_PROVIDE, USER_PROVIDE } from '../../common/constants';
-import { CreateCampaignInterface } from '../../domain/campaign/interface/create-campaign.interface';
 import { UserRepositoryInterface } from '../../persistance/user/interface';
 import {
+  CampaignCustomException,
   CampaignServerException,
   UserForbiddenException,
   UserNotFoundException,
 } from '../../common/exeptions';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import { UpdateCampaignInterface } from '../../domain/campaign/interface/update-campaign.interface';
-import { DeleteCampaignInterface } from '../../domain/campaign/interface/delete-campaign.interface';
 import {
   CampaignDocumentType,
   CreateCampaignType,
   DeleteCampaignType,
   UpdateCampaignType,
 } from '../../persistance/campaign/types';
+import {
+  CampaignActivationInterface,
+  CampaignDeactivationInterface,
+  DeleteCampaignInterface,
+  UpdateCampaignInterface,
+  CreateCampaignInterface,
+} from '../../domain/campaign/interface';
+import {
+  ActivateCampaignType,
+  DeactivateCampaignType,
+} from '../../domain/campaign/types';
 
 @Injectable()
 export class CampaignService {
@@ -27,6 +36,10 @@ export class CampaignService {
     private readonly updateCampaign: UpdateCampaignInterface,
     @Inject(CAMPAIGN_PROVIDE.DELETE_CAMPAIGN)
     private readonly deleteCampaign: DeleteCampaignInterface,
+    @Inject(CAMPAIGN_PROVIDE.ACTIVATE_CAMPAIGN)
+    private readonly campaignActivation: CampaignActivationInterface,
+    @Inject(CAMPAIGN_PROVIDE.DEACTIVATE_CAMPAIGN)
+    private readonly campaignDeactivation: CampaignDeactivationInterface,
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
@@ -62,5 +75,33 @@ export class CampaignService {
     const campaign = await this.deleteCampaign.delete(deleteCampaignDto);
     if (!campaign) throw new CampaignServerException();
     return campaign;
+  }
+
+  async validateActivation(
+    params: ActivateCampaignType,
+  ): Promise<{ isValid: boolean }> {
+    const { isValid, message } =
+      await this.campaignActivation.validateActivation(params);
+    if (!isValid) {
+      throw new CampaignCustomException(
+        message,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    return { isValid };
+  }
+
+  async validateDeactivation(
+    params: DeactivateCampaignType,
+  ): Promise<{ isValid: boolean }> {
+    const { isValid, message } =
+      await this.campaignDeactivation.validateDeactivation(params);
+    if (!isValid) {
+      throw new CampaignCustomException(
+        message,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    return { isValid };
   }
 }
