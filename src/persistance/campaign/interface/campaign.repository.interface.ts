@@ -39,7 +39,7 @@ Domain
  */
   findOneSuspended(guideName: string): Promise<CampaignDocumentType>;
   findActiveByActivationLink(
-    activation_permlink: string,
+    activationPermlink: string,
   ): Promise<CampaignDocumentType>;
   activateCampaign({
     _id,
@@ -56,6 +56,6 @@ Domain
   findCampaignByStatusGuideNameActivation({
     statuses,
     guideName,
-    activation_permlink,
+    activationPermlink,
   }: findCampaignByStatusGuideNameActivation): Promise<CampaignDocumentType>;
 }

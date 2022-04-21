@@ -31,13 +31,13 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
 
   async deactivate({
     guideName,
-    deactivation_permlink,
-    activation_permlink,
+    deactivationPermlink,
+    activationPermlink,
   }: DeactivateCampaignType): Promise<void> {
     const result = await this.validateDeactivation({
       guideName,
-      deactivation_permlink,
-      activation_permlink,
+      deactivationPermlink,
+      activationPermlink,
     });
 
     if (!result.isValid) return;
@@ -45,7 +45,7 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
       await this.campaignRepository.findCampaignByStatusGuideNameActivation({
         statuses: ACTIVE_CAMPAIGN_STATUSES,
         guideName,
-        activation_permlink,
+        activationPermlink,
       });
 
     const assigns = _.filter(
@@ -58,13 +58,13 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
 
     const deactivatedCampaign = await this.campaignRepository.updateOne({
       filter: {
-        activation_permlink,
+        activationPermlink,
         guideName,
         status: { $in: ACTIVE_CAMPAIGN_STATUSES },
       },
       update: {
         status,
-        deactivation_permlink,
+        deactivationPermlink,
         stoppedAt: process.env.BLOCK_MAIN_TIMESTAMP,
       },
     });
@@ -80,17 +80,17 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
 
   async validateDeactivation({
     guideName,
-    deactivation_permlink,
-    activation_permlink,
+    deactivationPermlink,
+    activationPermlink,
   }: DeactivateCampaignType): Promise<validateActivationDeactivationType> {
     const campaign =
       await this.campaignRepository.findCampaignByStatusGuideNameActivation({
         statuses: ACTIVE_CAMPAIGN_STATUSES,
         guideName,
-        activation_permlink,
+        activationPermlink,
       });
 
-    if (!deactivation_permlink) {
+    if (!deactivationPermlink) {
       return {
         isValid: false,
         message: 'Deactivation permlink must be exist',

@@ -79,8 +79,8 @@ export class HiveCommentParser extends HiveOperationParser {
         break;
       case 'stopCampaign':
         await this.campaignDeactivation.deactivate({
-          activation_permlink: parent_permlink,
-          deactivation_permlink: permlink,
+          activationPermlink: parent_permlink,
+          deactivationPermlink: permlink,
           guideName: postAuthor,
         });
         break;

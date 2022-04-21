@@ -1,5 +1,5 @@
 export type DeactivateCampaignType = {
-  activation_permlink: string;
+  activationPermlink: string;
   guideName: string;
-  deactivation_permlink: string;
+  deactivationPermlink: string;
 };

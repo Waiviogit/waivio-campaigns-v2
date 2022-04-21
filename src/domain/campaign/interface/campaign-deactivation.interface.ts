@@ -6,12 +6,12 @@ import {
 export interface CampaignDeactivationInterface {
   deactivate({
     guideName,
-    deactivation_permlink,
-    activation_permlink,
+    deactivationPermlink,
+    activationPermlink,
   }: DeactivateCampaignType): Promise<void>;
   validateDeactivation({
     guideName,
-    deactivation_permlink,
-    activation_permlink,
+    deactivationPermlink,
+    activationPermlink,
   }: DeactivateCampaignType): Promise<validateActivationDeactivationType>;
 }

@@ -110,11 +110,11 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }
 
   async findActiveByActivationLink(
-    activation_permlink: string,
+    activationPermlink: string,
   ): Promise<CampaignDocumentType> {
     return this.findOne({
       filter: {
-        activation_permlink,
+        activationPermlink,
         status: CAMPAIGN_STATUS.ACTIVE,
       },
     });
@@ -128,7 +128,7 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }: ActivateCampaignType): Promise<CampaignDocumentType> {
     return this.findOneAndUpdate({
       filter: { _id, status: CAMPAIGN_STATUS.PENDING, guideName },
-      update: { status, activation_permlink: permlink },
+      update: { status, activationPermlink: permlink },
       options: { new: true },
     });
   }
@@ -160,10 +160,10 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   async findCampaignByStatusGuideNameActivation({
     statuses,
     guideName,
-    activation_permlink,
+    activationPermlink,
   }: findCampaignByStatusGuideNameActivation): Promise<CampaignDocumentType> {
     return this.findOne({
-      filter: { guideName, activation_permlink, status: { $in: statuses } },
+      filter: { guideName, activationPermlink, status: { $in: statuses } },
     });
   }
 }
