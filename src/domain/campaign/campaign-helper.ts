@@ -6,12 +6,14 @@ import BigNumber from 'bignumber.js';
 
 import {
   CAMPAIGN_PROVIDE,
+  CAMPAIGN_STATUS,
   CURRENCY_RATES_PROVIDE,
   ENGINE_MARKETPOOLS,
   HIVE_ENGINE_PROVIDE,
   PAYOUT_TOKEN,
   REDIS_KEY,
   REDIS_PROVIDE,
+  RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
@@ -72,6 +74,15 @@ export class CampaignHelper implements CampaignHelperInterface {
         reservationPermlink,
         requiredObject,
       }),
+    );
+  }
+
+  async delExpireAssign(reservationPermlink: string): Promise<void> {
+    await this.campaignRedisClient.deleteKey(
+      `${REDIS_KEY.ASSIGN_EXPIRE}${reservationPermlink}`,
+    );
+    await this.campaignRedisClient.deleteKey(
+      `${REDIS_KEY.ASSIGN}${reservationPermlink}`,
     );
   }
 
@@ -171,5 +182,22 @@ export class CampaignHelper implements CampaignHelperInterface {
     return new BigNumber(amount)
       .dividedBy(_.get(result, `rates.${currency}`))
       .toNumber();
+  }
+
+  async checkOnHoldStatus(activationPermlink: string): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { activationPermlink, status: CAMPAIGN_STATUS.ON_HOLD },
+    });
+    if (!campaign) return;
+    const hasAssignedUsers = _.filter(
+      campaign.users,
+      (u) => u.status === RESERVATION_STATUS.ASSIGNED,
+    );
+    if (_.isEmpty(hasAssignedUsers)) {
+      await this.campaignRepository.updateOne({
+        filter: { _id: campaign._id },
+        update: { status: CAMPAIGN_STATUS.INACTIVE },
+      });
+    }
   }
 }

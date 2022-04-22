@@ -22,4 +22,6 @@ export interface CampaignHelperInterface {
   }: SetExpireAssignType): Promise<void>;
   getPayoutTokenRateUSD(token: string): Promise<number>;
   getCurrencyInUSD(currency: string, amount: number): Promise<number>;
+  delExpireAssign(reservationPermlink: string): Promise<void>;
+  checkOnHoldStatus(activationPermlink: string): Promise<void>;
 }

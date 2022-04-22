@@ -6,12 +6,16 @@ import { HiveCommentOptionsType, HiveCommentType } from '../../common/types';
 import { HiveOperationParser } from './hive-operation-parser';
 import { MetadataType } from './types';
 import { parserValidator } from './validators';
-import { CAMPAIGN_PROVIDE } from '../../common/constants';
+import { CAMPAIGN_PROVIDE, RESERVATION_PROVIDE } from '../../common/constants';
 import {
   CampaignActivationInterface,
   CampaignDeactivationInterface,
 } from '../campaign/interface';
 import { ActivateCampaignType } from '../campaign/types';
+import {
+  AssignReservationInterface,
+  RejectReservationInterface,
+} from '../campaign/reservation/interface';
 
 @Injectable()
 export class HiveCommentParser extends HiveOperationParser {
@@ -20,6 +24,10 @@ export class HiveCommentParser extends HiveOperationParser {
     private readonly campaignActivation: CampaignActivationInterface,
     @Inject(CAMPAIGN_PROVIDE.DEACTIVATE_CAMPAIGN)
     private readonly campaignDeactivation: CampaignDeactivationInterface,
+    @Inject(RESERVATION_PROVIDE.ASSIGN)
+    private readonly assignReservation: AssignReservationInterface,
+    @Inject(RESERVATION_PROVIDE.REJECT)
+    private readonly rejectReservation: RejectReservationInterface,
   ) {
     super();
   }
@@ -62,7 +70,6 @@ export class HiveCommentParser extends HiveOperationParser {
     const { type } = metadata.waivioRewards;
     const postAuthor = metadata?.comment?.userId || author;
 
-    //validate if get params from json metadata
     switch (type) {
       case 'activateCampaign':
         const activationParams =
@@ -85,25 +92,22 @@ export class HiveCommentParser extends HiveOperationParser {
         });
         break;
       case 'reserveCampaign':
-        //waivio_assign_campaign
-        const assignData = {
-          campaign_permlink: parent_permlink,
-          reservation_permlink: permlink,
-          user_name: postAuthor,
-          root_name: author,
-          approved_object: metadata.waivioRewards.approved_object,
-          currencyId: metadata.waivioRewards.currencyId,
-          referral_account: app,
-        };
+        await this.assignReservation.assign({
+          activationPermlink: parent_permlink,
+          reservationPermlink: permlink,
+          name: postAuthor,
+          rootName: author,
+          requiredObject: metadata.waivioRewards.requiredObject,
+          referralServer: app,
+        });
         break;
-      case 'releaseReservation':
-        //waivio_reject_object_campaign
-        const releaseData = {
-          campaign_permlink: parent_permlink,
-          reservation_permlink: metadata.waivioRewards.reservation_permlink,
-          unreservation_permlink: permlink,
-          user_name: postAuthor,
-        };
+      case 'rejectReservation':
+        await this.rejectReservation.rejectReservation({
+          activationPermlink: parent_permlink,
+          reservationPermlink: metadata.waivioRewards.reservationPermlink,
+          rejectionPermlink: permlink,
+          name: postAuthor,
+        });
         break;
       case 'rejectReservationByGuide':
         //reject_reservation_by_guide

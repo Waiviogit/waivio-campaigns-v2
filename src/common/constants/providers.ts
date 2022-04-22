@@ -62,4 +62,5 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
 
 export const RESERVATION_PROVIDE = Object.freeze({
   ASSIGN: 'AssignReservation',
+  REJECT: 'RejectReservation',
 });

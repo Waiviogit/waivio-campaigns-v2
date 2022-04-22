@@ -17,4 +17,6 @@ type MetadataWaivioRewardsType = {
   riseAmount?: number;
   reservation_permlink?: string;
   activationPermlink?: string;
+  requiredObject?: string;
+  reservationPermlink?: string;
 };
