@@ -6,7 +6,11 @@ import { HiveCommentOptionsType, HiveCommentType } from '../../common/types';
 import { HiveOperationParser } from './hive-operation-parser';
 import { MetadataType } from './types';
 import { parserValidator } from './validators';
-import { CAMPAIGN_PROVIDE, RESERVATION_PROVIDE } from '../../common/constants';
+import {
+  CAMPAIGN_PROVIDE,
+  RESERVATION_PROVIDE,
+  REVIEW_PROVIDE,
+} from '../../common/constants';
 import {
   CampaignActivationInterface,
   CampaignDeactivationInterface,
@@ -14,8 +18,10 @@ import {
 import { ActivateCampaignType } from '../campaign/types';
 import {
   AssignReservationInterface,
+  GuideRejectReservationInterface,
   RejectReservationInterface,
 } from '../campaign/reservation/interface';
+import { CreateReviewInterface } from '../campaign/review/interface';
 
 @Injectable()
 export class HiveCommentParser extends HiveOperationParser {
@@ -28,6 +34,10 @@ export class HiveCommentParser extends HiveOperationParser {
     private readonly assignReservation: AssignReservationInterface,
     @Inject(RESERVATION_PROVIDE.REJECT)
     private readonly rejectReservation: RejectReservationInterface,
+    @Inject(RESERVATION_PROVIDE.GUIDE_REJECT)
+    private readonly guideRejectReservation: GuideRejectReservationInterface,
+    @Inject(REVIEW_PROVIDE.CREATE)
+    private readonly createReview: CreateReviewInterface,
   ) {
     super();
   }
@@ -45,17 +55,13 @@ export class HiveCommentParser extends HiveOperationParser {
     const app = metadata?.app;
 
     //#TODO add set demo post handle
-    //#TODO add parse review
+    await this.createReview.parseReview({
+      comment,
+      metadata,
+      app,
+      beneficiaries,
+    });
 
-    // await this.parseActions(
-    //   comment,
-    //   {
-    //     waivioRewards: {
-    //       type: 'stopCampaign',
-    //     },
-    //   },
-    //   app,
-    // );
     if (metadata?.waivioRewards) {
       await this.parseActions(comment, metadata, app);
     }
@@ -110,13 +116,11 @@ export class HiveCommentParser extends HiveOperationParser {
         });
         break;
       case 'rejectReservationByGuide':
-        //reject_reservation_by_guide
-        const rejectReview = {
-          user: parent_author,
-          parent_permlink: parent_permlink,
+        await this.guideRejectReservation.reject({
+          reservationPermlink: parent_permlink,
           guideName: author,
-          permlink: permlink,
-        };
+          rejectionPermlink: permlink,
+        });
         break;
       case 'restoreReservationByGuide':
         //restore_reservation_by_guide
@@ -127,7 +131,7 @@ export class HiveCommentParser extends HiveOperationParser {
           permlink: permlink,
         };
         break;
-
+      //later
       case 'raiseReviewReward':
         //'waivio_raise_review_reward':
         const raiseReward = {

@@ -1,6 +1,14 @@
 export type MetadataType = {
   comment?: MetadataCommentType;
   waivioRewards?: MetadataWaivioRewardsType;
+  wobj?: { wobjects: MetadataWobject[] };
+};
+
+type MetadataWobject = {
+  object_type: string;
+  objectName: string;
+  author_permlink: string;
+  percent: number;
 };
 
 type MetadataCommentType = {

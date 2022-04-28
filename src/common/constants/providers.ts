@@ -63,4 +63,10 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
 export const RESERVATION_PROVIDE = Object.freeze({
   ASSIGN: 'AssignReservation',
   REJECT: 'RejectReservation',
+  GUIDE_REJECT: 'GuideRejectReservation',
+});
+
+export const REVIEW_PROVIDE = Object.freeze({
+  CREATE: 'CreateReview',
+  FRAUD: 'FraudDetection',
 });

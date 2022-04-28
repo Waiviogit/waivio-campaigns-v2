@@ -35,6 +35,7 @@ export type ProcessedWobjectAddFieldsType = {
   newsFilter?: NewsFilerType[];
   blog?: Blog[];
   name?: string;
+  map?: string;
 };
 
 export type NewsFilerType = {

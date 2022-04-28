@@ -56,3 +56,28 @@ export const PAYOUT_TOKEN = Object.freeze({
   HIVE: 'HIVE',
   WAIV: 'WAIV',
 });
+
+export const PAYOUT_TOKEN_PRECISION = Object.freeze({
+  HIVE: 8,
+  WAIV: 8,
+});
+
+export const GUEST_BNF_ACC = 'waivio.hpower';
+
+export const CAMPAIGN_PAYMENT = {
+  REVIEW: 'review',
+  TRANSFER: 'transfer',
+  CAMPAIGNS_SERVER_FEE: 'campaign_server_fee',
+  REFERRAL_SERVER_FEE: 'referral_server_fee',
+  BENEFICIARY_FEE: 'beneficiary_fee',
+  INDEX_FEE: 'index_fee',
+  DEMO_POST: 'demo_post',
+  DEMO_USER_TRANSFER: 'demo_user_transfer',
+  DEMO_DEBT: 'demo_debt',
+  USER_TO_GUEST_TRANSFER: 'user_to_guest_transfer',
+  COMPENSATION_FEE: 'compensation_fee',
+  OVERPAYMENT_REFUND: 'overpayment_refund',
+};
+
+export const SECONDS_IN_DAY = 24 * 3600;
+export const GPS_DIFF = 0.01;
