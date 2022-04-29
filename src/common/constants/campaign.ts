@@ -46,11 +46,11 @@ export const SUPPORTED_CURRENCY = Object.freeze({
   UAH: 'UAH',
 });
 
-export const PAYMENT_STATUS = Object.freeze({
-  ACTIVE: 'active',
-  REJECTED: 'rejected',
-  PAYED: 'payed',
-});
+// export const PAYMENT_STATUS = Object.freeze({
+//   ACTIVE: 'active',
+//   REJECTED: 'rejected',
+//   PAYED: 'payed',
+// });
 
 export const PAYOUT_TOKEN = Object.freeze({
   HIVE: 'HIVE',
