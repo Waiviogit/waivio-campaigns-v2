@@ -26,56 +26,55 @@ import {
   SUPPORTED_CURRENCY,
 } from '../../constants';
 import {
-  CampaignPaymentDocumentType,
+  // CampaignPaymentDocumentType,
   CampaignUserDocumentType,
 } from '../../../persistance/campaign/types';
 import { ObjectId, Types } from 'mongoose';
-import { Prop } from '@nestjs/mongoose';
 
-export class CampaignPaymentDto {
-  @IsString()
-  @ApiProperty({ type: String })
-  _id: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  reservationId: string;
-  @IsString()
-  @ApiProperty({ type: String })
-  userName: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  objectPermlink: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  rootAuthor: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  paymentPermlink: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  rejectionPermlink: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  postTitle: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  postPermlink: string;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  app: string;
-
-  @IsString()
-  @ApiProperty({ type: String, enum: Object.values(PAYMENT_STATUS) })
-  status: string;
-}
+// export class CampaignPaymentDto {
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   _id: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   reservationId: string;
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   userName: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   objectPermlink: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   rootAuthor: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   paymentPermlink: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   rejectionPermlink: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   postTitle: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   postPermlink: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String })
+//   app: string;
+//
+//   @IsString()
+//   @ApiProperty({ type: String, enum: Object.values(PAYMENT_STATUS) })
+//   status: string;
+// }
 
 export class CampaignUserDto {
   @IsString()
@@ -363,10 +362,10 @@ export class CampaignDto {
   @ApiProperty({ type: Number, required: false })
   frequencyAssign: number;
 
-  @ValidateNested()
-  @Type(() => CampaignPaymentDto)
-  @ApiProperty({ type: () => [CampaignPaymentDto] })
-  payments: CampaignPaymentDocumentType[];
+  // @ValidateNested()
+  // @Type(() => CampaignPaymentDto)
+  // @ApiProperty({ type: () => [CampaignPaymentDto] })
+  // payments: CampaignPaymentDocumentType[];
 
   @IsOptional()
   @ValidateNested()

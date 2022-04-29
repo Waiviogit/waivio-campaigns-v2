@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 
-import { Campaign, CampaignPayment, CampaignUser } from '../campaign.schema';
+import { Campaign, CampaignUser } from '../campaign.schema';
 
 export type ReviewRequirementsType = {
   minPhotos: number;
@@ -25,6 +25,6 @@ export type ReservationTimetableType = {
 
 export type CampaignUserDocumentType = CampaignUser & Document;
 
-export type CampaignPaymentDocumentType = CampaignPayment & Document;
+// export type CampaignPaymentDocumentType = CampaignPayment & Document;
 
 export type CampaignDocumentType = Campaign & Document;

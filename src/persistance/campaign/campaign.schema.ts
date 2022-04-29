@@ -12,7 +12,7 @@ import {
 } from '../../common/constants';
 import { configService } from '../../common/config';
 import {
-  CampaignPaymentDocumentType,
+  // CampaignPaymentDocumentType,
   CampaignUserDocumentType,
   ReservationTimetableType,
   ReviewRequirementsType,
@@ -83,47 +83,47 @@ export class CampaignUser {
 
 export const CampaignUserSchema = SchemaFactory.createForClass(CampaignUser);
 
-@Schema({ timestamps: true })
-export class CampaignPayment {
-  _id: ObjectId;
-
-  @Prop({ type: Types.ObjectId, required: true })
-  reservationId: string;
-
-  @Prop({ type: String, required: true })
-  userName: string;
-
-  @Prop({ type: String, required: true })
-  objectPermlink: string;
-
-  @Prop({ type: String, required: true })
-  rootAuthor: string;
-
-  @Prop({ type: String })
-  paymentPermlink: string;
-
-  @Prop({ type: String })
-  rejectionPermlink: string;
-
-  @Prop({ type: String, required: true })
-  postTitle: string;
-
-  @Prop({ type: String, required: true })
-  postPermlink: string;
-
-  @Prop({ type: String })
-  app: string;
-
-  @Prop({
-    type: String,
-    default: PAYMENT_STATUS.ACTIVE,
-    enum: Object.values(PAYMENT_STATUS),
-  })
-  status: string;
-}
-
-export const CampaignPaymentSchema =
-  SchemaFactory.createForClass(CampaignPayment);
+// @Schema({ timestamps: true })
+// export class CampaignPayment {
+//   _id: ObjectId;
+//
+//   @Prop({ type: Types.ObjectId, required: true })
+//   reservationId: string;
+//
+//   @Prop({ type: String, required: true })
+//   userName: string;
+//
+//   @Prop({ type: String, required: true })
+//   objectPermlink: string;
+//
+//   @Prop({ type: String, required: true })
+//   rootAuthor: string;
+//
+//   @Prop({ type: String })
+//   paymentPermlink: string;
+//
+//   @Prop({ type: String })
+//   rejectionPermlink: string;
+//
+//   @Prop({ type: String, required: true })
+//   postTitle: string;
+//
+//   @Prop({ type: String, required: true })
+//   postPermlink: string;
+//
+//   @Prop({ type: String })
+//   app: string;
+//
+//   @Prop({
+//     type: String,
+//     default: PAYMENT_STATUS.ACTIVE,
+//     enum: Object.values(PAYMENT_STATUS),
+//   })
+//   status: string;
+// }
+//
+// export const CampaignPaymentSchema =
+//   SchemaFactory.createForClass(CampaignPayment);
 
 @Schema({ timestamps: true })
 export class Campaign {
@@ -223,8 +223,8 @@ export class Campaign {
   @Prop({ type: Number, max: 300, default: 0 })
   frequencyAssign: number;
 
-  @Prop({ type: [CampaignPaymentSchema], default: [] })
-  payments: CampaignPaymentDocumentType[];
+  // @Prop({ type: [CampaignPaymentSchema], default: [] })
+  // payments: CampaignPaymentDocumentType[];
 
   @Prop(
     raw({

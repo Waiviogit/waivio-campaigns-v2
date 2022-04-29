@@ -58,7 +58,7 @@ export const PAYOUT_TOKEN = Object.freeze({
 });
 
 export const PAYOUT_TOKEN_PRECISION = Object.freeze({
-  HIVE: 8,
+  HIVE: 3,
   WAIV: 8,
 });
 

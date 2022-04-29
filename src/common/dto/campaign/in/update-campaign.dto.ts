@@ -11,7 +11,7 @@ export class UpdateCampaignDto extends PartialType(
     'users',
     'activationPermlink',
     'deactivationPermlink',
-    'payments',
+    // 'payments',
     'stoppedAt',
     'rewardInUSD',
     'createdAt',
