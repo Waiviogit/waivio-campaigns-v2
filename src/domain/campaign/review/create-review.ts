@@ -2,10 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   APP_PROVIDE,
   CAMPAIGN_PAYMENT,
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   GUEST_BNF_ACC,
   PAYOUT_TOKEN_PRECISION,
+  REDIS_DAYS_TO_SUSPEND,
+  REDIS_EXPIRE,
   REFERRAL_TYPES,
   RESERVATION_STATUS,
   REVIEW_PROVIDE,
@@ -20,6 +23,7 @@ import * as moment from 'moment';
 import { CampaignHelperInterface } from '../interface';
 import {
   CampaignPaymentType,
+  CreateCampaignPaymentsType,
   CreateReviewType,
   GetBeneficiariesPaymentsType,
   GetCampaignPaymentsType,
@@ -37,6 +41,7 @@ import { UserDocumentType } from '../../../persistance/user/types';
 import { CreateReviewInterface, FraudDetectionInterface } from './interface';
 import { ObjectId } from 'mongoose';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
+import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -53,6 +58,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly fraudDetection: FraudDetectionInterface,
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
+    private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
   ) {}
 
   async parseReview({
@@ -120,6 +127,60 @@ export class CreateReview implements CreateReviewInterface {
       campaign,
       host,
       isGuest: !!botName,
+    });
+
+    await this.createCampaignPayments({
+      payments,
+      campaign,
+      app,
+      botName,
+      reviewPermlink,
+      title,
+    });
+  }
+
+  async createCampaignPayments({
+    payments,
+    campaign,
+    title,
+    app,
+    reviewPermlink,
+    botName,
+  }: CreateCampaignPaymentsType): Promise<void> {
+    const beneficiaries = _.chain(payments)
+      .filter({ type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE })
+      .map((bnf) => ({ account: bnf.account, weight: bnf.weight }))
+      .value();
+
+    for (const payment of payments) {
+      const result = await this.campaignPaymentRepository.create({
+        amount: payment.amount,
+        type: payment.type,
+        payoutToken: campaign.payoutToken,
+        sponsor: campaign.guideName,
+        userName: payment.account,
+        beneficiaries,
+        campaignId: campaign.campaignId,
+        title,
+        app,
+        reviewPermlink,
+        mainObject: campaign.requiredObject,
+        reviewObject: campaign.userReservationObject,
+        isDemoAccount: !!botName,
+        ...(payment.commission && { commission: payment.commission }),
+      });
+      if (result) {
+        await this.campaignHelper.setExpireCampaignPayment(
+          result._id,
+          campaign.campaignId,
+        );
+      }
+    }
+    await this.campaignHelper.setExpireSuspendWarning({
+      userReservationPermlink: campaign.userReservationPermlink,
+      campaignId: campaign.campaignId,
+      expire: REDIS_EXPIRE.CAMPAIGN_SUSPEND_WARNING_5,
+      daysToSuspend: REDIS_DAYS_TO_SUSPEND.FIVE,
     });
   }
 

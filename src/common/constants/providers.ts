@@ -60,6 +60,10 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
   GUIDE_CAMPAIGNS: 'GuideCampaigns',
 });
 
+export const CAMPAIGN_PAYMENT_PROVIDE = Object.freeze({
+  REPOSITORY: 'CampaignPaymentRepository',
+});
+
 export const RESERVATION_PROVIDE = Object.freeze({
   ASSIGN: 'AssignReservation',
   REJECT: 'RejectReservation',

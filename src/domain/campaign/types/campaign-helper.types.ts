@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongoose';
+
 export type GetCompletedUsersInSameCampaignsType = {
   guideName: string;
   requiredObject: string;
@@ -26,4 +28,11 @@ export type SetExpireAssignType = {
   requiredObject: string;
   name: string;
   reservationTime: number;
+};
+
+export type SetExpireSuspendWarningType = {
+  userReservationPermlink: string;
+  expire: number;
+  daysToSuspend: string;
+  campaignId: ObjectId;
 };

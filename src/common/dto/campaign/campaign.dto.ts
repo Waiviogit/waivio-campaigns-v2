@@ -20,7 +20,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
-  PAYMENT_STATUS,
+ // PAYMENT_STATUS,
   PAYOUT_TOKEN,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,

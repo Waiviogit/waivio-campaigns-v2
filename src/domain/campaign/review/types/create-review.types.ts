@@ -107,3 +107,12 @@ export type UpdateUserStatusType = {
   fraud: boolean;
   fraudCodes: string[];
 };
+
+export type CreateCampaignPaymentsType = {
+  payments: CampaignPaymentType[];
+  campaign: ReviewCampaignType;
+  title: string;
+  app: string;
+  reviewPermlink: string;
+  botName?: string;
+};

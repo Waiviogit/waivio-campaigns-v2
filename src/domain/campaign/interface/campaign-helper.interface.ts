@@ -3,6 +3,7 @@ import {
   GetCompletedUsersInSameCampaignsOutType,
   GetCompletedUsersInSameCampaignsType,
   SetExpireAssignType,
+  SetExpireSuspendWarningType,
 } from '../types';
 
 export interface CampaignHelperInterface {
@@ -24,4 +25,14 @@ export interface CampaignHelperInterface {
   getCurrencyInUSD(currency: string, amount: number): Promise<number>;
   delExpireAssign(reservationPermlink: string): Promise<void>;
   checkOnHoldStatus(activationPermlink: string): Promise<void>;
+  setExpireCampaignPayment(
+    paymentId: ObjectId,
+    campaignId: ObjectId,
+  ): Promise<void>;
+  setExpireSuspendWarning({
+    userReservationPermlink,
+    expire,
+    daysToSuspend,
+    campaignId,
+  }: SetExpireSuspendWarningType): Promise<void>;
 }

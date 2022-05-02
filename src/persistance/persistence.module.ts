@@ -8,6 +8,7 @@ import { WobjectSubscriptionsPersistenceModule } from './wobject-subscriptions/w
 import { PostPersistenceModule } from './post/post.persistence.module';
 import { AppPersistenceModule } from './app/app.persistence.module';
 import { CurrencyRatesPersistenceModule } from './currency-rates/currency-rates.persistence.module';
+import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-payment.persistence.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CurrencyRatesPersistenceModule } from './currency-rates/currency-rates.
     PostPersistenceModule,
     AppPersistenceModule,
     CurrencyRatesPersistenceModule,
+    CampaignPaymentPersistenceModule,
   ],
   exports: [
     CampaignPersistenceModule,
@@ -29,6 +31,7 @@ import { CurrencyRatesPersistenceModule } from './currency-rates/currency-rates.
     PostPersistenceModule,
     AppPersistenceModule,
     CurrencyRatesPersistenceModule,
+    CampaignPaymentPersistenceModule,
   ],
 })
 export class PersistenceModule {}

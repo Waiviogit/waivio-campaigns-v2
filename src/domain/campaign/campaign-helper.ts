@@ -11,6 +11,7 @@ import {
   ENGINE_MARKETPOOLS,
   HIVE_ENGINE_PROVIDE,
   PAYOUT_TOKEN,
+  REDIS_EXPIRE,
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
@@ -23,6 +24,7 @@ import {
   GetCompletedUsersInSameCampaignsOutType,
   GetCompletedUsersInSameCampaignsType,
   SetExpireAssignType,
+  SetExpireSuspendWarningType,
 } from './types';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import axios from 'axios';
@@ -50,6 +52,30 @@ export class CampaignHelper implements CampaignHelperInterface {
       `${REDIS_KEY.CAMPAIGN_EXPIRE}${_id.toString()}`,
       expire,
       '',
+    );
+  }
+
+  async setExpireCampaignPayment(
+    paymentId: ObjectId,
+    campaignId: ObjectId,
+  ): Promise<void> {
+    await this.campaignRedisClient.setex(
+      `${REDIS_KEY.CAMPAIGN_PAYMENT_EXPIRE}${paymentId.toString()}`,
+      REDIS_EXPIRE.CAMPAIGN_PAYMENT_EXPIRE,
+      campaignId.toString(),
+    );
+  }
+
+  async setExpireSuspendWarning({
+    userReservationPermlink,
+    expire,
+    daysToSuspend,
+    campaignId,
+  }: SetExpireSuspendWarningType): Promise<void> {
+    await this.campaignRedisClient.setex(
+      `${REDIS_KEY.CAMPAIGN_SUSPEND_WARNING}${userReservationPermlink}${daysToSuspend}`,
+      expire,
+      campaignId.toString(),
     );
   }
 

@@ -1,12 +1,14 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
-import BigNumber from 'bignumber.js';
-import { ObjectId, Types } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 import { CAMPAIGN_PAYMENT, PAYOUT_TOKEN } from '../../common/constants';
 import { CampaignPaymentBeneficiariesType } from './types';
+import BigNumber from 'bignumber.js';
 
 @Schema({ versionKey: false })
 export class CampaignPayment {
+  _id: mongoose.ObjectId;
+
   @Prop({ type: String, required: true, index: true })
   userName: string;
 
@@ -16,7 +18,7 @@ export class CampaignPayment {
   @Prop({ type: String, enum: Object.values(CAMPAIGN_PAYMENT), required: true })
   type: string;
 
-  @Prop({ type: Types.Decimal128, required: true })
+  @Prop({ type: mongoose.Schema.Types.Decimal128, required: true })
   amount: BigNumber;
 
   @Prop({
@@ -37,13 +39,13 @@ export class CampaignPayment {
   )
   beneficiaries?: CampaignPaymentBeneficiariesType;
 
-  @Prop({ type: Types.ObjectId })
-  campaignId?: ObjectId;
+  @Prop({ type: mongoose.Types.ObjectId })
+  campaignId?: mongoose.ObjectId;
 
   @Prop({ type: String })
   transactionId?: string;
 
-  @Prop({ type: Types.Decimal128 })
+  @Prop({ type: mongoose.Schema.Types.Decimal128 })
   commission?: BigNumber;
 
   @Prop({ type: String })
