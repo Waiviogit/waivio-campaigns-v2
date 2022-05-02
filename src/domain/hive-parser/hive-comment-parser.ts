@@ -2,9 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 
 import { parseJSON } from '../../common/helpers';
-import { HiveCommentOptionsType, HiveCommentType } from '../../common/types';
-import { HiveOperationParser } from './hive-operation-parser';
-import { MetadataType } from './types';
+import { HiveCommentType } from '../../common/types';
+import { HiveCommentParseType, MetadataType } from './types';
 import { parserValidator } from './validators';
 import {
   CAMPAIGN_PROVIDE,
@@ -22,9 +21,10 @@ import {
   RejectReservationInterface,
 } from '../campaign/reservation/interface';
 import { CreateReviewInterface } from '../campaign/review/interface';
+import { HiveCommentParserInterface } from './interface';
 
 @Injectable()
-export class HiveCommentParser extends HiveOperationParser {
+export class HiveCommentParser implements HiveCommentParserInterface {
   constructor(
     @Inject(CAMPAIGN_PROVIDE.ACTIVATE_CAMPAIGN)
     private readonly campaignActivation: CampaignActivationInterface,
@@ -38,14 +38,9 @@ export class HiveCommentParser extends HiveOperationParser {
     private readonly guideRejectReservation: GuideRejectReservationInterface,
     @Inject(REVIEW_PROVIDE.CREATE)
     private readonly createReview: CreateReviewInterface,
-  ) {
-    super();
-  }
+  ) {}
 
-  async parse(
-    comment: HiveCommentType,
-    options: HiveCommentOptionsType,
-  ): Promise<void> {
+  async parse({ comment, options }: HiveCommentParseType): Promise<void> {
     const beneficiaries = _.get(
       options,
       '[1].extensions[0][1].beneficiaries',

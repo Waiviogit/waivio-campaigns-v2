@@ -39,6 +39,7 @@ export const NOTIFICATIONS_PROVIDE = Object.freeze({
 export const HIVE_PARSER_PROVIDE = Object.freeze({
   MAIN: 'HiveMainParser',
   COMMENT: 'HiveCommentParser',
+  TRANSFER: 'HiveTransferParser',
 });
 
 export const HIVE_PROVIDE = Object.freeze({
@@ -58,6 +59,7 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
   DEACTIVATE_CAMPAIGN: 'DeactivateCampaign',
   CAMPAIGN_HELPER: 'CampaignHelper',
   GUIDE_CAMPAIGNS: 'GuideCampaigns',
+  DEBT_OBLIGATIONS: 'DebtObligations',
 });
 
 export const CAMPAIGN_PAYMENT_PROVIDE = Object.freeze({

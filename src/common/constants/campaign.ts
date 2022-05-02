@@ -81,3 +81,7 @@ export const CAMPAIGN_PAYMENT = {
 
 export const SECONDS_IN_DAY = 24 * 3600;
 export const GPS_DIFF = 0.01;
+
+export const CAMPAIGN_TRANSFER_ID = Object.freeze({
+  CAMPAIGN_REWARD: 'campaignReward',
+});

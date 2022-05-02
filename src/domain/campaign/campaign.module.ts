@@ -4,6 +4,7 @@ import {
   CampaignDeactivationProvider,
   CampaignProviderHelper,
   CreateCampaignProvider,
+  DebtObligationsProvider,
   DeleteCampaignProvider,
   GuideCampaignsProvider,
   UpdateCampaignProvider,
@@ -36,6 +37,7 @@ import { WobjectModule } from '../wobject/wobject.module';
     GuideRejectReservationProvider,
     CreateReviewProvider,
     FraudDetectionProvider,
+    DebtObligationsProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -49,6 +51,7 @@ import { WobjectModule } from '../wobject/wobject.module';
     GuideRejectReservationProvider,
     CreateReviewProvider,
     FraudDetectionProvider,
+    DebtObligationsProvider,
   ],
 })
 export class CampaignModule {}

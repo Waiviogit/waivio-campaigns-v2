@@ -1,8 +1,5 @@
-import { HiveCommentType, HiveCommentOptionsType } from '../../../common/types';
+import { HiveCommentParseType } from '../types';
 
 export interface HiveCommentParserInterface {
-  parse(
-    comment: HiveCommentType,
-    options: HiveCommentOptionsType,
-  ): Promise<void>;
+  parse({ comment, options }: HiveCommentParseType): Promise<void>;
 }

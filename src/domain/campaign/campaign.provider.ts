@@ -7,7 +7,8 @@ import { UpdateCampaign } from './update-campaign';
 import { DeleteCampaign } from './delete-campaign';
 import { CampaignActivation } from './campaign-activation';
 import { CampaignDeactivation } from './campaign-deactivation';
-import {GuideCampaigns} from "./guide-campaigns";
+import { GuideCampaigns } from './guide-campaigns';
+import { DebtObligations } from './debt-obligations';
 
 export const CreateCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CREATE_CAMPAIGN,
@@ -42,4 +43,9 @@ export const CampaignDeactivationProvider: Provider = {
 export const GuideCampaignsProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.GUIDE_CAMPAIGNS,
   useClass: GuideCampaigns,
+};
+
+export const DebtObligationsProvider: Provider = {
+  provide: CAMPAIGN_PROVIDE.DEBT_OBLIGATIONS,
+  useClass: DebtObligations,
 };

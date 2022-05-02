@@ -73,6 +73,10 @@ class ConfigService {
     return this.getValue('API_KEY', true);
   }
 
+  public getAntiApp(): string {
+    return this.getValue('ANTI_APP', true);
+  }
+
   public getNotificationsRoute(): string {
     return `https://${this.getValue('APP_HOST', true)}${this.getValue(
       'NOTIFICATIONS_SET',
