@@ -1,5 +1,6 @@
 export const REDIS_KEY = Object.freeze({
   LAST_BLOCK_MAIN: 'campaign_v2_last_block',
+  LAST_BLOCK_ENGINE: 'campaign_v2_engine_block',
   CAMPAIGN_EXPIRE: 'expire:campaign:',
   ASSIGN_EXPIRE: 'expire:assign:',
   CAMPAIGN_PAYMENT_EXPIRE: 'expire:campaignPayment:',

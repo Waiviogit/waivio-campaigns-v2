@@ -8,7 +8,12 @@ import {
   ENGINE_METHOD,
   HIVE_ENGINE_NODES,
 } from '../../common/constants';
-import { EngineProxyType, EngineQueryType, MarketPoolType } from './types';
+import {
+  EngineBlockType,
+  EngineProxyType,
+  EngineQueryType,
+  MarketPoolType,
+} from './types';
 import { HiveEngineClientInterface } from './interface';
 
 @Injectable()
@@ -82,5 +87,13 @@ export class HiveEngineClient implements HiveEngineClientInterface {
         query,
       },
     })) as MarketPoolType;
+  }
+
+  async getBlock(blockNumber: number): Promise<EngineBlockType> {
+    return (await this.engineProxy({
+      method: ENGINE_METHOD.GET_BLOCK_INFO,
+      endpoint: ENGINE_ENDPOINT.BLOCKCHAIN,
+      params: { blockNumber },
+    })) as EngineBlockType;
   }
 }

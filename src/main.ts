@@ -4,6 +4,7 @@ import { configService } from './common/config';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { BlockProcessor } from './domain/processor/block-processor';
+import { EngineProcessor } from './domain/processor/engine-processor';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -22,8 +23,10 @@ async function bootstrap(): Promise<void> {
   SwaggerModule.setup('campaigns-v2/docs', app, document);
 
   const blockProcessor = app.get(BlockProcessor);
+  const engineProcessor = app.get(EngineProcessor);
 
   await app.listen(configService.getPort());
-  await blockProcessor.start();
+  engineProcessor.start();
+  blockProcessor.start();
 }
 bootstrap();

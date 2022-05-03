@@ -9,11 +9,12 @@ export const HIVE_ENGINE_NODES = [
 export const ENGINE_METHOD = Object.freeze({
   FIND: 'find',
   FIND_ONE: 'findOne',
+  GET_BLOCK_INFO: 'getBlockInfo',
 });
 
 export const ENGINE_ENDPOINT = Object.freeze({
   CONTRACTS: '/contracts',
-  BLOCKS: '/blocks',
+  BLOCKCHAIN: '/blockchain',
 });
 
 export const ENGINE_ID = Object.freeze({

@@ -42,6 +42,10 @@ export const HIVE_PARSER_PROVIDE = Object.freeze({
   TRANSFER: 'HiveTransferParser',
 });
 
+export const ENGINE_PARSER_PROVIDE = Object.freeze({
+  MAIN: 'EngineMainParser',
+});
+
 export const HIVE_PROVIDE = Object.freeze({
   CLIENT: 'HiveClient',
 });

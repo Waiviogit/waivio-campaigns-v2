@@ -23,7 +23,7 @@ export class HiveMainParser implements HiveMainParserInterface {
     private readonly transfer: HiveTransferParserInterface,
   ) {}
 
-  async parseHiveBlock(block: HiveBlockType): Promise<void> {
+  async parseBlock(block: HiveBlockType): Promise<void> {
     const { transactions, timestamp } = block;
     process.env.BLOCK_MAIN_NUMBER = String(transactions[0].block_num);
     process.env.BLOCK_MAIN_TIMESTAMP = timestamp;

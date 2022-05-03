@@ -7,9 +7,10 @@ export type EngineQueryType = {
 };
 
 export type EngineParamsType = {
-  contract: string;
-  table: string;
+  contract?: string;
+  table?: string;
   query?: object;
+  blockNumber?: number;
 };
 
 export type EngineProxyType = EngineQueryType & {
@@ -28,4 +29,38 @@ export type MarketPoolType = {
   totalShares: string;
   precision: string;
   creator: string;
+};
+
+export type EngineBlockType = {
+  _id: number;
+  blockNumber: number;
+  refHiveBlockNumber: number;
+  refHiveBlockId: string;
+  prevRefHiveBlockId: string;
+  previousHash: string;
+  previousDatabaseHash: string;
+  timestamp: string;
+  transactions: EngineTransactionType[];
+  virtualTransactions: unknown[];
+  hash: string;
+  databaseHash: string;
+  merkleRoot: string;
+  round: number;
+  roundHash: string;
+  witness: string;
+  signingKey: string;
+  roundSignature: string;
+};
+
+export type EngineTransactionType = {
+  refHiveBlockNumber: number;
+  transactionId: string;
+  sender: string;
+  contract: string;
+  action: string;
+  payload: string;
+  executedCodeHash: string;
+  hash: string;
+  databaseHash: string;
+  logs: string;
 };

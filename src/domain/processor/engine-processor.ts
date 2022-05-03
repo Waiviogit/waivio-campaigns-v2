@@ -1,30 +1,29 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-
 import {
-  HIVE_PARSER_PROVIDE,
-  HIVE_PROVIDE,
+  ENGINE_PARSER_PROVIDE,
+  HIVE_ENGINE_PROVIDE,
   REDIS_KEY,
   REDIS_PROVIDE,
 } from '../../common/constants';
-import { DEFAULT_START_BLOCK_CAMPAIGN } from './constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
-import { HiveClientInterface } from '../../services/hive-api/interface';
-import { HiveMainParserInterface } from '../hive-parser/interface';
+import { DEFAULT_START_ENGINE_CAMPAIGN } from './constants';
+import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
+import { EngineMainParserInterface } from '../engine-parser/interface';
 
 @Injectable()
-export class BlockProcessor {
+export class EngineProcessor {
   private currentBlock: number;
-  private readonly logger = new Logger(BlockProcessor.name);
-  redisBlockKey: string = REDIS_KEY.LAST_BLOCK_MAIN;
-  startDefaultBlock: number = DEFAULT_START_BLOCK_CAMPAIGN;
+  private readonly logger = new Logger(EngineProcessor.name);
+  redisBlockKey: string = REDIS_KEY.LAST_BLOCK_ENGINE;
+  startDefaultBlock: number = DEFAULT_START_ENGINE_CAMPAIGN;
 
   constructor(
     @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
     private readonly redisBlockClient: RedisClientInterface,
-    @Inject(HIVE_PROVIDE.CLIENT)
-    private readonly hiveClient: HiveClientInterface,
-    @Inject(HIVE_PARSER_PROVIDE.MAIN)
-    private readonly hiveParser: HiveMainParserInterface,
+    @Inject(HIVE_ENGINE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveEngineClientInterface,
+    @Inject(ENGINE_PARSER_PROVIDE.MAIN)
+    private readonly hiveParser: EngineMainParserInterface,
   ) {}
 
   async start(): Promise<void> {
