@@ -106,6 +106,7 @@ export type UpdateUserStatusType = {
   userId: ObjectId;
   fraud: boolean;
   fraudCodes: string[];
+  reviewPermlink: string;
 };
 
 export type CreateCampaignPaymentsType = {
@@ -115,4 +116,10 @@ export type CreateCampaignPaymentsType = {
   app: string;
   reviewPermlink: string;
   botName?: string;
+};
+
+export type UpdateReviewStatusesType = {
+  campaign: ReviewCampaignType;
+  images: string[];
+  reviewPermlink: string;
 };

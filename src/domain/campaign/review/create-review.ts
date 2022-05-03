@@ -32,6 +32,7 @@ import {
   ParseReviewType,
   ReviewCampaignType,
   ReviewCommissionsType,
+  UpdateReviewStatusesType,
   UpdateUserStatusType,
   ValidateReviewType,
 } from './types';
@@ -120,7 +121,7 @@ export class CreateReview implements CreateReviewInterface {
       (object) => campaign.userReservationObject === object,
     );
     if (_.isEmpty(objectPermlink)) return;
-    await this.updateReviewStatuses(campaign, images);
+    await this.updateReviewStatuses({ campaign, images, reviewPermlink });
 
     const payments = await this.getCampaignPayments({
       beneficiaries,
@@ -184,20 +185,22 @@ export class CreateReview implements CreateReviewInterface {
     });
   }
 
-  private async updateReviewStatuses(
-    campaign: ReviewCampaignType,
-    images: string[],
-  ): Promise<void> {
+  private async updateReviewStatuses({
+    campaign,
+    images,
+    reviewPermlink,
+  }: UpdateReviewStatusesType): Promise<void> {
     const { fraud, fraudCodes } = await this.fraudDetection.detectFraud({
       campaign,
       images,
     });
-    //TODO add reviewPermlink
+
     await this.updateUserStatus({
       campaignId: campaign.campaignId,
       userId: campaign.userId,
       fraud,
       fraudCodes,
+      reviewPermlink,
     });
 
     await this.updateCampaignStatus(campaign.campaignId);
@@ -239,6 +242,7 @@ export class CreateReview implements CreateReviewInterface {
     userId,
     fraud,
     fraudCodes,
+    reviewPermlink,
   }: UpdateUserStatusType): Promise<void> {
     await this.campaignRepository.updateOne({
       filter: { _id: campaignId, users: { $elemMatch: { _id: userId } } },
@@ -246,6 +250,7 @@ export class CreateReview implements CreateReviewInterface {
         $set: {
           'users.$.status': RESERVATION_STATUS.COMPLETED,
           'users.$.completedAt': moment.utc().format(),
+          'users.$.reviewPermlink': reviewPermlink,
           'users.$.fraudSuspicion': fraud,
           'users.$.fraudCodes': fraudCodes,
         },

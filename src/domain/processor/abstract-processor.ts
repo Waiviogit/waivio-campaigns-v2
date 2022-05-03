@@ -1,31 +1,34 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-
-import {
-  HIVE_PARSER_PROVIDE,
-  HIVE_PROVIDE,
-  REDIS_KEY,
-  REDIS_PROVIDE,
-} from '../../common/constants';
+import { Logger } from '@nestjs/common';
+import { REDIS_KEY } from '../../common/constants';
 import { DEFAULT_START_BLOCK_CAMPAIGN } from './constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { HiveClientInterface } from '../../services/hive-api/interface';
 import { HiveMainParserInterface } from '../hive-parser/interface';
+import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
+import { EngineMainParserInterface } from '../engine-parser/interface';
+import { HiveBlockType } from '../../common/types';
+import { EngineBlockType } from '../../services/hive-engine-api/types';
+import { AbstractProcessorInterface } from './interface';
 
-@Injectable()
-export class BlockProcessor {
+export abstract class AbstractProcessor implements AbstractProcessorInterface {
   private currentBlock: number;
-  private readonly logger = new Logger(BlockProcessor.name);
+  logger = new Logger(AbstractProcessor.name);
   redisBlockKey: string = REDIS_KEY.LAST_BLOCK_MAIN;
   startDefaultBlock: number = DEFAULT_START_BLOCK_CAMPAIGN;
 
-  constructor(
-    @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
-    private readonly redisBlockClient: RedisClientInterface,
-    @Inject(HIVE_PROVIDE.CLIENT)
-    private readonly hiveClient: HiveClientInterface,
-    @Inject(HIVE_PARSER_PROVIDE.MAIN)
-    private readonly hiveParser: HiveMainParserInterface,
-  ) {}
+  redisBlockClient: RedisClientInterface;
+  hiveClient: HiveClientInterface | HiveEngineClientInterface;
+  hiveParser: HiveMainParserInterface | EngineMainParserInterface;
+
+  protected constructor(
+    redisBlockClient: RedisClientInterface,
+    hiveClient: HiveClientInterface | HiveEngineClientInterface,
+    hiveParser: HiveMainParserInterface | EngineMainParserInterface,
+  ) {
+    this.redisBlockClient = redisBlockClient;
+    this.hiveClient = hiveClient;
+    this.hiveParser = hiveParser;
+  }
 
   async start(): Promise<void> {
     await this.loadNextBlock();
@@ -57,7 +60,9 @@ export class BlockProcessor {
       return true;
     }
     if (block && block.transactions && block.transactions[0]) {
-      await this.hiveParser.parseBlock(block);
+      await this.hiveParser.parseBlock(
+        block as HiveBlockType & EngineBlockType,
+      );
       return true;
     }
     return false;

@@ -94,6 +94,11 @@ export class CampaignUserDto {
   reservationPermlink: string;
 
   @IsString()
+  @IsOptional()
+  @ApiProperty({ type: String })
+  reviewPermlink?: string;
+
+  @IsString()
   @ApiProperty({ type: String })
   referralServer: string;
 

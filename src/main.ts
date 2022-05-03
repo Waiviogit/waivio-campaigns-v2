@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { configService } from './common/config';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { BlockProcessor } from './domain/processor/block-processor';
+import { HiveProcessor } from './domain/processor/hive-processor';
 import { EngineProcessor } from './domain/processor/engine-processor';
 
 async function bootstrap(): Promise<void> {
@@ -22,11 +22,11 @@ async function bootstrap(): Promise<void> {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('campaigns-v2/docs', app, document);
 
-  const blockProcessor = app.get(BlockProcessor);
+  const hiveProcessor = app.get(HiveProcessor);
   const engineProcessor = app.get(EngineProcessor);
 
   await app.listen(configService.getPort());
   engineProcessor.start();
-  blockProcessor.start();
+  hiveProcessor.start();
 }
 bootstrap();

@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 
-import { EngineMainParserProvider } from './engine-parser.provider';
+import {
+  EngineMainParserProvider,
+  EngineTransferParserProvider,
+} from './engine-parser.provider';
+import { CampaignModule } from '../campaign/campaign.module';
 
 @Module({
-  providers: [EngineMainParserProvider],
-  exports: [EngineMainParserProvider],
+  imports: [CampaignModule],
+  providers: [EngineMainParserProvider, EngineTransferParserProvider],
+  exports: [EngineMainParserProvider, EngineTransferParserProvider],
 })
 export class EngineParserModule {}

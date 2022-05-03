@@ -33,6 +33,9 @@ export class CampaignUser {
   reservationPermlink: string;
 
   @Prop({ type: String })
+  reviewPermlink?: string;
+
+  @Prop({ type: String })
   referralServer: string;
 
   @Prop({ type: String })

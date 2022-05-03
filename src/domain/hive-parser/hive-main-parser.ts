@@ -49,23 +49,7 @@ export class HiveMainParser implements HiveMainParserInterface {
             });
             break;
         }
-        // if (this.hasOwnProperty(parserType)) {
-        //   await this[parserType].parse(operation[1], transaction.operations[1]);
-        // }
       }
-      //await this.processVotes();
     }
   }
-
-  // private vote(voteData: HiveVoteType): void {
-  //   this.votes.push(voteData);
-  // }
-  // private async processVotes(): Promise<void> {
-  //   // this._votes = [];
-  // }
-  // private async transfer(transferData: HiveTransferType): Promise<void> {}
-  // private async custom_json(customData: HiveCustomJsonType): Promise<void> {}
-  // private async account_update(
-  //   accountUpdateData: HiveAccountUpdateType,
-  // ): Promise<void> {}
 }
