@@ -199,7 +199,7 @@ export class Campaign {
   )
   userRequirements: UserRequirementsType;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, index: true })
   requiredObject: string;
 
   @Prop({ type: [String], validate: /\S+/, required: true })

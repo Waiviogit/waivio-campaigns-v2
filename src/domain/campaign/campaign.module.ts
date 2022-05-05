@@ -21,6 +21,7 @@ import {
   FraudDetectionProvider,
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
+import { RewardsAllProvider } from './rewards/rewards.provider';
 
 @Module({
   imports: [PersistenceModule, NotificationsModule, WobjectModule],
@@ -38,6 +39,7 @@ import { WobjectModule } from '../wobject/wobject.module';
     CreateReviewProvider,
     FraudDetectionProvider,
     DebtObligationsProvider,
+    RewardsAllProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -52,6 +54,7 @@ import { WobjectModule } from '../wobject/wobject.module';
     CreateReviewProvider,
     FraudDetectionProvider,
     DebtObligationsProvider,
+    RewardsAllProvider,
   ],
 })
 export class CampaignModule {}

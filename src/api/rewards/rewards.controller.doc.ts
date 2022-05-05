@@ -1,12 +1,14 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
+import {
+  RewardAllMainOutDto,
+  RewardAllOutDto,
+} from '../../common/dto/rewards/out';
 
-import { ValidationResponseDto } from '../../common/dto/campaign/out';
-
-export class ReservationControllerDoc {
+export class RewardsControllerDoc {
   static main(): ClassDecorator {
     return applyDecorators(
-      ApiTags('reservation'),
+      ApiTags('rewards'),
       ApiResponse({
         status: HttpStatus.FORBIDDEN,
         description: 'Forbidden',
@@ -22,25 +24,25 @@ export class ReservationControllerDoc {
     );
   }
 
-  static getValidateAssign(): MethodDecorator {
+  static getAllRewards(): MethodDecorator {
     return applyDecorators(
       ApiOperation({
-        summary: 'endpoint for validate campaign assign',
+        summary: 'get all rewards',
       }),
       ApiResponse({
         status: HttpStatus.OK,
-        type: ValidationResponseDto,
+        type: [RewardAllMainOutDto],
       }),
     );
   }
-  static getValidateReject(): MethodDecorator {
+  static getAllRewardsByRequiredObject(): MethodDecorator {
     return applyDecorators(
       ApiOperation({
-        summary: 'endpoint for validate reservation reject',
+        summary: 'get rewards by required object',
       }),
       ApiResponse({
         status: HttpStatus.OK,
-        type: ValidationResponseDto,
+        type: [RewardAllOutDto],
       }),
     );
   }

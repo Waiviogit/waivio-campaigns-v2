@@ -191,7 +191,7 @@ class ReservationTimetableDto {
   sunday: boolean;
 }
 
-class RequirementsDto {
+export class RequirementsDto {
   @IsNumber()
   @ApiProperty({ type: Number })
   minPhotos: number;
@@ -202,7 +202,7 @@ class RequirementsDto {
   receiptPhoto: boolean;
 }
 
-class UserRequirementsDto {
+export class UserRequirementsDto {
   @IsNumber()
   @ApiProperty({ type: Number })
   minPosts: number;

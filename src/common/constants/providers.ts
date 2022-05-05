@@ -81,3 +81,7 @@ export const REVIEW_PROVIDE = Object.freeze({
   CREATE: 'CreateReview',
   FRAUD: 'FraudDetection',
 });
+
+export const REWARDS_PROVIDE = Object.freeze({
+  ALL: 'RewardsAll',
+});

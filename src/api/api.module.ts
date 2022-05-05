@@ -7,10 +7,22 @@ import { CampaignsController } from './campaigns/campaigns.controller';
 import { CampaignsService } from './campaigns/campaigns.service';
 import { ReservationController } from './reservation/reservation.controller';
 import { ReservationService } from './reservation/reservation.service';
+import { RewardsController } from './rewards/rewards.controller';
+import { RewardsService } from './rewards/rewards.service';
 
 @Module({
   imports: [DomainModule, PersistenceModule],
-  controllers: [CampaignController, CampaignsController, ReservationController],
-  providers: [CampaignService, CampaignsService, ReservationService],
+  controllers: [
+    CampaignController,
+    CampaignsController,
+    ReservationController,
+    RewardsController,
+  ],
+  providers: [
+    CampaignService,
+    CampaignsService,
+    ReservationService,
+    RewardsService,
+  ],
 })
 export class ApiModule {}

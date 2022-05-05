@@ -11,3 +11,4 @@ export * from './notifications';
 export * from './app-constants';
 export * from './currencies';
 export * from './hive-engine';
+export * from './reg-exp';
