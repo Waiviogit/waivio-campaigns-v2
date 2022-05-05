@@ -5,6 +5,8 @@ import {
   Patch,
   UseGuards,
   Delete,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { CampaignControllerDocs } from './campaign.controller.doc';
 import {
@@ -23,6 +25,7 @@ import {
   UpdateCampaignOutDto,
   ValidationResponseDto,
 } from '../../common/dto/campaign/out';
+import { CampaignDto } from '../../common/dto/campaign/campaign.dto';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
@@ -54,6 +57,12 @@ export class CampaignController {
     @Body() deleteCampaignDto: DeleteCampaignDto,
   ): Promise<DeleteCampaignOutDto> {
     return this.campaignService.delete(deleteCampaignDto);
+  }
+
+  @Get(':_id')
+  @CampaignControllerDocs.getById()
+  async getCampaignById(@Param('_id') _id: string): Promise<CampaignDto> {
+    return this.campaignService.getCampaignById(_id);
   }
 
   @Post('activate')

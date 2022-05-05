@@ -104,4 +104,9 @@ export class CampaignService {
     }
     return { isValid };
   }
+
+  async getCampaignById(_id: string): Promise<CampaignDocumentType> {
+    const campaign = await this.campaignRepository.findCampaignById(_id);
+    return campaign;
+  }
 }

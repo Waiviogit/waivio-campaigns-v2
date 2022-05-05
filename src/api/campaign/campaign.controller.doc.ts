@@ -7,6 +7,7 @@ import {
   UpdateCampaignOutDto,
   ValidationResponseDto,
 } from '../../common/dto/campaign/out';
+import { CampaignDto } from '../../common/dto/campaign/campaign.dto';
 
 export class CampaignControllerDocs {
   static main(): ClassDecorator {
@@ -95,6 +96,21 @@ export class CampaignControllerDocs {
       }),
     );
   }
+
+  static getById(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'endpoint for get campaign by id',
+        description: 'campaign object',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        description: 'campaign',
+        type: CampaignDto,
+      }),
+    );
+  }
+
   static validateActivation(): MethodDecorator {
     return applyDecorators(
       ApiOperation({
