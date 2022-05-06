@@ -41,8 +41,8 @@ export abstract class AbstractProcessor implements AbstractProcessorInterface {
     const processed = await this.processBlock(this.currentBlock);
     const end = process.hrtime(start);
 
-    this.logger.log(`${this.currentBlock}: ${end[1] / 1000000}ms`);
     if (processed) {
+      this.logger.log(`${this.currentBlock}: ${end[1] / 1000000}ms`);
       await this.redisBlockClient.set(
         this.redisBlockKey,
         `${this.currentBlock + 1}`,
