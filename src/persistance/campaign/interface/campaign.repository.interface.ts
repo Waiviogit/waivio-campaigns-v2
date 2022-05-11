@@ -3,8 +3,8 @@ import {
   AggregateType,
   CampaignDocumentType,
   CampaignFindOneAndDeleteType,
-  CampaignFindOneType,
-  CampaignUpdateOneType,
+  CampaignFindType,
+  CampaignUpdateType,
   CreateCampaignType,
   DeleteCampaignType,
   findCampaignByStatusGuideNameActivation,
@@ -14,16 +14,21 @@ import { Aggregate, UpdateWriteOpResult } from 'mongoose';
 
 export interface CampaignRepositoryInterface {
   create(campaign: CreateCampaignType): Promise<CampaignDocumentType>;
+  find({
+    filter,
+    projection,
+    options,
+  }: CampaignFindType): Promise<CampaignDocumentType[]>;
   findOne({
     filter,
     projection,
     options,
-  }: CampaignFindOneType): Promise<CampaignDocumentType>;
+  }: CampaignFindType): Promise<CampaignDocumentType>;
   findOneAndUpdate({
     filter,
     update,
     options,
-  }: CampaignUpdateOneType): Promise<CampaignDocumentType>;
+  }: CampaignUpdateType): Promise<CampaignDocumentType>;
   findOneAndDelete({
     filter,
     options,
@@ -32,8 +37,13 @@ export interface CampaignRepositoryInterface {
     filter,
     update,
     options,
-  }: CampaignUpdateOneType): Promise<UpdateWriteOpResult>;
+  }: CampaignUpdateType): Promise<UpdateWriteOpResult>;
   aggregate({ pipeline }: AggregateType): Promise<Aggregate<Array<never>>>;
+  updateMany({
+    filter,
+    update,
+    options,
+  }: CampaignUpdateType): Promise<UpdateWriteOpResult>;
   /*
 Domain
  */

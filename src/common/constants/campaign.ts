@@ -3,8 +3,8 @@ export const CAMPAIGN_STATUS = Object.freeze({
   ACTIVE: 'active',
   INACTIVE: 'inactive',
   EXPIRED: 'expired',
-  DELETED: 'deleted',
-  PAYED: 'payed',
+  DELETED: 'deleted', // ?
+  PAYED: 'payed', // ?
   REACHED_LIMIT: 'reachedLimit',
   ON_HOLD: 'onHold',
   SUSPENDED: 'suspended',
@@ -100,3 +100,9 @@ export const GPS_DIFF = 0.01;
 export const CAMPAIGN_TRANSFER_ID = Object.freeze({
   CAMPAIGN_REWARD: 'campaignReward',
 });
+
+export const PAYABLE_DEADLINE = 30;
+export const PAYABLE_WARNING = 21;
+
+
+export const PAYABLE_DEBT_MAX_USD = 2;

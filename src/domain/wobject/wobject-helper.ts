@@ -17,6 +17,7 @@ import {
   ADMIN_ROLES,
   APP_PROVIDE,
   ARRAY_FIELDS,
+  CAMPAIGN_PROVIDE,
   CATEGORY_SWITCHER,
   FIELDS_NAMES,
   LANGUAGES,
@@ -31,12 +32,17 @@ import { WobjectRepositoryInterface } from '../../persistance/wobject/interface'
 import { AppRepositoryInterface } from '../../persistance/app/interface';
 import { configService } from '../../common/config';
 import { WobjectHelperInterface } from './interface';
+import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
+import { FilterQuery } from 'mongoose';
+import { CampaignDocumentType } from '../../persistance/campaign/types';
 
 @Injectable()
 export class WobjectHelper implements WobjectHelperInterface {
   constructor(
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
+    private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(APP_PROVIDE.REPOSITORY)
     private readonly appRepository: AppRepositoryInterface,
   ) {}
@@ -509,5 +515,23 @@ export class WobjectHelper implements WobjectHelperInterface {
       app,
     });
     return processed.name || wobject.default_name;
+  }
+
+  async updateCampaignsCountForManyCampaigns(
+    filter: FilterQuery<CampaignDocumentType>,
+    status: string,
+  ): Promise<void> {
+    const campaigns = await this.campaignRepository.find({
+      filter,
+      projection: { objects: 1, requiredObject: 1 },
+    });
+    if (_.isEmpty(campaigns)) return;
+    for (const campaign of campaigns) {
+      await this.wobjectRepository.updateCampaignsCount(
+        campaign._id.toString(),
+        status,
+        [campaign.requiredObject, ...campaign.objects],
+      );
+    }
   }
 }

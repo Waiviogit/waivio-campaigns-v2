@@ -8,13 +8,13 @@ import {
 import { CampaignDocumentType } from './campaign.types';
 import { Campaign } from '../campaign.schema';
 
-export type CampaignFindOneType = {
+export type CampaignFindType = {
   filter: FilterQuery<CampaignDocumentType>;
   projection?: object | string | string[];
   options?: QueryOptions;
 };
 
-export type CampaignUpdateOneType = {
+export type CampaignUpdateType = {
   filter: FilterQuery<CampaignDocumentType>;
   update: UpdateWithAggregationPipeline | UpdateQuery<CampaignDocumentType>;
   options?: QueryOptions;

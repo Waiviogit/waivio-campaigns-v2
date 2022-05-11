@@ -6,3 +6,4 @@ export * from './delete-campaign.interface';
 export * from './update-campaign.interface';
 export * from './guide-campaigns.interface';
 export * from './debt-obligations.interface';
+export * from './campaign-suspend.interface';

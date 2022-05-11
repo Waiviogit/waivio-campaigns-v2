@@ -3,6 +3,7 @@ import {
   CampaignActivationProvider,
   CampaignDeactivationProvider,
   CampaignProviderHelper,
+  CampaignSuspendProvider,
   CreateCampaignProvider,
   DebtObligationsProvider,
   DeleteCampaignProvider,
@@ -22,9 +23,15 @@ import {
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
 import { RewardsAllProvider } from './rewards/rewards.provider';
+import { CampaignPaymentModule } from '../campaign-payment/campaign-payment.module';
 
 @Module({
-  imports: [PersistenceModule, NotificationsModule, WobjectModule],
+  imports: [
+    PersistenceModule,
+    NotificationsModule,
+    WobjectModule,
+    CampaignPaymentModule,
+  ],
   providers: [
     CreateCampaignProvider,
     CampaignProviderHelper,
@@ -40,6 +47,7 @@ import { RewardsAllProvider } from './rewards/rewards.provider';
     FraudDetectionProvider,
     DebtObligationsProvider,
     RewardsAllProvider,
+    CampaignSuspendProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -55,6 +63,7 @@ import { RewardsAllProvider } from './rewards/rewards.provider';
     FraudDetectionProvider,
     DebtObligationsProvider,
     RewardsAllProvider,
+    CampaignSuspendProvider,
   ],
 })
 export class CampaignModule {}

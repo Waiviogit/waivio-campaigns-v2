@@ -65,6 +65,7 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
   CAMPAIGN_HELPER: 'CampaignHelper',
   GUIDE_CAMPAIGNS: 'GuideCampaigns',
   DEBT_OBLIGATIONS: 'DebtObligations',
+  SUSPEND: 'CampaignSuspend',
 });
 
 export const CAMPAIGN_PAYMENT_PROVIDE = Object.freeze({

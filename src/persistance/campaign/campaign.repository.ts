@@ -10,8 +10,8 @@ import {
   AggregateType,
   CampaignDocumentType,
   CampaignFindOneAndDeleteType,
-  CampaignFindOneType,
-  CampaignUpdateOneType,
+  CampaignFindType,
+  CampaignUpdateType,
   CreateCampaignType,
   DeleteCampaignType,
   findCampaignByStatusGuideNameActivation,
@@ -35,11 +35,23 @@ export class CampaignRepository implements CampaignRepositoryInterface {
     }
   }
 
+  async find({
+    filter,
+    projection,
+    options,
+  }: CampaignFindType): Promise<CampaignDocumentType[]> {
+    try {
+      return this.model.find(filter, projection, options).lean();
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
   async findOne({
     filter,
     projection,
     options,
-  }: CampaignFindOneType): Promise<CampaignDocumentType> {
+  }: CampaignFindType): Promise<CampaignDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {
@@ -50,7 +62,7 @@ export class CampaignRepository implements CampaignRepositoryInterface {
     filter,
     update,
     options,
-  }: CampaignUpdateOneType): Promise<CampaignDocumentType> {
+  }: CampaignUpdateType): Promise<CampaignDocumentType> {
     try {
       return this.model.findOneAndUpdate(filter, update, options).lean();
     } catch (error) {
@@ -72,9 +84,21 @@ export class CampaignRepository implements CampaignRepositoryInterface {
     filter,
     update,
     options,
-  }: CampaignUpdateOneType): Promise<UpdateWriteOpResult> {
+  }: CampaignUpdateType): Promise<UpdateWriteOpResult> {
     try {
       return this.model.updateOne(filter, update, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async updateMany({
+    filter,
+    update,
+    options,
+  }: CampaignUpdateType): Promise<UpdateWriteOpResult> {
+    try {
+      return this.model.updateMany(filter, update, options);
     } catch (error) {
       this.logger.error(error.message);
     }

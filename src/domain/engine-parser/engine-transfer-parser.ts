@@ -1,10 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
+
 import { EngineTransferParserType } from './types/engine-transfer-parser.types';
 import { parseJSON } from '../../common/helpers';
 import { CAMPAIGN_PROVIDE, CAMPAIGN_TRANSFER_ID } from '../../common/constants';
 import { configService } from '../../common/config';
-import { DebtObligationsInterface } from '../campaign/interface';
+import {
+  CampaignSuspendInterface,
+  DebtObligationsInterface,
+} from '../campaign/interface';
 import { EngineTransferParserInterface } from './interface';
 
 @Injectable()
@@ -12,7 +16,10 @@ export class EngineTransferParser implements EngineTransferParserInterface {
   constructor(
     @Inject(CAMPAIGN_PROVIDE.DEBT_OBLIGATIONS)
     private readonly debtObligations: DebtObligationsInterface,
+    @Inject(CAMPAIGN_PROVIDE.SUSPEND)
+    private readonly campaignSuspend: CampaignSuspendInterface,
   ) {}
+
   async parse({
     transfer,
     transactionId,
@@ -31,6 +38,7 @@ export class EngineTransferParser implements EngineTransferParserInterface {
           transactionId,
           isDemoAccount: false,
         });
+        await this.campaignSuspend.checkGuideForUnblock(transfer.sender);
     }
   }
 }

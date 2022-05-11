@@ -5,6 +5,7 @@ import { CampaignModule } from './campaign/campaign.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WobjectModule } from './wobject/wobject.module';
 import { CampaignPaymentModule } from './campaign-payment/campaign-payment.module';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CampaignPaymentModule } from './campaign-payment/campaign-payment.modul
     NotificationsModule,
     WobjectModule,
     CampaignPaymentModule,
+    JobsModule,
   ],
   exports: [
     CampaignModule,

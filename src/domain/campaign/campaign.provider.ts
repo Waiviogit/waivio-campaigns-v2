@@ -9,6 +9,7 @@ import { CampaignActivation } from './campaign-activation';
 import { CampaignDeactivation } from './campaign-deactivation';
 import { GuideCampaigns } from './guide-campaigns';
 import { DebtObligations } from './debt-obligations';
+import {CampaignSuspend} from "./campaign-suspend";
 
 export const CreateCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CREATE_CAMPAIGN,
@@ -48,4 +49,9 @@ export const GuideCampaignsProvider: Provider = {
 export const DebtObligationsProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.DEBT_OBLIGATIONS,
   useClass: DebtObligations,
+};
+
+export const CampaignSuspendProvider: Provider = {
+  provide: CAMPAIGN_PROVIDE.SUSPEND,
+  useClass: CampaignSuspend,
 };
