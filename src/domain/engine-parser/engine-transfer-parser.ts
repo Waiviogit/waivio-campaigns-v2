@@ -26,7 +26,7 @@ export class EngineTransferParser implements EngineTransferParserInterface {
         await this.debtObligations.processPayment({
           amount: transfer.quantity,
           payoutToken: transfer.symbol,
-          sponsor: transfer.sender,
+          guideName: transfer.sender,
           userName: transfer.to,
           transactionId,
           isDemoAccount: false,

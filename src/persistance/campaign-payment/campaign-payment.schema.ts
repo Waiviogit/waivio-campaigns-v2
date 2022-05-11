@@ -13,7 +13,7 @@ export class CampaignPayment {
   userName: string;
 
   @Prop({ type: String, index: true })
-  sponsor: string;
+  guideName: string;
 
   @Prop({ type: String, enum: Object.values(CAMPAIGN_PAYMENT), required: true })
   type: string;
@@ -77,6 +77,8 @@ export class CampaignPayment {
 
   @Prop({ type: String })
   mainObject?: string;
+
+  createdAt: Date;
 }
 
 export const CampaignPaymentSchema =

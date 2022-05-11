@@ -158,7 +158,7 @@ export class CreateReview implements CreateReviewInterface {
         amount: payment.amount,
         type: payment.type,
         payoutToken: campaign.payoutToken,
-        sponsor: campaign.guideName,
+        guideName: campaign.guideName,
         userName: payment.account,
         beneficiaries,
         campaignId: campaign.campaignId,

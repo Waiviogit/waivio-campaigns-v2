@@ -8,4 +8,7 @@ export type CampaignPaymentBeneficiariesType = {
 
 export type CampaignPaymentDocumentType = CampaignPayment & Document;
 
-export type CreateCampaignPaymentType = Omit<CampaignPayment, '_id'>;
+export type CreateCampaignPaymentType = Omit<
+  CampaignPayment,
+  '_id' | 'createdAt'
+>;

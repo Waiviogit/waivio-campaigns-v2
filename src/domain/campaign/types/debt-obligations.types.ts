@@ -1,7 +1,7 @@
 export type ProcessPaymentType = {
   amount: string;
   payoutToken: string;
-  sponsor: string;
+  guideName: string;
   userName: string;
   transactionId: string;
   isDemoAccount: boolean;

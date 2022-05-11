@@ -4,7 +4,7 @@ export interface DebtObligationsInterface {
   processPayment({
     amount,
     payoutToken,
-    sponsor,
+    guideName,
     userName,
     transactionId,
     isDemoAccount,

@@ -28,7 +28,7 @@ export class HiveTransferParser implements HiveTransferParserInterface {
         await this.debtObligations.processPayment({
           amount: amount.split(' ')[0],
           payoutToken: amount.split(' ')[1],
-          sponsor: from,
+          guideName: from,
           userName: to,
           transactionId,
           isDemoAccount: false,

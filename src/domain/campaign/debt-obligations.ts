@@ -20,7 +20,7 @@ export class DebtObligations implements DebtObligationsInterface {
   async processPayment({
     amount,
     payoutToken,
-    sponsor,
+    guideName,
     userName,
     transactionId,
     isDemoAccount,
@@ -31,7 +31,7 @@ export class DebtObligations implements DebtObligationsInterface {
       amount: new BigNumber(amount),
       type: CAMPAIGN_PAYMENT.TRANSFER,
       payoutToken,
-      sponsor,
+      guideName,
       userName,
       transactionId,
       isDemoAccount,
