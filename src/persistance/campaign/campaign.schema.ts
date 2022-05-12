@@ -278,9 +278,9 @@ CampaignSchema.index({ rewardInUSD: -1 });
 CampaignSchema.index({ userName: 1, postPermlink: 1 });
 
 CampaignSchema.virtual('canAssign').get(function () {
-  const countAssigns = this.budget / this.reward;
+  const countAssigns = this.get('budget') / this.get('reward');
   const filterUsers = _.filter(
-    this.users,
+    this.get('users'),
     (user) =>
       ['assigned', 'completed'].includes(user.status) &&
       new Date(user.createdAt).getMonth() === new Date().getMonth(),
