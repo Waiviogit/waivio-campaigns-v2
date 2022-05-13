@@ -5,16 +5,24 @@ import {
   CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
   PAYOUT_TOKEN,
+  USER_PROVIDE,
 } from '../../common/constants';
 import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
-import { ProcessPaymentType } from './types/debt-obligations.types';
+import {
+  ProcessGuestPaymentType,
+  ProcessPaymentType,
+} from './types/debt-obligations.types';
 import { DebtObligationsInterface } from './interface';
+
+import { UserRepositoryInterface } from '../../persistance/user/interface';
 
 @Injectable()
 export class DebtObligations implements DebtObligationsInterface {
   constructor(
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
     private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
 
   async processPayment({
@@ -23,7 +31,6 @@ export class DebtObligations implements DebtObligationsInterface {
     guideName,
     userName,
     transactionId,
-    isDemoAccount,
   }: ProcessPaymentType): Promise<void> {
     if (!_.includes(Object.values(PAYOUT_TOKEN), payoutToken)) return;
 
@@ -34,7 +41,34 @@ export class DebtObligations implements DebtObligationsInterface {
       guideName,
       userName,
       transactionId,
-      isDemoAccount,
+      isDemoAccount: false,
+    });
+  }
+
+  async processGuestPayment({
+    amount,
+    payoutToken,
+    guideName,
+    memoJson,
+    transactionId,
+    destination,
+  }: ProcessGuestPaymentType): Promise<void> {
+    if (!_.includes(Object.values(PAYOUT_TOKEN), payoutToken)) return;
+    const guestUser = await this.userRepository.findOne({
+      filter: { name: memoJson.to },
+    });
+    if (_.includes([process.env.ENGINE_WALLET], destination) || !guestUser) {
+      return;
+    }
+
+    await this.campaignPaymentRepository.create({
+      amount: new BigNumber(amount),
+      type: CAMPAIGN_PAYMENT.TRANSFER_TO_GUEST,
+      payoutToken,
+      guideName,
+      userName: memoJson.to,
+      transactionId,
+      isDemoAccount: true,
     });
   }
 }

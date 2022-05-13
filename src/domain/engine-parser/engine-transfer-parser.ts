@@ -36,9 +36,20 @@ export class EngineTransferParser implements EngineTransferParserInterface {
           guideName: transfer.sender,
           userName: transfer.to,
           transactionId,
-          isDemoAccount: false,
         });
         await this.campaignSuspend.checkGuideForUnblock(transfer.sender);
+        break;
+      case CAMPAIGN_TRANSFER_ID.GUEST_CAMPAIGN_REWARD:
+        await this.debtObligations.processGuestPayment({
+          amount: transfer.quantity,
+          payoutToken: transfer.symbol,
+          guideName: transfer.sender,
+          transactionId,
+          memoJson,
+          destination: transfer.to,
+        });
+        await this.campaignSuspend.checkGuideForUnblock(transfer.sender);
+        break;
     }
   }
 }

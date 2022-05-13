@@ -67,21 +67,22 @@ export const GUEST_BNF_ACC = 'waivio.hpower';
 export const CAMPAIGN_PAYMENT = {
   REVIEW: 'review',
   TRANSFER: 'transfer',
-  CAMPAIGNS_SERVER_FEE: 'campaign_server_fee',
-  REFERRAL_SERVER_FEE: 'referral_server_fee',
-  BENEFICIARY_FEE: 'beneficiary_fee',
-  INDEX_FEE: 'index_fee',
-  DEMO_POST: 'demo_post',
-  DEMO_USER_TRANSFER: 'demo_user_transfer',
-  DEMO_DEBT: 'demo_debt',
-  USER_TO_GUEST_TRANSFER: 'user_to_guest_transfer',
-  COMPENSATION_FEE: 'compensation_fee',
-  OVERPAYMENT_REFUND: 'overpayment_refund',
+  TRANSFER_TO_GUEST: 'transferToGuest',
+  CAMPAIGNS_SERVER_FEE: 'campaignServerFee',
+  REFERRAL_SERVER_FEE: 'referralServerFee',
+  BENEFICIARY_FEE: 'beneficiaryFee',
+  INDEX_FEE: 'indexFee',
+  // DEMO_POST: 'demo_post',
+  // DEMO_USER_TRANSFER: 'demo_user_transfer',
+  //DEMO_DEBT: 'demo_debt',
+  //USER_TO_GUEST_TRANSFER: 'user_to_guest_transfer',
+  COMPENSATION_FEE: 'compensationFee',
+  OVERPAYMENT_REFUND: 'overpaymentRefund', //?
 };
 
 export const CP_TRANSFER_TYPES = [
   CAMPAIGN_PAYMENT.TRANSFER,
-  CAMPAIGN_PAYMENT.DEMO_DEBT,
+  CAMPAIGN_PAYMENT.TRANSFER_TO_GUEST,
 ];
 
 export const CP_REVIEW_TYPES = [
@@ -99,10 +100,10 @@ export const GPS_DIFF = 0.01;
 
 export const CAMPAIGN_TRANSFER_ID = Object.freeze({
   CAMPAIGN_REWARD: 'campaignReward',
+  GUEST_CAMPAIGN_REWARD: 'guestCampaignReward',
 });
 
 export const PAYABLE_DEADLINE = 30;
 export const PAYABLE_WARNING = 21;
-
 
 export const PAYABLE_DEBT_MAX_USD = 2;

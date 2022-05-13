@@ -4,5 +4,16 @@ export type ProcessPaymentType = {
   guideName: string;
   userName: string;
   transactionId: string;
-  isDemoAccount: boolean;
+};
+
+export type ProcessGuestPaymentType = Omit<ProcessPaymentType, 'userName'> & {
+  memoJson: MemoJsonType;
+  destination: string;
+};
+
+export type MemoJsonType = {
+  app: string;
+  id: string;
+  to: string;
+  message: string;
 };

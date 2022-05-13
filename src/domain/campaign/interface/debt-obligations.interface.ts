@@ -1,4 +1,7 @@
-import { ProcessPaymentType } from '../types/debt-obligations.types';
+import {
+  ProcessGuestPaymentType,
+  ProcessPaymentType,
+} from '../types/debt-obligations.types';
 
 export interface DebtObligationsInterface {
   processPayment({
@@ -7,6 +10,13 @@ export interface DebtObligationsInterface {
     guideName,
     userName,
     transactionId,
-    isDemoAccount,
   }: ProcessPaymentType): Promise<void>;
+  processGuestPayment({
+    amount,
+    payoutToken,
+    guideName,
+    memoJson,
+    transactionId,
+    destination,
+  }: ProcessGuestPaymentType): Promise<void>;
 }

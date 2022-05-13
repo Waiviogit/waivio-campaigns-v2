@@ -36,9 +36,20 @@ export class HiveTransferParser implements HiveTransferParserInterface {
           guideName: from,
           userName: to,
           transactionId,
-          isDemoAccount: false,
         });
         await this.campaignSuspend.checkGuideForUnblock(from);
+        break;
+      case CAMPAIGN_TRANSFER_ID.GUEST_CAMPAIGN_REWARD:
+        await this.debtObligations.processGuestPayment({
+          amount: amount.split(' ')[0],
+          payoutToken: amount.split(' ')[1],
+          guideName: from,
+          transactionId,
+          memoJson,
+          destination: to,
+        });
+        await this.campaignSuspend.checkGuideForUnblock(from);
+        break;
     }
   }
 }

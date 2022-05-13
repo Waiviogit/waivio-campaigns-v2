@@ -262,7 +262,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
           balance = history.balance;
           break;
         case CAMPAIGN_PAYMENT.TRANSFER:
-        case CAMPAIGN_PAYMENT.DEMO_DEBT:
+        case CAMPAIGN_PAYMENT.TRANSFER_TO_GUEST:
           history.balance = new BigNumber(balance)
             .minus(history.amount)
             .toNumber();
