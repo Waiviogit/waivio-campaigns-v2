@@ -57,7 +57,7 @@ export class DebtObligations implements DebtObligationsInterface {
     const guestUser = await this.userRepository.findOne({
       filter: { name: memoJson.to },
     });
-    if (_.includes([process.env.ENGINE_WALLET], destination) || !guestUser) {
+    if (process.env.HOT_WALLET !== destination || !guestUser) {
       return;
     }
 
