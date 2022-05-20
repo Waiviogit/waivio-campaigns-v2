@@ -22,6 +22,9 @@ export const APP_PROVIDE = Object.freeze({
 export const POST_PROVIDE = Object.freeze({
   REPOSITORY: 'PostRepository',
 });
+export const SPONSORS_BOT_PROVIDE = Object.freeze({
+  REPOSITORY: 'SponsorsBotRepository',
+});
 
 export const CURRENCY_RATES_PROVIDE = Object.freeze({
   REPOSITORY: 'CurrencyRatesRepository',
@@ -40,6 +43,7 @@ export const HIVE_PARSER_PROVIDE = Object.freeze({
   MAIN: 'HiveMainParser',
   COMMENT: 'HiveCommentParser',
   TRANSFER: 'HiveTransferParser',
+  JSON: 'HiveJsonParser',
 });
 
 export const ENGINE_PARSER_PROVIDE = Object.freeze({

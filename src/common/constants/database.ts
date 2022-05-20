@@ -13,4 +13,5 @@ export const COLLECTION = Object.freeze({
   POSTS: 'posts',
   APPS: 'apps',
   CURRENCY_RATES: 'currencies-rates',
+  SPONSORS_BOTS: 'sponsors_bots',
 });

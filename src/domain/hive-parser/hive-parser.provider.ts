@@ -3,6 +3,7 @@ import { HiveMainParser } from './hive-main-parser';
 import { HIVE_PARSER_PROVIDE } from '../../common/constants';
 import { HiveCommentParser } from './hive-comment-parser';
 import { HiveTransferParser } from './hive-transfer-parser';
+import { HiveJsonParser } from './hive-json-parser';
 
 export const HiveMainParserProvider: Provider = {
   provide: HIVE_PARSER_PROVIDE.MAIN,
@@ -17,4 +18,9 @@ export const HiveCommentParserProvider: Provider = {
 export const HiveTransferParserProvider: Provider = {
   provide: HIVE_PARSER_PROVIDE.TRANSFER,
   useClass: HiveTransferParser,
+};
+
+export const HiveJsonParserProvider: Provider = {
+  provide: HIVE_PARSER_PROVIDE.JSON,
+  useClass: HiveJsonParser,
 };

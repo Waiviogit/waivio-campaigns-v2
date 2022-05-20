@@ -9,6 +9,7 @@ import { PostPersistenceModule } from './post/post.persistence.module';
 import { AppPersistenceModule } from './app/app.persistence.module';
 import { CurrencyRatesPersistenceModule } from './currency-rates/currency-rates.persistence.module';
 import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-payment.persistence.module';
+import { SponsorsBotPersistenceModule } from './sponsors-bot/sponsors-bot.persistence.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-pa
     AppPersistenceModule,
     CurrencyRatesPersistenceModule,
     CampaignPaymentPersistenceModule,
+    SponsorsBotPersistenceModule,
   ],
   exports: [
     CampaignPersistenceModule,
@@ -32,6 +34,7 @@ import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-pa
     AppPersistenceModule,
     CurrencyRatesPersistenceModule,
     CampaignPaymentPersistenceModule,
+    SponsorsBotPersistenceModule,
   ],
 })
 export class PersistenceModule {}

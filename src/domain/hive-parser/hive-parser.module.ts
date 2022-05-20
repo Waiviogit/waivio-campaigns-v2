@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import {
   HiveCommentParserProvider,
+  HiveJsonParserProvider,
   HiveMainParserProvider,
   HiveTransferParserProvider,
 } from './hive-parser.provider';
@@ -12,11 +13,8 @@ import { CampaignModule } from '../campaign/campaign.module';
     HiveMainParserProvider,
     HiveCommentParserProvider,
     HiveTransferParserProvider,
+    HiveJsonParserProvider,
   ],
-  exports: [
-    HiveMainParserProvider,
-    HiveCommentParserProvider,
-    HiveTransferParserProvider,
-  ],
+  exports: [HiveMainParserProvider],
 })
 export class HiveParserModule {}

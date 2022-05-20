@@ -4,10 +4,12 @@ import {
   HiveBlockType,
   HiveCommentOptionsType,
   HiveCommentType,
+  HiveCustomJsonType,
 } from '../../common/types';
 import { HIVE_PARSER_PROVIDE } from '../../common/constants';
 import {
   HiveCommentParserInterface,
+  HiveJsonParserInterface,
   HiveMainParserInterface,
   HiveTransferParserInterface,
 } from './interface';
@@ -21,6 +23,8 @@ export class HiveMainParser implements HiveMainParserInterface {
     private readonly comment: HiveCommentParserInterface,
     @Inject(HIVE_PARSER_PROVIDE.TRANSFER)
     private readonly transfer: HiveTransferParserInterface,
+    @Inject(HIVE_PARSER_PROVIDE.JSON)
+    private readonly json: HiveJsonParserInterface,
   ) {}
 
   async parseBlock(block: HiveBlockType): Promise<void> {
@@ -48,6 +52,8 @@ export class HiveMainParser implements HiveMainParserInterface {
                 .operations[1] as unknown as HiveCommentOptionsType,
             });
             break;
+          case HIVE_OPERATION.CUSTOM_JSON:
+            await this.json.parse(operation[1] as HiveCustomJsonType);
         }
       }
     }
