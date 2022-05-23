@@ -12,3 +12,8 @@ export type SponsorsBotJsonType = {
   expiredAt?: string;
   votingPower?: number;
 };
+
+export type CheckDisableType = {
+  botName: string;
+  accountAuths: [string, number][];
+};

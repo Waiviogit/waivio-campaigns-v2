@@ -4,7 +4,6 @@ import { HiveJsonParserInterface } from './interface';
 import { parseJSON } from '../../common/helpers';
 import * as _ from 'lodash';
 import { SPONSORS_BOT_PROVIDE } from '../../common/constants';
-import { CampaignActivationInterface } from '../campaign/interface';
 import { SponsorsBotInterface } from '../sponsors-bot/interface';
 
 @Injectable()

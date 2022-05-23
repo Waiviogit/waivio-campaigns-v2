@@ -45,6 +45,7 @@ export const HIVE_PARSER_PROVIDE = Object.freeze({
   COMMENT: 'HiveCommentParser',
   TRANSFER: 'HiveTransferParser',
   JSON: 'HiveJsonParser',
+  ACCOUNT_UPDATE: 'HiveAccountUpdateParser',
 });
 
 export const ENGINE_PARSER_PROVIDE = Object.freeze({

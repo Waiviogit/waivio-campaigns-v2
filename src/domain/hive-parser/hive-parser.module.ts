@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import {
+  HiveAccUpdateParserProvider,
   HiveCommentParserProvider,
   HiveJsonParserProvider,
   HiveMainParserProvider,
@@ -15,6 +16,7 @@ import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
     HiveCommentParserProvider,
     HiveTransferParserProvider,
     HiveJsonParserProvider,
+    HiveAccUpdateParserProvider,
   ],
   exports: [HiveMainParserProvider],
 })

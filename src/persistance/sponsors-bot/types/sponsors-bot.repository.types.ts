@@ -28,7 +28,7 @@ export type SetSponsorsBotVotingPowerType = {
 
 export type GetSponsorsBotType = {
   botName: string;
-  skip: number;
+  skip?: number;
   limit: number;
 };
 

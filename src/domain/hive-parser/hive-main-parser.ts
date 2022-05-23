@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import {
+  HiveAccountUpdateType,
   HiveBlockType,
   HiveCommentOptionsType,
   HiveCommentType,
@@ -8,6 +9,7 @@ import {
 } from '../../common/types';
 import { HIVE_PARSER_PROVIDE } from '../../common/constants';
 import {
+  HiveAccUpdateParserInterface,
   HiveCommentParserInterface,
   HiveJsonParserInterface,
   HiveMainParserInterface,
@@ -25,6 +27,8 @@ export class HiveMainParser implements HiveMainParserInterface {
     private readonly transfer: HiveTransferParserInterface,
     @Inject(HIVE_PARSER_PROVIDE.JSON)
     private readonly json: HiveJsonParserInterface,
+    @Inject(HIVE_PARSER_PROVIDE.ACCOUNT_UPDATE)
+    private readonly accountUpdate: HiveAccUpdateParserInterface,
   ) {}
 
   async parseBlock(block: HiveBlockType): Promise<void> {
@@ -54,6 +58,12 @@ export class HiveMainParser implements HiveMainParserInterface {
             break;
           case HIVE_OPERATION.CUSTOM_JSON:
             await this.json.parse(operation[1] as HiveCustomJsonType);
+            break;
+          case HIVE_OPERATION.ACCOUNT_UPDATE:
+            await this.accountUpdate.parse(
+              operation[1] as HiveAccountUpdateType,
+            );
+            break;
         }
       }
     }

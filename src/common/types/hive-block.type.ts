@@ -81,7 +81,7 @@ export type HiveAccountUpdateType = {
 
 export type PostingType = {
   weight_threshold: string;
-  account_auths: [];
+  account_auths: [string, number][];
   key_auths: [string, number][];
   memo_key: string;
   json_metadata: string;

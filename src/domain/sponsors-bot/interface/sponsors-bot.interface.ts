@@ -1,4 +1,4 @@
-import { ParseHiveCustomJsonType } from '../type';
+import { CheckDisableType, ParseHiveCustomJsonType } from '../type';
 
 export interface SponsorsBotInterface {
   parseHiveCustomJson({
@@ -6,4 +6,5 @@ export interface SponsorsBotInterface {
     authorizedUser,
     json,
   }: ParseHiveCustomJsonType): Promise<void>;
+  checkDisable({ botName, accountAuths }: CheckDisableType): Promise<void>;
 }
