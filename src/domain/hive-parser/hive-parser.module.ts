@@ -6,9 +6,10 @@ import {
   HiveTransferParserProvider,
 } from './hive-parser.provider';
 import { CampaignModule } from '../campaign/campaign.module';
+import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
 
 @Module({
-  imports: [CampaignModule],
+  imports: [CampaignModule, SponsorsBotModule],
   providers: [
     HiveMainParserProvider,
     HiveCommentParserProvider,

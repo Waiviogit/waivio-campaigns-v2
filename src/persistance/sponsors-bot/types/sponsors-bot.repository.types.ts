@@ -6,7 +6,7 @@ import {FilterQuery, QueryOptions} from "mongoose";
 export type CreateSponsorBotType = {
   botName: string;
   sponsor: string;
-  votingPercent: null;
+  votingPercent: number;
   enabled: boolean;
   note: string;
   expiredAt: Date | null;
@@ -23,7 +23,7 @@ export type RemoveSponsorBotRuleType = Pick<
 
 export type SetSponsorsBotVotingPowerType = {
   botName: string;
-  minVotingPower: string;
+  minVotingPower: number;
 };
 
 export type GetSponsorsBotType = {

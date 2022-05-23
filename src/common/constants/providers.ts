@@ -24,6 +24,7 @@ export const POST_PROVIDE = Object.freeze({
 });
 export const SPONSORS_BOT_PROVIDE = Object.freeze({
   REPOSITORY: 'SponsorsBotRepository',
+  BOT: 'SponsorsBot',
 });
 
 export const CURRENCY_RATES_PROVIDE = Object.freeze({
