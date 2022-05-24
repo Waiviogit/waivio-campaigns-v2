@@ -12,7 +12,6 @@ import {
   Min,
   Max,
   Matches,
-  IsDateString,
   IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -385,16 +384,16 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   app: string;
 
-  @IsDateString()
+  @IsString()
   @ApiProperty({ type: Date, required: true })
   expiredAt: Date;
 
-  @IsDateString()
+  @IsString()
   @ApiProperty({ type: Date })
   stoppedAt: Date;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   @ApiProperty({ type: Date, required: false })
   createdAt?: Date;
 
