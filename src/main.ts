@@ -7,7 +7,7 @@ import { HiveProcessor } from './domain/processor/hive-processor';
 import { EngineProcessor } from './domain/processor/engine-processor';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.setGlobalPrefix('campaigns-v2');
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, stopAtFirstError: true }),
