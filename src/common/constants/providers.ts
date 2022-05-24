@@ -22,9 +22,14 @@ export const APP_PROVIDE = Object.freeze({
 export const POST_PROVIDE = Object.freeze({
   REPOSITORY: 'PostRepository',
 });
+
 export const SPONSORS_BOT_PROVIDE = Object.freeze({
   REPOSITORY: 'SponsorsBotRepository',
   BOT: 'SponsorsBot',
+});
+
+export const SPONSORS_BOT_UPVOTE_PROVIDE = Object.freeze({
+  REPOSITORY: 'SponsorsBotUpvoteRepository',
 });
 
 export const CURRENCY_RATES_PROVIDE = Object.freeze({

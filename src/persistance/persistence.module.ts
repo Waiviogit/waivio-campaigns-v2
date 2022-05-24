@@ -10,6 +10,7 @@ import { AppPersistenceModule } from './app/app.persistence.module';
 import { CurrencyRatesPersistenceModule } from './currency-rates/currency-rates.persistence.module';
 import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-payment.persistence.module';
 import { SponsorsBotPersistenceModule } from './sponsors-bot/sponsors-bot.persistence.module';
+import { SponsorsBotUpvotePersistenceModule } from './sponsors-bot-upvote/sponsors-bot-upvote.persistence.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SponsorsBotPersistenceModule } from './sponsors-bot/sponsors-bot.persis
     CurrencyRatesPersistenceModule,
     CampaignPaymentPersistenceModule,
     SponsorsBotPersistenceModule,
+    SponsorsBotUpvotePersistenceModule,
   ],
   exports: [
     CampaignPersistenceModule,
@@ -35,6 +37,7 @@ import { SponsorsBotPersistenceModule } from './sponsors-bot/sponsors-bot.persis
     CurrencyRatesPersistenceModule,
     CampaignPaymentPersistenceModule,
     SponsorsBotPersistenceModule,
+    SponsorsBotUpvotePersistenceModule,
   ],
 })
 export class PersistenceModule {}

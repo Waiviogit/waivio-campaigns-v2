@@ -14,4 +14,5 @@ export const COLLECTION = Object.freeze({
   APPS: 'apps',
   CURRENCY_RATES: 'currencies-rates',
   SPONSORS_BOTS: 'sponsors_bots',
+  SPONSORS_BOT_UPVOTE: 'sponsors_bots_upvotes',
 });
