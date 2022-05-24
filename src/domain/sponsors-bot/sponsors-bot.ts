@@ -2,17 +2,29 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
-import { CheckDisableType, ParseHiveCustomJsonType } from './type';
+import {
+  CheckDisableType,
+  CreateUpvoteRecordsType,
+  ParseHiveCustomJsonType,
+} from './type';
 import { SponsorsBotInterface } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
-import { SPONSORS_BOT_PROVIDE } from '../../common/constants';
+import {
+  PAYOUT_TOKEN_PRECISION,
+  SPONSORS_BOT_PROVIDE,
+  SPONSORS_BOT_UPVOTE_PROVIDE,
+} from '../../common/constants';
 import { SponsorsBotRepositoryInterface } from '../../persistance/sponsors-bot/interface';
+import { SponsorsBotUpvoteRepositoryInterface } from '../../persistance/sponsors-bot-upvote/interface';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
   constructor(
     @Inject(SPONSORS_BOT_PROVIDE.REPOSITORY)
     private readonly sponsorsBotRepository: SponsorsBotRepositoryInterface,
+    @Inject(SPONSORS_BOT_UPVOTE_PROVIDE.REPOSITORY)
+    private readonly sponsorsBotUpvoteRepository: SponsorsBotUpvoteRepositoryInterface,
   ) {}
 
   async parseHiveCustomJson({
@@ -83,5 +95,50 @@ export class SponsorsBot implements SponsorsBotInterface {
     accountAuths: [string, number][],
   ): boolean {
     return _.flattenDepth(accountAuths).includes(botName);
+  }
+
+  async createUpvoteRecords({
+    campaign,
+    botName,
+    permlink,
+  }: CreateUpvoteRecordsType): Promise<void> {
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(campaign.payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
+
+    for (const matchBot of campaign.matchBots) {
+      const bot = await this.sponsorsBotRepository.findOne({
+        filter: {
+          'sponsors.sponsor': campaign.guideName,
+          botName: matchBot,
+          'sponsors.enabled': true,
+        },
+      });
+      if (!bot) continue;
+      const sponsorsPermissions = _.find(
+        bot.sponsors,
+        (record) => record.sponsor === campaign.guideName,
+      );
+
+      const reward = rewardInToken.times(2).decimalPlaces(tokenPrecision);
+
+      const amountToVote = reward
+        .times(sponsorsPermissions.votingPercent)
+        .decimalPlaces(tokenPrecision);
+
+      await this.sponsorsBotUpvoteRepository.create({
+        requiredObject: campaign.requiredObject,
+        symbol: campaign.payoutToken,
+        reservationPermlink: campaign.userReservationPermlink,
+        botName: bot.botName,
+        author: botName || campaign.userName,
+        sponsor: campaign.guideName,
+        permlink,
+        amountToVote: amountToVote.toNumber(),
+        reward: reward.toNumber(),
+      });
+    }
   }
 }

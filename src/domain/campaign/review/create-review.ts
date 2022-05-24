@@ -12,6 +12,7 @@ import {
   REFERRAL_TYPES,
   RESERVATION_STATUS,
   REVIEW_PROVIDE,
+  SPONSORS_BOT_PROVIDE,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
@@ -43,6 +44,7 @@ import { CreateReviewInterface, FraudDetectionInterface } from './interface';
 import { ObjectId } from 'mongoose';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
+import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -61,6 +63,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly wobjectRepository: WobjectRepositoryInterface,
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
     private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
+    @Inject(SPONSORS_BOT_PROVIDE.BOT)
+    private readonly sponsorsBot: SponsorsBotInterface,
   ) {}
 
   async parseReview({
@@ -122,6 +126,11 @@ export class CreateReview implements CreateReviewInterface {
     );
     if (_.isEmpty(objectPermlink)) return;
     await this.updateReviewStatuses({ campaign, images, reviewPermlink });
+    await this.sponsorsBot.createUpvoteRecords({
+      campaign,
+      botName,
+      permlink: reviewPermlink,
+    });
 
     const payments = await this.getCampaignPayments({
       beneficiaries,

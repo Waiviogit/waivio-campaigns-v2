@@ -1,4 +1,8 @@
-import { CheckDisableType, ParseHiveCustomJsonType } from '../type';
+import {
+  CheckDisableType,
+  CreateUpvoteRecordsType,
+  ParseHiveCustomJsonType,
+} from '../type';
 
 export interface SponsorsBotInterface {
   parseHiveCustomJson({
@@ -7,4 +11,9 @@ export interface SponsorsBotInterface {
     json,
   }: ParseHiveCustomJsonType): Promise<void>;
   checkDisable({ botName, accountAuths }: CheckDisableType): Promise<void>;
+  createUpvoteRecords({
+    campaign,
+    botName,
+    permlink,
+  }: CreateUpvoteRecordsType): Promise<void>;
 }

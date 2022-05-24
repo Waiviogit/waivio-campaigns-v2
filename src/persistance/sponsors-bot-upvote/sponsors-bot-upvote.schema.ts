@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BOT_UPVOTE_STATUS } from '../../common/constants';
+import { BOT_UPVOTE_STATUS, PAYOUT_TOKEN } from '../../common/constants';
 
 @Schema()
 export class SponsorsBotUpvote {
@@ -8,6 +8,9 @@ export class SponsorsBotUpvote {
 
   @Prop({ type: String, required: true })
   sponsor: string;
+
+  @Prop({ type: String, enum: [PAYOUT_TOKEN.WAIV], default: PAYOUT_TOKEN.WAIV })
+  symbol?: string;
 
   @Prop({ type: String, required: true })
   author: string;

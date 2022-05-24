@@ -1,3 +1,5 @@
+import { ReviewCampaignType } from '../../campaign/review/types';
+
 export type ParseHiveCustomJsonType = {
   id: string;
   authorizedUser: string;
@@ -16,4 +18,10 @@ export type SponsorsBotJsonType = {
 export type CheckDisableType = {
   botName: string;
   accountAuths: [string, number][];
+};
+
+export type CreateUpvoteRecordsType = {
+  campaign: ReviewCampaignType;
+  permlink: string;
+  botName?: string;
 };
