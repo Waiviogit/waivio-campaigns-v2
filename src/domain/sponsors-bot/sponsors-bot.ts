@@ -198,7 +198,7 @@ export class SponsorsBot implements SponsorsBotInterface {
         weight,
       });
       if (vote) {
-        await this.updateDataAfterVote({upvote, weight })
+        await this.updateDataAfterVote({ upvote, weight });
       }
     }
   }
