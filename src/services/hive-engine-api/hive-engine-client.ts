@@ -7,11 +7,15 @@ import {
   ENGINE_ID,
   ENGINE_METHOD,
   HIVE_ENGINE_NODES,
+  REWARD_POOL_ID,
 } from '../../common/constants';
 import {
+  EngineBalanceType,
   EngineBlockType,
   EngineProxyType,
   EngineQueryType,
+  EngineRewardPoolType,
+  EngineVotingPowerType,
   MarketPoolType,
 } from './types';
 import { HiveEngineClientInterface } from './interface';
@@ -95,5 +99,48 @@ export class HiveEngineClient implements HiveEngineClientInterface {
       endpoint: ENGINE_ENDPOINT.BLOCKCHAIN,
       params: { blockNumber },
     })) as EngineBlockType;
+  }
+
+  async getVotingPower(
+    account: string,
+    symbol: string,
+  ): Promise<EngineVotingPowerType> {
+    const rewardPoolId = REWARD_POOL_ID[symbol];
+    return (await this.engineProxy({
+      method: ENGINE_METHOD.FIND_ONE,
+      endpoint: ENGINE_ENDPOINT.CONTRACTS,
+      params: {
+        contract: ENGINE_CONTRACT.COMMENTS.NAME,
+        table: ENGINE_CONTRACT.COMMENTS.TABLE.VOTING_POWER,
+        query: { rewardPoolId, account },
+      },
+    })) as EngineVotingPowerType;
+  }
+
+  async getRewardPool(symbol: string): Promise<EngineRewardPoolType> {
+    return (await this.engineProxy({
+      method: ENGINE_METHOD.FIND_ONE,
+      endpoint: ENGINE_ENDPOINT.CONTRACTS,
+      params: {
+        contract: ENGINE_CONTRACT.COMMENTS.NAME,
+        table: ENGINE_CONTRACT.COMMENTS.TABLE.REWARD_POOLS,
+        query: { symbol },
+      },
+    })) as EngineRewardPoolType;
+  }
+
+  async getTokenBalance(
+    account: string,
+    symbol: string,
+  ): Promise<EngineBalanceType> {
+    return (await this.engineProxy({
+      method: ENGINE_METHOD.FIND_ONE,
+      endpoint: ENGINE_ENDPOINT.CONTRACTS,
+      params: {
+        contract: ENGINE_CONTRACT.TOKENS.NAME,
+        table: ENGINE_CONTRACT.TOKENS.TABLE.BALANCES,
+        query: { symbol, account },
+      },
+    })) as EngineBalanceType;
   }
 }

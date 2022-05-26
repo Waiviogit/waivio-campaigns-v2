@@ -1,22 +1,35 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import * as _ from 'lodash';
+import BigNumber from 'bignumber.js';
 
 import {
   CheckDisableType,
   CreateUpvoteRecordsType,
+  GetWeightToVoteType,
   ParseHiveCustomJsonType,
+  UpdateDataAfterVoteType,
 } from './type';
 import { SponsorsBotInterface } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
+  BOT_UPVOTE_STATUS,
+  HIVE_ENGINE_PROVIDE,
+  HIVE_PROVIDE,
+  MAX_VOTING_POWER,
   PAYOUT_TOKEN_PRECISION,
+  POST_PROVIDE,
   SPONSORS_BOT_PROVIDE,
   SPONSORS_BOT_UPVOTE_PROVIDE,
 } from '../../common/constants';
 import { SponsorsBotRepositoryInterface } from '../../persistance/sponsors-bot/interface';
 import { SponsorsBotUpvoteRepositoryInterface } from '../../persistance/sponsors-bot-upvote/interface';
-import BigNumber from 'bignumber.js';
+import { PostRepositoryInterface } from '../../persistance/post/interface';
+import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
+import { calculateMana } from '../../common/helpers';
+import { GetUpvoteType } from '../../persistance/sponsors-bot-upvote/type';
+import { CalculateManaType } from '../../common/helpers/types';
+import { HiveClientInterface } from '../../services/hive-api/interface';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -25,6 +38,12 @@ export class SponsorsBot implements SponsorsBotInterface {
     private readonly sponsorsBotRepository: SponsorsBotRepositoryInterface,
     @Inject(SPONSORS_BOT_UPVOTE_PROVIDE.REPOSITORY)
     private readonly sponsorsBotUpvoteRepository: SponsorsBotUpvoteRepositoryInterface,
+    @Inject(POST_PROVIDE.REPOSITORY)
+    private readonly postRepository: PostRepositoryInterface,
+    @Inject(HIVE_ENGINE_PROVIDE.CLIENT)
+    private readonly hiveEngineClient: HiveEngineClientInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
 
   async parseHiveCustomJson({
@@ -140,5 +159,101 @@ export class SponsorsBot implements SponsorsBotInterface {
         reward: reward.toNumber(),
       });
     }
+  }
+
+  async executeUpvotes(): Promise<void> {
+    const upvotes = await this.sponsorsBotUpvoteRepository.getUpvotes();
+    for (const upvote of upvotes) {
+      const post = await this.postRepository.findOne({
+        filter: {
+          $or: [
+            { author: upvote.author, permlink: upvote.permlink },
+            { root_author: upvote.author, permlink: upvote.permlink },
+          ],
+        },
+      });
+
+      if (
+        post &&
+        post.active_votes &&
+        _.map(post.active_votes, 'voter').includes(upvote.botName)
+      ) {
+        return;
+      }
+      const votingPowers = await this.getVotingPowers(upvote);
+
+      if (votingPowers.votingPower < upvote.minVotingPower) return;
+      const weight = await this.getWeightToVote({
+        amount: upvote.amountToVote,
+        symbol: upvote.symbol,
+        votingPower: votingPowers.votingPower,
+        account: upvote.botName,
+      });
+
+      const vote = await this.hiveClient.voteOnPost({
+        key: process.env.UPVOTE_BOT_KEY,
+        author: upvote.author,
+        permlink: upvote.permlink,
+        voter: upvote.botName,
+        weight,
+      });
+      if (vote) {
+        await this.updateDataAfterVote({upvote, weight })
+      }
+    }
+  }
+
+  async getWeightToVote({
+    amount,
+    symbol,
+    votingPower,
+    account,
+  }: GetWeightToVoteType): Promise<number> {
+    const { stake, delegationsIn } =
+      await this.hiveEngineClient.getTokenBalance(account, symbol);
+    const { rewardPool, pendingClaims } =
+      await this.hiveEngineClient.getRewardPool(symbol);
+
+    const rewards = new BigNumber(rewardPool).dividedBy(pendingClaims);
+    const finalRshares = new BigNumber(stake).plus(delegationsIn);
+
+    const reverseRshares = new BigNumber(amount).dividedBy(rewards);
+
+    const reversePower = reverseRshares
+      .times(MAX_VOTING_POWER)
+      .dividedBy(finalRshares);
+
+    const weight = reversePower
+      .times(MAX_VOTING_POWER)
+      .dividedBy(votingPower)
+      .integerValue()
+      .toNumber();
+
+    return weight > MAX_VOTING_POWER ? MAX_VOTING_POWER : weight;
+  }
+
+  async getVotingPowers(upvote: GetUpvoteType): Promise<CalculateManaType> {
+    const votingPower = await this.hiveEngineClient.getVotingPower(
+      upvote.botName,
+      upvote.symbol,
+    );
+    return calculateMana(votingPower);
+  }
+
+  async updateDataAfterVote({
+    upvote,
+    weight,
+  }: UpdateDataAfterVoteType): Promise<void> {
+    await this.sponsorsBotUpvoteRepository.updateStatus({
+      _id: upvote._id,
+      status: BOT_UPVOTE_STATUS.UPVOTED,
+      currentVote: upvote.amountToVote,
+      voteWeight: weight,
+    });
+
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { author: upvote.author, permlink: upvote.permlink },
+      update: { $inc: { totalVotesWeight: upvote.amountToVote } },
+    });
   }
 }

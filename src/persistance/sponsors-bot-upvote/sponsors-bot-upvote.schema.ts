@@ -16,7 +16,7 @@ export class SponsorsBotUpvote {
   author: string;
 
   @Prop({ type: Number, default: 0 })
-  votePercent?: number;
+  voteWeight?: number;
 
   @Prop({ type: String, required: true })
   permlink: string;

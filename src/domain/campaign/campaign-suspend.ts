@@ -22,6 +22,7 @@ import { PayablesAllType } from '../campaign-payment/types';
 import { WobjectHelperInterface } from '../wobject/interface';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
+import { CampaignDocumentType } from '../../persistance/campaign/types';
 
 @Injectable()
 export class CampaignSuspend implements CampaignSuspendInterface {
@@ -159,22 +160,7 @@ export class CampaignSuspend implements CampaignSuspendInterface {
       filter: { guideName, status: CAMPAIGN_STATUS.SUSPENDED },
     });
     for (const campaign of campaigns) {
-      let status;
-      if (campaign.expiredAt < new Date()) {
-        status = campaign.deactivationPermlink
-          ? CAMPAIGN_STATUS.INACTIVE
-          : CAMPAIGN_STATUS.EXPIRED;
-      } else {
-        const completedUsers = _.filter(
-          campaign.users,
-          (user) => user.createdAt > moment.utc().startOf('month').toDate(),
-        );
-        status =
-          campaign.budget - campaign.reward * completedUsers.length >
-          campaign.reward
-            ? CAMPAIGN_STATUS.ACTIVE
-            : CAMPAIGN_STATUS.REACHED_LIMIT;
-      }
+      const status = this.getStatusAfterSuspend(campaign);
       await this.campaignRepository.updateOne({
         filter: { _id: campaign._id },
         update: { status },
@@ -185,5 +171,21 @@ export class CampaignSuspend implements CampaignSuspendInterface {
         [campaign.requiredObject, ...campaign.objects],
       );
     }
+  }
+
+  getStatusAfterSuspend(campaign: CampaignDocumentType): string {
+    if (campaign.deactivationPermlink) return CAMPAIGN_STATUS.INACTIVE;
+    if (campaign.expiredAt < new Date()) return CAMPAIGN_STATUS.EXPIRED;
+    if (campaign.activationPermlink) {
+      const completedUsers = _.filter(
+        campaign.users,
+        (user) => user.createdAt > moment.utc().startOf('month').toDate(),
+      );
+      return campaign.budget - campaign.reward * completedUsers.length >
+        campaign.reward
+        ? CAMPAIGN_STATUS.ACTIVE
+        : CAMPAIGN_STATUS.REACHED_LIMIT;
+    }
+    return CAMPAIGN_STATUS.PENDING;
   }
 }

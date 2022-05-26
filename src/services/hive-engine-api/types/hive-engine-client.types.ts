@@ -64,3 +64,60 @@ export type EngineTransactionType = {
   databaseHash: string;
   logs: string;
 };
+
+export type EngineVotingPowerType = {
+  _id: EngineVotingPowerIdType;
+  rewardPoolId: number;
+  account: string;
+  lastVoteTimestamp: number;
+  votingPower: number;
+  downvotingPower: number;
+};
+
+export type EngineVotingPowerIdType = {
+  rewardPoolId: number;
+  account: string;
+};
+
+export type EngineRewardPoolType = {
+  _id: number;
+  symbol: string;
+  rewardPool: string;
+  lastRewardTimestamp: number;
+  lastClaimDecayTimestamp: number;
+  createdTimestamp: number;
+  config: EngineRewardPoolConfigType;
+  pendingClaims: string;
+  active: boolean;
+  intervalPendingClaims: string;
+  intervalRewardPool: string;
+};
+
+export type EngineRewardPoolConfigType = {
+  postRewardCurve: string;
+  postRewardCurveParameter: string;
+  curationRewardCurve: string;
+  curationRewardCurveParameter: string;
+  curationRewardPercentage: number;
+  cashoutWindowDays: number;
+  rewardPerInterval: string;
+  rewardIntervalSeconds: number;
+  voteRegenerationDays: number;
+  downvoteRegenerationDays: number;
+  stakedRewardPercentage: number;
+  votePowerConsumption: number;
+  downvotePowerConsumption: number;
+  tags: string[];
+};
+
+export type EngineBalanceType = {
+  _id: number;
+  account: string;
+  symbol: string;
+  balance: string;
+  stake: string;
+  pendingUnstake: string;
+  delegationsIn: string;
+  delegationsOut: string;
+  pendingUndelegations: string;
+};

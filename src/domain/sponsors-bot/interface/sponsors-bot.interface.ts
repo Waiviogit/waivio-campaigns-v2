@@ -16,4 +16,5 @@ export interface SponsorsBotInterface {
     botName,
     permlink,
   }: CreateUpvoteRecordsType): Promise<void>;
+  executeUpvotes(): Promise<void>;
 }

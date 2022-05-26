@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Client, PrivateKey } from '@hiveio/dhive';
 import axios from 'axios';
 
 import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
 import { HiveClientInterface } from './interface';
+import { VoteOnPostType } from './type';
 
 @Injectable()
 export class HiveClient implements HiveClientInterface {
@@ -11,6 +13,10 @@ export class HiveClient implements HiveClientInterface {
   private readonly logger = new Logger(HiveClient.name);
   private readonly hiveNodes: string[] = HIVE_RPC_NODES;
   private url = this.hiveNodes[0];
+  private broadcastClient = new Client(HIVE_RPC_NODES, {
+    failoverThreshold: 0,
+    timeout: 10 * 1000,
+  });
 
   private changeNode(): void {
     const index = this.hiveNodes.indexOf(this.url);
@@ -41,5 +47,28 @@ export class HiveClient implements HiveClientInterface {
 
   async getBlock(blockNumber: number): Promise<HiveBlockType | undefined> {
     return this.hiveRequest(CONDENSER_API.GET_BLOCK, [blockNumber]);
+  }
+
+  async voteOnPost({
+    key,
+    voter,
+    author,
+    permlink,
+    weight,
+  }: VoteOnPostType): Promise<boolean> {
+    try {
+      await this.broadcastClient.broadcast.vote(
+        {
+          voter,
+          author,
+          permlink,
+          weight,
+        },
+        PrivateKey.fromString(key),
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }
