@@ -191,7 +191,7 @@ export class SponsorsBot implements SponsorsBotInterface {
       });
 
       const vote = await this.hiveClient.voteOnPost({
-        key: process.env.UPVOTE_BOT_KEY,
+        key: process.env.SPONSORS_BOT_KEY,
         author: upvote.author,
         permlink: upvote.permlink,
         voter: upvote.botName,
