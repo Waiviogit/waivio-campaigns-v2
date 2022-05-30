@@ -23,6 +23,7 @@ import { SponsorsBotModule } from './sponsors-bot/sponsors-bot.module';
     NotificationsModule,
     WobjectModule,
     CampaignPaymentModule,
+    SponsorsBotModule,
   ],
 })
 export class DomainModule {}

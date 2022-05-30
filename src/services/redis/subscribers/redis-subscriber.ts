@@ -24,5 +24,5 @@ export abstract class RedisExpireSubscriber implements OnModuleInit {
     }
   }
 
-  async handleExpired(key: string): Promise<void> {}
+  abstract handleExpired(key: string): Promise<void>;
 }

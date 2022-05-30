@@ -326,4 +326,8 @@ export class SponsorsBot implements SponsorsBotInterface {
       }),
     );
   }
+
+  async expireListener(key: string): Promise<void> {
+    console.log()
+  }
 }

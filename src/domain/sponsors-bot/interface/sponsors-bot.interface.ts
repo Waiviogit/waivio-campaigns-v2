@@ -19,4 +19,5 @@ export interface SponsorsBotInterface {
   }: CreateUpvoteRecordsType): Promise<void>;
   executeUpvotes(): Promise<void>;
   parseVotes(votes: EngineVoteType[]): Promise<void>;
+  expireListener(key: string): Promise<void>;
 }
