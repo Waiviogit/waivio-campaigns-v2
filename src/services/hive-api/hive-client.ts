@@ -5,7 +5,7 @@ import axios from 'axios';
 import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
 import { HiveClientInterface } from './interface';
-import { VoteOnPostType } from './type';
+import { HiveContentType, VoteOnPostType } from './type';
 
 @Injectable()
 export class HiveClient implements HiveClientInterface {
@@ -70,5 +70,9 @@ export class HiveClient implements HiveClientInterface {
     } catch (error) {
       return false;
     }
+  }
+
+  async getContent(author: string, permlink: string): Promise<HiveContentType> {
+    return this.hiveRequest(CONDENSER_API.GET_CONTENT, [author, permlink]);
   }
 }

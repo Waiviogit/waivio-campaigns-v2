@@ -14,11 +14,14 @@ import { SponsorsBotInterface } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
   BOT_UPVOTE_STATUS,
+  CAMPAIGN_PROVIDE,
   HIVE_ENGINE_PROVIDE,
   HIVE_PROVIDE,
   MAX_VOTING_POWER,
   PAYOUT_TOKEN_PRECISION,
   POST_PROVIDE,
+  REDIS_KEY,
+  REDIS_PROVIDE,
   SPONSORS_BOT_PROVIDE,
   SPONSORS_BOT_UPVOTE_PROVIDE,
 } from '../../common/constants';
@@ -30,6 +33,9 @@ import { calculateMana } from '../../common/helpers';
 import { GetUpvoteType } from '../../persistance/sponsors-bot-upvote/type';
 import { CalculateManaType } from '../../common/helpers/types';
 import { HiveClientInterface } from '../../services/hive-api/interface';
+import { EngineVoteType } from '../engine-parser/types';
+import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
+import { RedisClientInterface } from '../../services/redis/clients/interface';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -40,10 +46,14 @@ export class SponsorsBot implements SponsorsBotInterface {
     private readonly sponsorsBotUpvoteRepository: SponsorsBotUpvoteRepositoryInterface,
     @Inject(POST_PROVIDE.REPOSITORY)
     private readonly postRepository: PostRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
+    private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(HIVE_ENGINE_PROVIDE.CLIENT)
     private readonly hiveEngineClient: HiveEngineClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
 
   async parseHiveCustomJson({
@@ -255,5 +265,65 @@ export class SponsorsBot implements SponsorsBotInterface {
       filter: { author: upvote.author, permlink: upvote.permlink },
       update: { $inc: { totalVotesWeight: upvote.amountToVote } },
     });
+  }
+
+  async parseVotes(votes: EngineVoteType[]): Promise<void> {
+    await Promise.all(
+      votes.map(async (vote) => {
+        const campaign = await this.campaignRepository.findOne({
+          filter: {
+            $or: [{ guideName: vote.voter }, { match_bots: vote.voter }],
+            users: {
+              $elemMatch: {
+                reviewPermlink: vote.permlink,
+                rootAuthor: vote.author,
+              },
+            },
+          },
+        });
+        if (!campaign && vote.weight < 0) {
+          const campaignWithReview = await this.campaignRepository.findOne({
+            filter: {
+              users: {
+                $elemMatch: {
+                  reviewPermlink: vote.permlink,
+                  rootAuthor: vote.author,
+                },
+              },
+            },
+          });
+          if (!campaignWithReview) return;
+          const post = await this.hiveClient.getContent(
+            vote.author,
+            vote.permlink,
+          );
+          if (
+            !post.author ||
+            moment.utc(post.created) < moment.utc().subtract(7, 'days')
+          ) {
+            return;
+          }
+          const expirationTime = moment
+            .utc(post.created)
+            .add(167, 'hours')
+            .valueOf();
+          const ttlTime = Math.round(
+            (expirationTime - moment.utc().valueOf()) / 1000,
+          );
+          if (ttlTime < 0) return;
+          await this.campaignRedisClient.setex(
+            `${REDIS_KEY.REVIEW_DOWNVOTE}|${vote.author}|${vote.permlink}`,
+            ttlTime,
+            '',
+          );
+        } else if (campaign) {
+          await this.campaignRedisClient.setex(
+            `${REDIS_KEY.SPONSOR_BOT_VOTE}|${vote.author}|${vote.permlink}|${vote.voter}`,
+            20,
+            '',
+          );
+        }
+      }),
+    );
   }
 }

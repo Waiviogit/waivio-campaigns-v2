@@ -3,6 +3,7 @@ import {
   CreateUpvoteRecordsType,
   ParseHiveCustomJsonType,
 } from '../type';
+import { EngineVoteType } from '../../engine-parser/types';
 
 export interface SponsorsBotInterface {
   parseHiveCustomJson({
@@ -17,4 +18,5 @@ export interface SponsorsBotInterface {
     permlink,
   }: CreateUpvoteRecordsType): Promise<void>;
   executeUpvotes(): Promise<void>;
+  parseVotes(votes: EngineVoteType[]): Promise<void>;
 }

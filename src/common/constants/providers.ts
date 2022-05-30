@@ -56,6 +56,7 @@ export const HIVE_PARSER_PROVIDE = Object.freeze({
 export const ENGINE_PARSER_PROVIDE = Object.freeze({
   MAIN: 'EngineMainParser',
   TRANSFER: 'EngineTransferParser',
+  COMMENTS: 'EngineCommentsParser',
 });
 
 export const HIVE_PROVIDE = Object.freeze({

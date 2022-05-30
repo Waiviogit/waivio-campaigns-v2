@@ -1,5 +1,5 @@
 import { HiveBlockType } from '../../../common/types';
-import { VoteOnPostType } from '../type';
+import { HiveContentType, VoteOnPostType } from '../type';
 
 export interface HiveClientInterface {
   getBlock(blockNumber: number): Promise<HiveBlockType | undefined>;
@@ -10,4 +10,5 @@ export interface HiveClientInterface {
     permlink,
     weight,
   }: VoteOnPostType): Promise<boolean>;
+  getContent(author: string, permlink: string): Promise<HiveContentType>;
 }

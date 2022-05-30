@@ -6,6 +6,8 @@ export const REDIS_KEY = Object.freeze({
   CAMPAIGN_PAYMENT_EXPIRE: 'expire:campaignPayment:',
   CAMPAIGN_SUSPEND_WARNING: 'expire:suspendedWarning:',
   ASSIGN: 'assign:',
+  REVIEW_DOWNVOTE: 'expire:reviewDownvote',
+  SPONSOR_BOT_VOTE: 'expire:sponsorBotVote',
 });
 
 export const REDIS_EXPIRE = Object.freeze({
