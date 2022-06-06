@@ -8,7 +8,7 @@ import { CampaignsControllerDocs } from './campaigns.controller.doc';
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
-  @Get('active/:guideName')
+  @Get('manager/:guideName')
   @CampaignsControllerDocs.getActiveCampaigns()
   async getActiveCampaigns(
     @Param('guideName') guideName: string,
