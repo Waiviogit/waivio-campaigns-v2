@@ -17,12 +17,12 @@ export abstract class RedisExpireSubscriber implements OnModuleInit {
       this.client.configSet('notify-keyspace-events', 'Ex');
       this.client.subscribe(
         `__keyevent@${this.db}__:expired`,
-        this.handleExpired,
+        this.handleExpired.bind(this),
       );
     } catch (error) {
       this.logger.error(error.message);
     }
   }
 
-  abstract handleExpired(key: string): Promise<void>;
+  abstract handleExpired(key: string, event: string): Promise<void>;
 }

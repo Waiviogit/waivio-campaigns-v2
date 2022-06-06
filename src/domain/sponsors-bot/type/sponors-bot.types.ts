@@ -1,5 +1,5 @@
 import { ReviewCampaignType } from '../../campaign/review/types';
-import {GetUpvoteType} from "../../../persistance/sponsors-bot-upvote/type";
+import { GetUpvoteType } from '../../../persistance/sponsors-bot-upvote/type';
 
 export type ParseHiveCustomJsonType = {
   id: string;
@@ -37,4 +37,10 @@ export type GetWeightToVoteType = {
 export type UpdateDataAfterVoteType = {
   upvote: GetUpvoteType;
   weight: number;
+};
+
+export type ProcessSponsorsBotVoteType = {
+  author: string;
+  permlink: string;
+  voter: string;
 };

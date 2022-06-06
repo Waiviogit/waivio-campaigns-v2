@@ -8,6 +8,7 @@ import {
   CreateUpvoteRecordsType,
   GetWeightToVoteType,
   ParseHiveCustomJsonType,
+  ProcessSponsorsBotVoteType,
   UpdateDataAfterVoteType,
 } from './type';
 import { SponsorsBotInterface } from './interface';
@@ -29,7 +30,7 @@ import { SponsorsBotRepositoryInterface } from '../../persistance/sponsors-bot/i
 import { SponsorsBotUpvoteRepositoryInterface } from '../../persistance/sponsors-bot-upvote/interface';
 import { PostRepositoryInterface } from '../../persistance/post/interface';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
-import { calculateMana } from '../../common/helpers';
+import { calculateMana, parseJSON } from '../../common/helpers';
 import { GetUpvoteType } from '../../persistance/sponsors-bot-upvote/type';
 import { CalculateManaType } from '../../common/helpers/types';
 import { HiveClientInterface } from '../../services/hive-api/interface';
@@ -242,6 +243,10 @@ export class SponsorsBot implements SponsorsBotInterface {
     return weight > MAX_VOTING_POWER ? MAX_VOTING_POWER : weight;
   }
 
+  async getVoteAmount() {
+
+  }
+
   async getVotingPowers(upvote: GetUpvoteType): Promise<CalculateManaType> {
     const votingPower = await this.hiveEngineClient.getVotingPower(
       upvote.botName,
@@ -327,7 +332,31 @@ export class SponsorsBot implements SponsorsBotInterface {
     );
   }
 
-  async expireListener(key: string): Promise<void> {
-    console.log()
+  async expireListener(msg: string): Promise<void> {
+    const data = msg.split('|');
+    switch (data[0]) {
+      case REDIS_KEY.SPONSOR_BOT_VOTE:
+        await this.processSponsorsBotVote({
+          author: data[1],
+          permlink: data[2],
+          voter: data[3],
+        });
+        break;
+      case REDIS_KEY.REVIEW_DOWNVOTE:
+        break;
+    }
+  }
+
+  async processSponsorsBotVote({
+    author,
+    permlink,
+    voter,
+  }: ProcessSponsorsBotVoteType): Promise<void> {
+    const upvote = await this.sponsorsBotUpvoteRepository.findOne({
+      filter: { author, permlink, botName: voter },
+    });
+    if (!upvote) {
+      //TODO sponsors vote
+    }
   }
 }

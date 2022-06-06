@@ -47,3 +47,9 @@ export type UpdateUpvotesType = {
     | UpdateQuery<SponsorsBotUpvoteDocumentType>;
   options?: QueryOptions;
 };
+
+export type UpvotesFindType = {
+  filter: FilterQuery<SponsorsBotUpvoteDocumentType>;
+  projection?: object | string | string[];
+  options?: QueryOptions;
+};

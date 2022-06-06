@@ -10,6 +10,7 @@ import {
   UpdateStatusDataType,
   UpdateStatusType,
   UpdateUpvotesType,
+  UpvotesFindType,
 } from './type';
 import { SponsorsBotUpvote } from './sponsors-bot-upvote.schema';
 import { SponsorsBotUpvoteRepositoryInterface } from './interface';
@@ -51,19 +52,22 @@ export class SponsorsBotUpvoteRepository
                   $filter: {
                     input: '$upvotes',
                     as: 'upvote',
-                    cond: { $eq: ['$$upvote.status', 'pending'] },
+                    cond: {
+                      $and: [
+                        { $eq: ['$$upvote.status', 'pending'] },
+                        { $lte: ['$$upvote.startedAt', moment.utc().toDate()] },
+                        {
+                          $gte: [
+                            '$$upvote.expiredAt',
+                            moment.utc().subtract(30, 'minutes').toDate(),
+                          ],
+                        },
+                      ],
+                    },
                   },
                 },
                 0,
               ],
-            },
-          },
-        },
-        {
-          $match: {
-            'upvote.startedAt': { $lte: moment.utc().toDate() },
-            'upvote.expiredAt': {
-              $gte: moment.utc().subtract(30, 'minutes').toDate(),
             },
           },
         },
@@ -145,6 +149,18 @@ export class SponsorsBotUpvoteRepository
   }: UpdateUpvotesType): Promise<UpdateWriteOpResult> {
     try {
       return this.model.updateMany(filter, update, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async findOne({
+    filter,
+    projection,
+    options,
+  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType> {
+    try {
+      return this.model.findOne(filter, projection, options);
     } catch (error) {
       this.logger.error(error.message);
     }

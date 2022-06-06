@@ -5,7 +5,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HiveProcessor } from './domain/processor/hive-processor';
 import { EngineProcessor } from './domain/processor/engine-processor';
-import {RedisCampaignSubscriber} from "./services/redis/subscribers/campaign-subscriber";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -25,11 +24,9 @@ async function bootstrap(): Promise<void> {
 
   const hiveProcessor = app.get(HiveProcessor);
   const engineProcessor = app.get(EngineProcessor);
-  const expreSubscriber = app.get(RedisCampaignSubscriber);
 
   await app.listen(configService.getPort());
   hiveProcessor.start();
   engineProcessor.start();
-  expreSubscriber.start();
 }
 bootstrap();

@@ -4,6 +4,7 @@ import {
   SponsorsBotUpvoteDocumentType,
   UpdateStatusType,
   UpdateUpvotesType,
+  UpvotesFindType,
 } from '../type';
 import { UpdateWriteOpResult } from 'mongoose';
 
@@ -21,4 +22,9 @@ export interface SponsorsBotUpvoteRepositoryInterface {
     update,
     options,
   }: UpdateUpvotesType): Promise<UpdateWriteOpResult>;
+  findOne({
+    filter,
+    projection,
+    options,
+  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType>;
 }
