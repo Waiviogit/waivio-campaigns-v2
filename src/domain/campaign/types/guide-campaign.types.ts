@@ -30,3 +30,17 @@ export type GuideActiveCampaignType = {
   commissionAgreement: number;
   remaining: number;
 };
+
+export type ReservedCampaigns = {
+  _id: ObjectId;
+  reserved: number;
+  rewardInUSD: number;
+  commissionAgreement: number;
+};
+
+export type GuideBalanceType = {
+  balance: number;
+  payable: number;
+  reserved: number;
+  remaining: number;
+};

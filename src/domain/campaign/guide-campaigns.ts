@@ -4,15 +4,24 @@ import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
 import {
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CURRENCY_RATES_PROVIDE,
+  HIVE_ENGINE_PROVIDE,
+  PAYOUT_TOKEN,
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import { GuideActiveCampaignType } from './types';
+import {
+  GuideActiveCampaignType,
+  GuideBalanceType,
+  ReservedCampaigns,
+} from './types';
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
-import { GuideCampaignsInterface } from './interface';
+import { CampaignHelperInterface, GuideCampaignsInterface } from './interface';
+import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
+import { GuidePaymentsQueryInterface } from '../campaign-payment/interface';
 
 @Injectable()
 export class GuideCampaigns implements GuideCampaignsInterface {
@@ -21,6 +30,12 @@ export class GuideCampaigns implements GuideCampaignsInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(CURRENCY_RATES_PROVIDE.REPOSITORY)
     private readonly currencyRatesRepository: CurrencyRatesRepositoryInterface,
+    @Inject(HIVE_ENGINE_PROVIDE.CLIENT)
+    private readonly hiveEngineClient: HiveEngineClientInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.GUIDE_PAYMENTS_Q)
+    private readonly guidePaymentsQuery: GuidePaymentsQueryInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
   async getActiveCampaigns(
@@ -133,5 +148,95 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               .toNumber();
     }
     return campaigns;
+  }
+
+  async getCampaignsReservedCount(
+    guideName: string,
+    payoutToken: string,
+  ): Promise<ReservedCampaigns[]> {
+    const limitDate = moment.utc().startOf('month').toDate();
+    const campaigns: ReservedCampaigns[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              guideName,
+              payoutToken,
+            },
+          },
+          {
+            $addFields: {
+              reserved: {
+                $size: {
+                  $filter: {
+                    input: '$users',
+                    as: 'user',
+                    cond: {
+                      $and: [
+                        { $eq: ['$$user.status', 'assigned'] },
+                        { $gt: ['$$user.createdAt', limitDate] },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              reserved: 1,
+              rewardInUSD: 1,
+              commissionAgreement: 1,
+            },
+          },
+        ],
+      });
+    return campaigns;
+  }
+
+  async getBalance(guideName: string): Promise<GuideBalanceType> {
+    const symbol = PAYOUT_TOKEN.WAIV;
+    const balance = await this.hiveEngineClient.getTokenBalance(
+      guideName,
+      symbol,
+    );
+    const { totalPayable } = await this.guidePaymentsQuery.getPayables({
+      guideName,
+      payoutToken: symbol,
+    });
+    const reserved = await this.getCampaignsReservedCount(guideName, symbol);
+
+    const budgetTotal = {
+      balance: Number(balance.balance),
+      payable: totalPayable,
+      reserved: _.sumBy(reserved, (campaign) => {
+        if (campaign.reserved) {
+          return (
+            campaign.reserved * campaign.rewardInUSD +
+            campaign.reserved *
+              campaign.rewardInUSD *
+              campaign.commissionAgreement
+          );
+        }
+        return 0;
+      }),
+      remaining: 0,
+    };
+
+    // if there are reservations, you need to recalculate at the exchange rate to the dollar,
+    // ideally this should be done taking into account the rate of each reservation,
+    // but for now we take into account the current rate
+    if (budgetTotal.reserved) {
+      const usdRate = await this.campaignHelper.getPayoutTokenRateUSD(symbol);
+      budgetTotal.reserved = usdRate
+        ? budgetTotal.reserved / usdRate
+        : budgetTotal.reserved;
+    }
+
+    budgetTotal.remaining = new BigNumber(budgetTotal.balance)
+      .minus(budgetTotal.payable)
+      .minus(budgetTotal.reserved)
+      .toNumber();
+    return budgetTotal;
   }
 }
