@@ -5,7 +5,7 @@ import {
 } from '../../../persistance/campaign/types';
 import { ObjectId } from 'mongoose';
 
-export type GuideActiveCampaignType = {
+export type GuideManageCampaignType = {
   _id: ObjectId;
   agreementObjects: string[];
   budget: number;
@@ -43,4 +43,10 @@ export type GuideBalanceType = {
   payable: number;
   reserved: number;
   remaining: number;
+};
+
+export type getInactiveCampaignsType = {
+  guideName: string;
+  skip?: number;
+  limit?: number;
 };

@@ -10,7 +10,11 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { cors: true });
   app.setGlobalPrefix('campaigns-v2');
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, stopAtFirstError: true }),
+    new ValidationPipe({
+      whitelist: true,
+      stopAtFirstError: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
   );
 
   const config = new DocumentBuilder()

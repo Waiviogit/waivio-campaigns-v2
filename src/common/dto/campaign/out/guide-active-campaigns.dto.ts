@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CampaignDto } from '../campaign.dto';
 
-export class GuideActiveCampaignDto extends PickType(CampaignDto, [
+export class GuideManageCampaignDto extends PickType(CampaignDto, [
   '_id',
   'name',
   'activationPermlink',

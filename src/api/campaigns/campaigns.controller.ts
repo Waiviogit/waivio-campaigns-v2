@@ -1,8 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service';
-import { GuideActiveCampaignDto } from '../../common/dto/campaign/out';
+import { GuideManageCampaignDto } from '../../common/dto/campaign/out';
 import { CampaignsControllerDocs } from './campaigns.controller.doc';
 import { GuideBalanceDto } from '../../common/dto/campaign/out/guide-balance.dto';
+import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
 
 @Controller('campaigns')
 @CampaignsControllerDocs.main()
@@ -13,7 +14,7 @@ export class CampaignsController {
   @CampaignsControllerDocs.getActiveCampaigns()
   async getActiveCampaigns(
     @Param('guideName') guideName: string,
-  ): Promise<GuideActiveCampaignDto[]> {
+  ): Promise<GuideManageCampaignDto[]> {
     return this.campaignsService.getActiveCampaigns(guideName);
   }
 
@@ -23,5 +24,14 @@ export class CampaignsController {
     @Param('guideName') guideName: string,
   ): Promise<GuideBalanceDto> {
     return this.campaignsService.getBalance(guideName);
+  }
+
+  @Get('history/:guideName')
+  @CampaignsControllerDocs.getHistory()
+  async getHistory(
+    @Param('guideName') guideName: string,
+    @Query() skipLimitDto: SkipLimitDto,
+  ): Promise<GuideManageCampaignDto[]> {
+    return this.campaignsService.getHistory({ guideName, ...skipLimitDto });
   }
 }

@@ -14,9 +14,10 @@ import {
 } from '../../common/constants';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import {
-  GuideActiveCampaignType,
+  GuideManageCampaignType,
   GuideBalanceType,
   ReservedCampaigns,
+  getInactiveCampaignsType,
 } from './types';
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 import { CampaignHelperInterface, GuideCampaignsInterface } from './interface';
@@ -38,11 +39,133 @@ export class GuideCampaigns implements GuideCampaignsInterface {
     private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
+  async addBudgetUsdToCampaigns(
+    campaigns: GuideManageCampaignType[],
+  ): Promise<GuideManageCampaignType[]> {
+    const currencyRate = this.currencyRatesRepository.findOne({
+      filter: { base: SUPPORTED_CURRENCY.USD },
+      options: { sort: { dateString: -1 } },
+    });
+
+    return campaigns.map((campaign) => ({
+      ...campaign,
+      budgetUSD:
+        campaign.currency === SUPPORTED_CURRENCY.USD
+          ? campaign.budget
+          : new BigNumber(campaign.budget)
+              .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
+              .toNumber(),
+    }));
+  }
+
+  async getInactiveCampaigns({
+    guideName,
+    skip,
+    limit,
+  }: getInactiveCampaignsType): Promise<GuideManageCampaignType[]> {
+    const limitDate = moment.utc().startOf('month').toDate();
+    const campaigns: GuideManageCampaignType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              guideName: guideName,
+              status: {
+                $nin: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.PENDING],
+              },
+            },
+          },
+          {
+            $addFields: {
+              completed: {
+                $size: {
+                  $filter: {
+                    input: '$users',
+                    as: 'user',
+                    cond: {
+                      $and: [
+                        { $eq: ['$$user.status', 'completed'] },
+                        { $gt: ['$$user.completedAt', limitDate] },
+                      ],
+                    },
+                  },
+                },
+              },
+              reserved: {
+                $size: {
+                  $filter: {
+                    input: '$users',
+                    as: 'user',
+                    cond: {
+                      $and: [
+                        { $eq: ['$$user.status', 'assigned'] },
+                        { $gt: ['$$user.createdAt', limitDate] },
+                      ],
+                    },
+                  },
+                },
+              },
+              completedTotal: {
+                $size: {
+                  $filter: {
+                    input: '$users',
+                    as: 'user',
+                    cond: { $eq: ['$$user.status', 'completed'] },
+                  },
+                },
+              },
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              name: 1,
+              activationPermlink: 1,
+              status: 1,
+              type: 1,
+              users: 1,
+              budget: 1,
+              reward: 1,
+              rewardInUSD: 1,
+              reserved: 1,
+              completed: 1,
+              completedTotal: 1,
+              agreementObjects: 1,
+              requiredObject: 1,
+              requirements: 1,
+              userRequirements: 1,
+              expiredAt: 1,
+              createdAt: 1,
+              guideName: 1,
+              currency: 1,
+              commissionAgreement: 1,
+              remaining: {
+                $cond: [
+                  { $eq: ['$status', 'active'] },
+                  {
+                    $subtract: [
+                      { $divide: ['$budget', '$reward'] },
+                      { $add: ['$completed', '$reserved'] },
+                    ],
+                  },
+                  0,
+                ],
+              },
+            },
+          },
+        ],
+      });
+
+    return this.addBudgetUsdToCampaigns(campaigns);
+  }
+
   async getActiveCampaigns(
     guideName: string,
-  ): Promise<GuideActiveCampaignType[]> {
+  ): Promise<GuideManageCampaignType[]> {
     const limitDate = moment.utc().startOf('month').toDate();
-    const campaigns: GuideActiveCampaignType[] =
+    const campaigns: GuideManageCampaignType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
           {
@@ -134,20 +257,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
         ],
       });
 
-    const currencyRate = this.currencyRatesRepository.findOne({
-      filter: { base: SUPPORTED_CURRENCY.USD },
-      options: { sort: { dateString: -1 } },
-    });
-
-    for (const campaign of campaigns) {
-      campaign.budgetUSD =
-        campaign.currency === SUPPORTED_CURRENCY.USD
-          ? campaign.budget
-          : new BigNumber(campaign.budget)
-              .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
-              .toNumber();
-    }
-    return campaigns;
+    return this.addBudgetUsdToCampaigns(campaigns);
   }
 
   async getCampaignsReservedCount(
