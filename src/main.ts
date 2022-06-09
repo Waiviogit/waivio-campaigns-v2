@@ -13,7 +13,6 @@ async function bootstrap(): Promise<void> {
     new ValidationPipe({
       whitelist: true,
       stopAtFirstError: true,
-    //  transformOptions: { enableImplicitConversion: true },
     }),
   );
 
