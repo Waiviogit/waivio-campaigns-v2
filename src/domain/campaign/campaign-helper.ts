@@ -34,6 +34,7 @@ import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rat
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
   private readonly logger = new Logger(CampaignHelper.name);
+
   constructor(
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
@@ -47,7 +48,7 @@ export class CampaignHelper implements CampaignHelperInterface {
 
   async setExpireTTLCampaign(expiredAt: Date, _id: ObjectId): Promise<void> {
     const expire = moment.utc(expiredAt).unix() - moment.utc().unix();
-
+    if (expire < 0) return;
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.CAMPAIGN_EXPIRE}${_id.toString()}`,
       expire,
