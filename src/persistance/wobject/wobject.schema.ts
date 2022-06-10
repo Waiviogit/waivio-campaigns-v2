@@ -5,6 +5,7 @@ import {
   FieldActiveVotesDocumentType,
   MapSchemaType,
   WobjectFieldsDocumentType,
+  WobjectStatusType,
 } from './types';
 
 @Schema({ _id: false })
@@ -118,6 +119,13 @@ export class Wobject {
 
   @Prop({ type: Number, default: 0 })
   activeCampaignsCount: number;
+
+  @Prop(
+    raw({
+      title: { type: String },
+    }),
+  )
+  status?: WobjectStatusType;
 }
 
 export const WobjectSchema = SchemaFactory.createForClass(Wobject);

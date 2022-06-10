@@ -11,6 +11,10 @@ export type MapSchemaType = {
   coordinates: number[];
 };
 
+export type WobjectStatusType = {
+  title: string;
+};
+
 export type WobjectDocumentType = Wobject & Document;
 
 export type WobjectFieldsDocumentType = WobjectFields & Document;
