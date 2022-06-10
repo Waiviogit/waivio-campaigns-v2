@@ -75,10 +75,14 @@ export class WobjectRepository implements WobjectRepositoryInterface {
   ): Promise<WobjectDocumentType> {
     return this.findOne({
       filter: {
-        author_permlink,
-        'status.title': {
-          $in: [WOBJECT_STATUS.UNAVAILABLE, WOBJECT_STATUS.RELISTED],
-        },
+        $and: [
+          { author_permlink },
+          {
+            'status.title': {
+              $in: [WOBJECT_STATUS.UNAVAILABLE, WOBJECT_STATUS.RELISTED],
+            },
+          },
+        ],
       },
     });
   }
