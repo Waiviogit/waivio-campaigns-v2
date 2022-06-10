@@ -57,7 +57,7 @@ Domain
     guideName,
     permlink,
   }: ActivateCampaignType): Promise<CampaignDocumentType>;
-  findOnePending(guideName: string, _id: string): Promise<CampaignDocumentType>;
+  findOnePending(_id: string, guideName: string): Promise<CampaignDocumentType>;
   findCampaignById(_id: string): Promise<CampaignDocumentType>;
   updateCampaign(campaign: UpdateCampaignType): Promise<CampaignDocumentType>;
   deleteCampaignById({

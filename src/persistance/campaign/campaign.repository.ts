@@ -125,8 +125,8 @@ export class CampaignRepository implements CampaignRepositoryInterface {
   }
 
   async findOnePending(
-    guideName: string,
     _id: string,
+    guideName: string,
   ): Promise<CampaignDocumentType> {
     return this.findOne({
       filter: { _id, status: CAMPAIGN_STATUS.PENDING, guideName },
