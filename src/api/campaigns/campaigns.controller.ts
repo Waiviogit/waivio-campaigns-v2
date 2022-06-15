@@ -4,6 +4,7 @@ import { GuideManageCampaignDto } from '../../common/dto/campaign/out';
 import { CampaignsControllerDocs } from './campaigns.controller.doc';
 import { GuideBalanceDto } from '../../common/dto/campaign/out/guide-balance.dto';
 import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
+import {GuideHistoryCampaignDto} from "../../common/dto/campaign/out/guide-history-campaign.dto";
 
 @Controller('campaigns')
 @CampaignsControllerDocs.main()
@@ -31,7 +32,7 @@ export class CampaignsController {
   async getHistory(
     @Param('guideName') guideName: string,
     @Query() skipLimitDto: SkipLimitDto,
-  ): Promise<GuideManageCampaignDto[]> {
+  ): Promise<GuideHistoryCampaignDto> {
     return this.campaignsService.getHistory({ guideName, ...skipLimitDto });
   }
 }

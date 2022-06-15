@@ -2,6 +2,7 @@ import {
   getInactiveCampaignsType,
   GuideBalanceType,
   GuideManageCampaignType,
+  InactiveCampaignsType,
 } from '../types';
 
 export interface GuideCampaignsInterface {
@@ -11,5 +12,5 @@ export interface GuideCampaignsInterface {
     guideName,
     skip,
     limit,
-  }: getInactiveCampaignsType): Promise<GuideManageCampaignType[]>;
+  }: getInactiveCampaignsType): Promise<InactiveCampaignsType>;
 }

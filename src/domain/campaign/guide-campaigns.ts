@@ -18,6 +18,7 @@ import {
   GuideBalanceType,
   ReservedCampaigns,
   getInactiveCampaignsType,
+  InactiveCampaignsType,
 } from './types';
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 import { CampaignHelperInterface, GuideCampaignsInterface } from './interface';
@@ -62,9 +63,9 @@ export class GuideCampaigns implements GuideCampaignsInterface {
     guideName,
     skip,
     limit,
-  }: getInactiveCampaignsType): Promise<GuideManageCampaignType[]> {
+  }: getInactiveCampaignsType): Promise<InactiveCampaignsType> {
     const limitDate = moment.utc().startOf('month').toDate();
-    const campaigns: GuideManageCampaignType[] =
+    const aggregationResult: GuideManageCampaignType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
           {
@@ -118,7 +119,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
           },
           { $sort: { createdAt: -1 } },
           { $skip: skip },
-          { $limit: limit },
+          { $limit: limit + 1 },
           {
             $project: {
               name: 1,
@@ -158,7 +159,13 @@ export class GuideCampaigns implements GuideCampaignsInterface {
         ],
       });
 
-    return this.addBudgetUsdToCampaigns(campaigns);
+    const campaigns = await this.addBudgetUsdToCampaigns(
+      _.take(aggregationResult, limit),
+    );
+    return {
+      campaigns,
+      hasMore: aggregationResult.length > campaigns.length,
+    };
   }
 
   async getActiveCampaigns(

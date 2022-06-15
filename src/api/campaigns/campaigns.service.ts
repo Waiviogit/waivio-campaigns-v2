@@ -4,7 +4,7 @@ import { GuideCampaignsInterface } from '../../domain/campaign/interface';
 import {
   GuideManageCampaignType,
   GuideBalanceType,
-  getInactiveCampaignsType,
+  getInactiveCampaignsType, InactiveCampaignsType,
 } from '../../domain/campaign/types';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class CampaignsService {
 
   async getHistory(
     req: getInactiveCampaignsType,
-  ): Promise<GuideManageCampaignType[]> {
+  ): Promise<InactiveCampaignsType> {
     return this.guideCampaigns.getInactiveCampaigns(req);
   }
 }

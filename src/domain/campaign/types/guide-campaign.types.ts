@@ -50,3 +50,8 @@ export type getInactiveCampaignsType = {
   skip?: number;
   limit?: number;
 };
+
+export type InactiveCampaignsType = {
+  campaigns: GuideManageCampaignType[];
+  hasMore: boolean;
+};
