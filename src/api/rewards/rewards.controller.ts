@@ -1,50 +1,45 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
-import {
-  RewardsAllInDto,
-  RewardsAllMainInDto,
-} from '../../common/dto/rewards/in';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { HostPipe } from '../pipes/host.pipe';
 import { CustomHeaders } from '../../common/decorators';
 import { RewardsService } from './rewards.service';
 import {
-  RewardAllMainOutDto,
-  RewardAllOutDto,
+  RewardsAllMainOutDto,
+  RewardsByObjectOutDto,
 } from '../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
+import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
 export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}
 
-  @Post('all')
+  @Get('all')
   @RewardsControllerDoc.getAllRewards()
   async getAllRewards(
     @CustomHeaders(new HostPipe())
     host: string,
-    @Body()
-    body: RewardsAllMainInDto,
-  ): Promise<RewardAllMainOutDto[]> {
+    @Query() skipLimitDto: SkipLimitDto,
+  ): Promise<RewardsAllMainOutDto> {
     return this.rewardsService.getAllRewards({
-      ...body,
+      ...skipLimitDto,
       host,
     });
   }
 
-  @Post('all/:requiredObject')
+  @Get('all/:requiredObject')
   @RewardsControllerDoc.getAllRewardsByRequiredObject()
   async getAllRewardsByRequiredObject(
-    @Body()
-    body: RewardsAllInDto,
+    @Query() skipLimitDto: SkipLimitDto,
     @CustomHeaders(new HostPipe())
     host: string,
     @Param('requiredObject')
     requiredObject: string,
-  ): Promise<RewardAllOutDto[]> {
+  ): Promise<RewardsByObjectOutDto> {
     return this.rewardsService.getAllRewardsByRequiredObject({
       requiredObject,
       host,
-      ...body,
+      ...skipLimitDto,
     });
   }
 }

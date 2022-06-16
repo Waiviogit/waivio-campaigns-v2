@@ -4,8 +4,8 @@ import { RewardsAllInterface } from '../../domain/campaign/rewards/interface/rew
 import {
   GetRewardsByRequiredObjectType,
   GetRewardsMainType,
-  RewardsByRequiredType,
-  RewardsMainType,
+  RewardsAllType,
+  RewardsByObjectType,
 } from '../../domain/campaign/rewards/types/rewards-all.types';
 
 @Injectable()
@@ -15,13 +15,13 @@ export class RewardsService {
     private readonly rewardsAll: RewardsAllInterface,
   ) {}
 
-  async getAllRewards(params: GetRewardsMainType): Promise<RewardsMainType[]> {
+  async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
     return this.rewardsAll.getRewardsMain(params);
   }
 
   async getAllRewardsByRequiredObject(
     params: GetRewardsByRequiredObjectType,
-  ): Promise<RewardsByRequiredType[]> {
+  ): Promise<RewardsByObjectType> {
     return this.rewardsAll.getRewardsByRequiredObject(params);
   }
 }

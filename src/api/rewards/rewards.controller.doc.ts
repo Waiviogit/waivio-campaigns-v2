@@ -1,8 +1,8 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
-  RewardAllMainOutDto,
-  RewardAllOutDto,
+  RewardsAllMainOutDto,
+  RewardsByObjectOutDto,
 } from '../../common/dto/rewards/out';
 
 export class RewardsControllerDoc {
@@ -31,7 +31,7 @@ export class RewardsControllerDoc {
       }),
       ApiResponse({
         status: HttpStatus.OK,
-        type: [RewardAllMainOutDto],
+        type: RewardsAllMainOutDto,
       }),
     );
   }
@@ -42,7 +42,7 @@ export class RewardsControllerDoc {
       }),
       ApiResponse({
         status: HttpStatus.OK,
-        type: [RewardAllOutDto],
+        type: RewardsByObjectOutDto,
       }),
     );
   }

@@ -6,12 +6,12 @@ export class SkipLimitDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsOptional()
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false, default: 0 })
   skip?: number = 0;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsOptional()
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false, default: 10 })
   limit?: number = 10;
 }

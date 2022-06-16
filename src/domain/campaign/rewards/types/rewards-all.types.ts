@@ -14,6 +14,11 @@ export type RewardsMainType = {
   rewardInUSD: number;
 };
 
+export type RewardsAllType = {
+  rewards: RewardsMainType[];
+  hasMore: boolean;
+};
+
 export type RewardsByRequiredType = {
   object: ProcessedWobjectType;
   payoutToken: string;
@@ -25,15 +30,20 @@ export type RewardsByRequiredType = {
   userRequirements: UserRequirementsType;
 };
 
+export type RewardsByObjectType = {
+  rewards: RewardsByRequiredType[];
+  hasMore: boolean;
+};
+
 export type GetRewardsMainType = {
-  skip: number;
-  limit: number;
+  skip?: number;
+  limit?: number;
   host: string;
 };
 
 export type GetRewardsByRequiredObjectType = {
-  skip: number;
-  limit: number;
+  skip?: number;
+  limit?: number;
   host: string;
   requiredObject: string;
 };

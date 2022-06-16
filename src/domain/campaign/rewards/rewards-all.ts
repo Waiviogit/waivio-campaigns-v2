@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import * as _ from 'lodash';
 import {
   APP_PROVIDE,
   CAMPAIGN_FIELDS,
@@ -11,6 +12,7 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import {
   GetRewardsByRequiredObjectType,
   GetRewardsMainType,
+  RewardsAllType, RewardsByObjectType,
   RewardsByRequiredType,
   RewardsMainType,
 } from './types/rewards-all.types';
@@ -33,7 +35,7 @@ export class RewardsAll implements RewardsAllInterface {
     skip,
     limit,
     host,
-  }: GetRewardsMainType): Promise<RewardsMainType[]> {
+  }: GetRewardsMainType): Promise<RewardsAllType> {
     const rewards: RewardsMainType[] = await this.campaignRepository.aggregate({
       pipeline: [
         { $match: { status: CAMPAIGN_STATUS.ACTIVE } },
@@ -45,7 +47,7 @@ export class RewardsAll implements RewardsAllInterface {
           },
         },
         { $skip: skip },
-        { $limit: limit },
+        { $limit: limit + 1 },
         {
           $lookup: {
             from: COLLECTION.WOBJECTS,
@@ -75,7 +77,10 @@ export class RewardsAll implements RewardsAllInterface {
         app,
       });
     }
-    return rewards;
+    return {
+      rewards: _.take(rewards, limit),
+      hasMore: rewards.length > limit,
+    };
   }
 
   async getRewardsByRequiredObject({
@@ -83,14 +88,14 @@ export class RewardsAll implements RewardsAllInterface {
     skip,
     limit,
     host,
-  }: GetRewardsByRequiredObjectType): Promise<RewardsByRequiredType[]> {
+  }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType> {
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
           { $match: { requiredObject, status: CAMPAIGN_STATUS.ACTIVE } },
           { $unwind: { path: '$objects' } },
           { $skip: skip },
-          { $limit: limit },
+          { $limit: limit + 1 },
           {
             $lookup: {
               from: COLLECTION.WOBJECTS,
@@ -122,6 +127,10 @@ export class RewardsAll implements RewardsAllInterface {
         app,
       });
     }
-    return rewards;
+
+    return {
+      rewards: _.take(rewards, limit),
+      hasMore: rewards.length > limit,
+    };
   }
 }
