@@ -13,12 +13,20 @@ export interface RewardsAllInterface {
     skip,
     limit,
     host,
+    sponsors,
+    type,
+    sort,
+    area,
   }: GetRewardsMainType): Promise<RewardsAllType>;
   getRewardsByRequiredObject({
     requiredObject,
     skip,
     limit,
     host,
+    sponsors,
+    type,
+    sort,
+    area,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType>;
   getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType>;
 }

@@ -1,5 +1,6 @@
 import { ProcessedWobjectType } from '../../../wobject/types';
 import {
+  CampaignDocumentType,
   ReviewRequirementsType,
   UserRequirementsType,
 } from '../../../../persistance/campaign/types';
@@ -8,10 +9,7 @@ export type RewardsMainType = {
   object: ProcessedWobjectType;
   maxReward: number;
   minReward: number;
-  payoutToken: string;
-  currency: string;
-  reward: number;
-  rewardInUSD: number;
+  distance: number | null;
 };
 
 export type RewardsAllType = {
@@ -39,6 +37,14 @@ export type GetRewardsMainType = {
   skip?: number;
   limit?: number;
   host: string;
+  sponsors?: string[];
+  type?: string[];
+  sort?: string;
+  area?: number[];
+};
+
+export type GetPrimaryObjectRewards = GetRewardsMainType & {
+  campaigns: CampaignDocumentType[];
 };
 
 export type GetRewardsByRequiredObjectType = {
@@ -46,9 +52,18 @@ export type GetRewardsByRequiredObjectType = {
   limit?: number;
   host: string;
   requiredObject: string;
+  sponsors?: string[];
+  type?: string[];
+  sort?: string;
+  area?: number[];
 };
 
 export type GetSponsorsType = {
   type: string[];
   sponsors: string[];
+};
+
+export type GetSortedCampaignMainType = {
+  sort?: string;
+  rewards: RewardsMainType[];
 };

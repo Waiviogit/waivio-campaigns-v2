@@ -6,6 +6,7 @@ import {
   FilterFieldValidationType,
   GetFieldsToDisplayInType,
   GetFilteredFieldsType,
+  GetWobjectsForCampaignsType,
   ProcessedFieldType,
   ProcessedWobjectType,
   ProcessWobjectsManyType,
@@ -17,6 +18,7 @@ import {
   ADMIN_ROLES,
   APP_PROVIDE,
   ARRAY_FIELDS,
+  CAMPAIGN_FIELDS,
   CAMPAIGN_PROVIDE,
   CATEGORY_SWITCHER,
   FIELDS_NAMES,
@@ -533,5 +535,21 @@ export class WobjectHelper implements WobjectHelperInterface {
         [campaign.requiredObject, ...campaign.objects],
       );
     }
+  }
+
+  async getWobjectsForCampaigns({
+    links,
+    host,
+  }: GetWobjectsForCampaignsType): Promise<ProcessedWobjectType[]> {
+    const app = await this.appRepository.findOneByHost(host);
+    const wobjects = (await this.wobjectRepository.find({
+      filter: { author_permlink: { $in: links } },
+    })) as ProcessedWobjectType[];
+
+    return this.processWobjects({
+      wobjects,
+      fields: CAMPAIGN_FIELDS,
+      app,
+    });
   }
 }

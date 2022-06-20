@@ -4,14 +4,18 @@ import {
   APP_PROVIDE,
   CAMPAIGN_FIELDS,
   CAMPAIGN_PROVIDE,
+  CAMPAIGN_SORTS,
   CAMPAIGN_STATUS,
   COLLECTION,
+  RESERVATION_STATUS,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
+  GetPrimaryObjectRewards,
   GetRewardsByRequiredObjectType,
   GetRewardsMainType,
+  GetSortedCampaignMainType,
   GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
@@ -21,6 +25,7 @@ import {
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { RewardsAllInterface } from './interface/rewards-all.interface';
+import { CampaignDocumentType } from '../../../persistance/campaign/types';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -37,52 +42,129 @@ export class RewardsAll implements RewardsAllInterface {
     skip,
     limit,
     host,
+    sponsors,
+    type,
+    sort,
+    area,
   }: GetRewardsMainType): Promise<RewardsAllType> {
-    const rewards: RewardsMainType[] = await this.campaignRepository.aggregate({
-      pipeline: [
-        { $match: { status: CAMPAIGN_STATUS.ACTIVE } },
-        {
-          $group: {
-            _id: '$requiredObject',
-            maxReward: { $max: '$reward' },
-            minReward: { $min: '$reward' },
-          },
-        },
-        { $skip: skip },
-        { $limit: limit + 1 },
-        {
-          $lookup: {
-            from: COLLECTION.WOBJECTS,
-            localField: '_id',
-            foreignField: 'author_permlink',
-            as: 'object',
-          },
-        },
-        {
-          $project: {
-            object: { $arrayElemAt: ['$object', 0] },
-            maxReward: 1,
-            minReward: 1,
-            payoutToken: 1,
-            currency: 1,
-            reward: 1,
-            rewardInUSD: 1,
-          },
-        },
-      ],
+    const campaigns = await this.campaignRepository.find({
+      filter: {
+        status: CAMPAIGN_STATUS.ACTIVE,
+        ...(sponsors && { $in: sponsors }),
+        ...(sponsors && { $in: type }),
+      },
     });
-    const app = await this.appRepository.findOneByHost(host);
-    for (const reward of rewards) {
-      reward.object = await this.wobjectHelper.processWobjects({
-        wobjects: reward.object,
-        fields: CAMPAIGN_FIELDS,
-        app,
+
+    return this.getPrimaryObjectRewards({
+      skip,
+      limit,
+      host,
+      sort,
+      area,
+      campaigns,
+    });
+  }
+
+  async getPrimaryObjectRewards({
+    skip,
+    limit,
+    host,
+    sort,
+    area,
+    campaigns,
+  }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
+    const rewards = [];
+    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
+      links: _.uniq(_.map(campaigns, 'requiredObject')),
+      host,
+    });
+    if (_.includes([CAMPAIGN_SORTS.PAYOUT, CAMPAIGN_SORTS.DEFAULT], sort)) {
+    }
+
+    const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
+    for (const key in groupedCampaigns) {
+      const object = _.find(objects, (obj) => obj.author_permlink === key);
+      const payout = this.getPayedForMain(groupedCampaigns[key]);
+      const coordinates = _.compact(this.parseCoordinates(object.map)) || [];
+      rewards.push({
+        lastCreated: _.maxBy(
+          groupedCampaigns[key],
+          (campaign) => campaign.createdAt,
+        ).createdAt,
+        minReward: _.minBy(
+          groupedCampaigns[key],
+          (campaign) => campaign.rewardInUSD,
+        ).rewardInUSD,
+        maxReward: _.maxBy(
+          groupedCampaigns[key],
+          (campaign) => campaign.rewardInUSD,
+        ).rewardInUSD,
+        distance:
+          area && coordinates.length === 2
+            ? this.getDistance(area, coordinates)
+            : null,
+        object,
+        payout,
       });
     }
+
+    const sorted = this.getSortedCampaignMain({ sort, rewards });
+
     return {
-      rewards: _.take(rewards, limit),
+      rewards: sorted.slice(skip, skip + limit),
       hasMore: rewards.length > limit,
     };
+  }
+
+  parseCoordinates(map: string): number[] | null {
+    try {
+      const coordinates = JSON.parse(map);
+      return [coordinates.longitude, coordinates.latitude];
+    } catch (error) {
+      return null;
+    }
+  }
+
+  getDistance(first: number[], second: number[]): number {
+    const EARTH_RADIUS = 6372795;
+    const long1 = first[0] * (Math.PI / 180);
+    const long2 = second[1] * (Math.PI / 180);
+    const lat1 = first[1] * (Math.PI / 180);
+    const lat2 = second[0] * (Math.PI / 180);
+
+    const cl1 = Math.cos(lat1);
+    const cl2 = Math.cos(lat2);
+    const sl1 = Math.sin(lat1);
+    const sl2 = Math.sin(lat2);
+    const delta = long2 - long1;
+    const cdelta = Math.cos(delta);
+    const sdelta = Math.sin(delta);
+
+    const y = Math.sqrt(
+      Math.pow(cl2 * sdelta, 2) + Math.pow(cl1 * sl2 - sl1 * cl2 * cdelta, 2),
+    );
+    const x = sl1 * sl2 + cl1 * cl2 * cdelta;
+
+    const ad = Math.atan2(y, x);
+    return Math.round(ad * EARTH_RADIUS);
+  }
+
+  getPayedForMain(campaigns: CampaignDocumentType[]): number {
+    return _.reduce(
+      campaigns,
+      (acc, el) => {
+        const countPayments = _.filter(
+          _.get(el, 'users', []),
+          (payment) => payment.status === RESERVATION_STATUS.COMPLETED,
+        ).length;
+        const payed = countPayments
+          ? countPayments * el.rewardInUSD * el.commissionAgreement
+          : el.rewardInUSD * el.commissionAgreement;
+        acc += payed;
+        return acc;
+      },
+      0,
+    );
   }
 
   async getRewardsByRequiredObject({
@@ -90,11 +172,21 @@ export class RewardsAll implements RewardsAllInterface {
     skip,
     limit,
     host,
+    sponsors,
+    type,
+    sort,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType> {
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
-          { $match: { requiredObject, status: CAMPAIGN_STATUS.ACTIVE } },
+          {
+            $match: {
+              requiredObject,
+              status: CAMPAIGN_STATUS.ACTIVE,
+              ...(sponsors && { $in: sponsors }),
+              ...(sponsors && { $in: type }),
+            },
+          },
           { $unwind: { path: '$objects' } },
           { $skip: skip },
           { $limit: limit + 1 },
@@ -162,5 +254,28 @@ export class RewardsAll implements RewardsAllInterface {
       },
     );
     return sponsors[0];
+  }
+
+  getSortedCampaignMain({
+    sort,
+    rewards,
+  }: GetSortedCampaignMainType): RewardsMainType[] {
+    switch (sort) {
+      case CAMPAIGN_SORTS.DATE:
+        return _.orderBy(rewards, ['lastCreated'], ['desc']);
+      case CAMPAIGN_SORTS.PROXIMITY:
+        return _.sortBy(rewards, (campaign) => campaign.distance);
+      case CAMPAIGN_SORTS.REWARD:
+        return _.orderBy(rewards, ['maxReward', 'lastCreated'], ['desc']);
+      case CAMPAIGN_SORTS.PAYOUT:
+        return _.orderBy(rewards, ['payout'], ['desc']);
+      case CAMPAIGN_SORTS.DEFAULT:
+      default:
+        return _.orderBy(
+          rewards,
+          [(reward) => reward.distance, 'payout'],
+          ['asc', 'desc'],
+        );
+    }
   }
 }

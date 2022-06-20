@@ -4,7 +4,8 @@ import { GuideCampaignsInterface } from '../../domain/campaign/interface';
 import {
   GuideManageCampaignType,
   GuideBalanceType,
-  getInactiveCampaignsType, InactiveCampaignsType,
+  getInactiveCampaignsType,
+  InactiveCampaignsType,
 } from '../../domain/campaign/types';
 
 @Injectable()

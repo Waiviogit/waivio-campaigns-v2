@@ -1,4 +1,5 @@
 import {
+  GetWobjectsForCampaignsType,
   ProcessedWobjectType,
   ProcessWobjectsManyType,
   ProcessWobjectsSingleType,
@@ -15,4 +16,8 @@ export interface WobjectHelperInterface {
     filter: FilterQuery<CampaignDocumentType>,
     status: string,
   ): Promise<void>;
+  getWobjectsForCampaigns({
+    links,
+    host,
+  }: GetWobjectsForCampaignsType): Promise<ProcessedWobjectType[]>;
 }

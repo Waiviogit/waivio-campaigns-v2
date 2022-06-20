@@ -108,3 +108,8 @@ export type SpecialFieldFilterType = {
   allFields: ProcessedFieldType[];
   id: string;
 };
+
+export type GetWobjectsForCampaignsType = {
+  links: string[];
+  host: string;
+};

@@ -9,6 +9,7 @@ import {
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
 import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
+import { RewardsAllInDto } from '../../common/dto/rewards/in';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -20,10 +21,10 @@ export class RewardsController {
   async getAllRewards(
     @CustomHeaders(new HostPipe())
     host: string,
-    @Query() skipLimitDto: SkipLimitDto,
+    @Query() rewardsAllInDto: RewardsAllInDto,
   ): Promise<RewardsAllMainOutDto> {
     return this.rewardsService.getAllRewards({
-      ...skipLimitDto,
+      ...rewardsAllInDto,
       host,
     });
   }

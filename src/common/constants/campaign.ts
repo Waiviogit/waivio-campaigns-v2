@@ -10,6 +10,14 @@ export const CAMPAIGN_STATUS = Object.freeze({
   SUSPENDED: 'suspended',
 });
 
+export const CAMPAIGN_SORTS = Object.freeze({
+  REWARD: 'reward',
+  DATE: 'date',
+  PROXIMITY: 'proximity',
+  PAYOUT: 'payout',
+  DEFAULT: 'default',
+});
+
 export const ACTIVE_CAMPAIGN_STATUSES = [
   CAMPAIGN_STATUS.ACTIVE,
   CAMPAIGN_STATUS.REACHED_LIMIT,
