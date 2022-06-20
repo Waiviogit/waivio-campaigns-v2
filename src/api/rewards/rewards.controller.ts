@@ -8,6 +8,7 @@ import {
 } from '../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
+import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -41,5 +42,20 @@ export class RewardsController {
       host,
       ...skipLimitDto,
     });
+  }
+
+  @Get('sponsors/all')
+  @RewardsControllerDoc.getSponsors()
+  async getAllSponsors(): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsAll();
+  }
+
+  @Get('sponsors/all/:requiredObject')
+  @RewardsControllerDoc.getSponsors()
+  async getAllSponsorsByObject(
+    @Param('requiredObject')
+    requiredObject: string,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsAll(requiredObject);
   }
 }

@@ -4,6 +4,7 @@ import { RewardsAllInterface } from '../../domain/campaign/rewards/interface/rew
 import {
   GetRewardsByRequiredObjectType,
   GetRewardsMainType,
+  GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
 } from '../../domain/campaign/rewards/types/rewards-all.types';
@@ -23,5 +24,9 @@ export class RewardsService {
     params: GetRewardsByRequiredObjectType,
   ): Promise<RewardsByObjectType> {
     return this.rewardsAll.getRewardsByRequiredObject(params);
+  }
+
+  async getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType> {
+    return this.rewardsAll.getSponsorsAll(requiredObject);
   }
 }

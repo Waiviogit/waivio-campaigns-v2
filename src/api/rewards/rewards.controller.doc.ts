@@ -4,6 +4,7 @@ import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
 } from '../../common/dto/rewards/out';
+import {RewardSponsorsDto} from "../../common/dto/rewards/out/reward-sponsors.dto";
 
 export class RewardsControllerDoc {
   static main(): ClassDecorator {
@@ -43,6 +44,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: RewardsByObjectOutDto,
+      }),
+    );
+  }
+
+  static getSponsors(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get rewards by required object',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardSponsorsDto,
       }),
     );
   }

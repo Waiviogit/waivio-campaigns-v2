@@ -1,6 +1,9 @@
 import {
   GetRewardsByRequiredObjectType,
-  GetRewardsMainType, RewardsAllType, RewardsByObjectType,
+  GetRewardsMainType,
+  GetSponsorsType,
+  RewardsAllType,
+  RewardsByObjectType,
   RewardsByRequiredType,
   RewardsMainType,
 } from '../types/rewards-all.types';
@@ -17,4 +20,5 @@ export interface RewardsAllInterface {
     limit,
     host,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType>;
+  getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType>;
 }

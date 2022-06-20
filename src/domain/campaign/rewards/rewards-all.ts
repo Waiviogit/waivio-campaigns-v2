@@ -12,7 +12,9 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import {
   GetRewardsByRequiredObjectType,
   GetRewardsMainType,
-  RewardsAllType, RewardsByObjectType,
+  GetSponsorsType,
+  RewardsAllType,
+  RewardsByObjectType,
   RewardsByRequiredType,
   RewardsMainType,
 } from './types/rewards-all.types';
@@ -132,5 +134,33 @@ export class RewardsAll implements RewardsAllInterface {
       rewards: _.take(rewards, limit),
       hasMore: rewards.length > limit,
     };
+  }
+
+  async getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType> {
+    const sponsors: GetSponsorsType[] = await this.campaignRepository.aggregate(
+      {
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              ...(requiredObject && { requiredObject }),
+            },
+          },
+          {
+            $group: {
+              _id: '$status',
+              type: { $addToSet: '$type' },
+              sponsors: { $addToSet: '$guideName' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ],
+      },
+    );
+    return sponsors[0];
   }
 }

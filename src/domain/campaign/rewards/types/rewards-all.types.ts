@@ -47,3 +47,8 @@ export type GetRewardsByRequiredObjectType = {
   host: string;
   requiredObject: string;
 };
+
+export type GetSponsorsType = {
+  type: string[];
+  sponsors: string[];
+};
