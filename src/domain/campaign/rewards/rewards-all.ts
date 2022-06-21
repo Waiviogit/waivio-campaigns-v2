@@ -78,14 +78,12 @@ export class RewardsAll implements RewardsAllInterface {
       links: _.uniq(_.map(campaigns, 'requiredObject')),
       host,
     });
-    if (_.includes([CAMPAIGN_SORTS.PAYOUT, CAMPAIGN_SORTS.DEFAULT], sort)) {
-    }
 
     const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
     for (const key in groupedCampaigns) {
-      const object = _.find(objects, (obj) => obj.author_permlink === key);
+      const object = objects.find((o) => o.author_permlink === key);
       const payout = this.getPayedForMain(groupedCampaigns[key]);
-      const coordinates = _.compact(this.parseCoordinates(object.map)) || [];
+      const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
       rewards.push({
         lastCreated: _.maxBy(
           groupedCampaigns[key],
@@ -220,6 +218,7 @@ export class RewardsAll implements RewardsAllInterface {
         wobjects: reward.object,
         fields: CAMPAIGN_FIELDS,
         app,
+        returnArray: false,
       });
     }
 

@@ -110,6 +110,7 @@ export class FraudDetection implements FraudDetectionInterface {
       wobjects: result as ProcessedWobjectType,
       fields: [FIELDS_NAMES.MAP],
       app,
+      returnArray: false,
     });
     if (_.get(fields, FIELDS_NAMES.MAP)) map = JSON.parse(fields.map);
     return map;

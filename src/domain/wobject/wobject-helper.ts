@@ -444,6 +444,7 @@ export class WobjectHelper implements WobjectHelperInterface {
     fields,
     app,
     locale = LANGUAGES.en_US,
+    returnArray,
   }: ProcessWobjectsType): ProcessedWobjectType | ProcessedWobjectType[] {
     const filteredWobjects = [];
     const admins = _.get(app, 'admins', []);
@@ -500,9 +501,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       filteredWobjects.push(obj);
     }
 
-    const length = _.get(wobjects, 'length');
-
-    return length > 1 ? filteredWobjects : filteredWobjects[0];
+    return returnArray ? filteredWobjects : filteredWobjects[0];
   }
 
   async getWobjectName(permlink: string): Promise<string> {
@@ -515,6 +514,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       wobjects: wobject as ProcessedWobjectType,
       fields: [FIELDS_NAMES.NAME],
       app,
+      returnArray: false,
     });
     return processed.name || wobject.default_name;
   }
@@ -550,6 +550,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       wobjects,
       fields: CAMPAIGN_FIELDS,
       app,
+      returnArray: true,
     });
   }
 }

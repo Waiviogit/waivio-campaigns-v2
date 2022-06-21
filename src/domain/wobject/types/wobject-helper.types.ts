@@ -9,6 +9,7 @@ export type ProcessWobjectsType = {
   fields: string[];
   app?: AppDocumentType;
   locale?: string;
+  returnArray?: boolean;
 };
 
 export type ProcessWobjectsSingleType = {
@@ -16,6 +17,7 @@ export type ProcessWobjectsSingleType = {
   fields: string[];
   app?: AppDocumentType;
   locale?: string;
+  returnArray?: boolean;
 };
 
 export type ProcessWobjectsManyType = {
@@ -23,6 +25,7 @@ export type ProcessWobjectsManyType = {
   fields: string[];
   app?: AppDocumentType;
   locale?: string;
+  returnArray?: boolean;
 };
 
 export type ProcessedWobjectType = WobjectDocumentType &
