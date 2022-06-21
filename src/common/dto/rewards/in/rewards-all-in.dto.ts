@@ -38,4 +38,9 @@ export class RewardsAllInDto extends SkipLimitDto {
     required: false,
   })
   area?: number[] = [0, 0];
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ type: String, required: false })
+  userName?: string;
 }

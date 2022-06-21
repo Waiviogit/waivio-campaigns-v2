@@ -1,18 +1,16 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ObjectId, Types } from 'mongoose';
+import { ObjectId } from 'mongoose';
 import * as _ from 'lodash';
 
 import {
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
-  // PAYMENT_STATUS,
   PAYOUT_TOKEN,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
 import { configService } from '../../common/config';
 import {
-  // CampaignPaymentDocumentType,
   CampaignUserDocumentType,
   ReservationTimetableType,
   ReviewRequirementsType,

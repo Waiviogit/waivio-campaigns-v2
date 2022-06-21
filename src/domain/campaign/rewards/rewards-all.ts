@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import {
   APP_PROVIDE,
   CAMPAIGN_FIELDS,
@@ -8,12 +9,14 @@ import {
   CAMPAIGN_STATUS,
   COLLECTION,
   RESERVATION_STATUS,
+  USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
   GetPrimaryObjectRewards,
   GetRewardsByRequiredObjectType,
+  GetRewardsEligibleType,
   GetRewardsMainType,
   GetSortedCampaignMainType,
   GetSponsorsType,
@@ -26,6 +29,7 @@ import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { RewardsAllInterface } from './interface/rewards-all.interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -36,7 +40,167 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly wobjectHelper: WobjectHelperInterface,
     @Inject(APP_PROVIDE.REPOSITORY)
     private readonly appRepository: AppRepositoryInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
+
+  async getRewardsEligibleMain({
+    skip,
+    limit,
+    host,
+    sponsors,
+    type,
+    sort,
+    area,
+    userName,
+  }: GetRewardsEligibleType): Promise<RewardsAllType> {
+    const currentDay = moment().format('dddd').toLowerCase();
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+    const campaigns: CampaignDocumentType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              ...(sponsors && { $in: sponsors }),
+              ...(sponsors && { $in: type }),
+            },
+          },
+          {
+            $addFields: {
+              completedUser: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.name', userName] },
+                      { $eq: ['$$user.status', 'completed'] },
+                    ],
+                  },
+                },
+              },
+              assignedUser: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.name', userName] },
+                      { $eq: ['$$user.status', 'assigned'] },
+                    ],
+                  },
+                },
+              },
+              thisMonthCompleted: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.status', 'completed'] },
+                      {
+                        $gte: [
+                          '$$user.updatedAt',
+                          moment.utc().startOf('month').toDate(),
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+              assigned: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: { $eq: ['$$user.status', 'assigned'] },
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              assignedUser: { $size: '$assignedUser' },
+              thisMonthCompleted: { $size: '$thisMonthCompleted' },
+              assigned: { $size: '$assigned' },
+              completedUser: {
+                $arrayElemAt: [
+                  '$completedUser',
+                  {
+                    $indexOfArray: [
+                      '$completedUser.updatedAt',
+                      { $max: '$array.updatedAt' },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          {
+            $addFields: {
+              monthBudget: {
+                $multiply: [
+                  '$reward',
+                  { $sum: ['$thisMonthCompleted', '$assigned'] },
+                ],
+              },
+              daysPassed: {
+                $dateDiff: {
+                  startDate: '$completedUser.updatedAt',
+                  endDate: moment.utc().toDate(),
+                  unit: 'day',
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              canAssignByBudget: { $gt: ['$budget', '$monthBudget'] },
+              canAssignByCurrentDay: {
+                $eq: [`$reservationTimetable.${currentDay}`, true],
+              },
+              posts: { $gte: [user.count_posts, '$userRequirements.minPosts'] },
+              followers: {
+                $gte: [user.followers_count, '$userRequirements.followers'],
+              },
+              expertise: {
+                $gte: [user.wobjects_weight, '$userRequirements.expertise'],
+              },
+              notAssigned: { $eq: ['$assignedUser', 0] },
+              frequency: {
+                $or: [
+                  { $gt: ['$daysPassed', '$frequencyAssign'] },
+                  { $eq: ['$daysPassed', null] },
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              canAssignByBudget: true,
+              canAssignByCurrentDay: true,
+              posts: true,
+              followers: true,
+              expertise: true,
+              notAssigned: true,
+              frequency: true,
+            },
+          },
+        ],
+      });
+
+    return this.getPrimaryObjectRewards({
+      skip,
+      limit,
+      host,
+      sort,
+      area,
+      campaigns,
+    });
+  }
 
   async getRewardsMain({
     skip,

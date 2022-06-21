@@ -28,6 +28,19 @@ export class RewardsController {
     });
   }
 
+  @Get('eligible')
+  @RewardsControllerDoc.getAllRewards()
+  async getAllEligibleRewards(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Query() rewardsAllInDto: RewardsAllInDto,
+  ): Promise<RewardsAllMainOutDto> {
+    return this.rewardsService.getAllEligible({
+      ...rewardsAllInDto,
+      host,
+    });
+  }
+
   @Get('all/object/:requiredObject')
   @RewardsControllerDoc.getAllRewardsByRequiredObject()
   async getAllRewardsByRequiredObject(

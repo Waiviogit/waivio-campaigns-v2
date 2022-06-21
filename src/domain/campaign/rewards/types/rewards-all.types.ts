@@ -43,6 +43,10 @@ export type GetRewardsMainType = {
   area?: number[];
 };
 
+export type GetRewardsEligibleType = GetRewardsMainType & {
+  userName?: string;
+};
+
 export type GetPrimaryObjectRewards = GetRewardsMainType & {
   campaigns: CampaignDocumentType[];
 };

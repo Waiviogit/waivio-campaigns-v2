@@ -3,6 +3,7 @@ import { REWARDS_PROVIDE } from '../../common/constants';
 import { RewardsAllInterface } from '../../domain/campaign/rewards/interface/rewards-all.interface';
 import {
   GetRewardsByRequiredObjectType,
+  GetRewardsEligibleType,
   GetRewardsMainType,
   GetSponsorsType,
   RewardsAllType,
@@ -18,6 +19,12 @@ export class RewardsService {
 
   async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
     return this.rewardsAll.getRewardsMain(params);
+  }
+
+  async getAllEligible(
+    params: GetRewardsEligibleType,
+  ): Promise<RewardsAllType> {
+    return this.rewardsAll.getRewardsEligibleMain(params);
   }
 
   async getAllRewardsByRequiredObject(
