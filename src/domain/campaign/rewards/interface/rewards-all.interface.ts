@@ -5,8 +5,6 @@ import {
   GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
-  RewardsByRequiredType,
-  RewardsMainType,
 } from '../types/rewards-all.types';
 
 export interface RewardsAllInterface {
@@ -40,4 +38,12 @@ export interface RewardsAllInterface {
     area,
     userName,
   }: GetRewardsEligibleType): Promise<RewardsAllType>;
+  getEligibleByObject({
+    skip,
+    limit,
+    host,
+    sponsors,
+    type,
+    userName,
+  }: GetRewardsEligibleType): Promise<RewardsByObjectType>;
 }

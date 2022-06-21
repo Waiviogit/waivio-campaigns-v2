@@ -71,6 +71,9 @@ export class RewardsAll implements RewardsAllInterface {
           },
           {
             $addFields: {
+              blacklist: {
+                $setDifference: ['$blacklistUsers', '$whitelistUsers'],
+              },
               completedUser: {
                 $filter: {
                   input: '$users',
@@ -187,6 +190,7 @@ export class RewardsAll implements RewardsAllInterface {
               expertise: true,
               notAssigned: true,
               frequency: true,
+              blacklist: { $ne: userName },
             },
           },
         ],
@@ -200,6 +204,197 @@ export class RewardsAll implements RewardsAllInterface {
       area,
       campaigns,
     });
+  }
+
+  async getEligibleByObject({
+    skip,
+    limit,
+    host,
+    sponsors,
+    type,
+    userName,
+  }: GetRewardsEligibleType): Promise<RewardsByObjectType> {
+    const currentDay = moment().format('dddd').toLowerCase();
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+    const rewards: RewardsByRequiredType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              ...(sponsors && { $in: sponsors }),
+              ...(sponsors && { $in: type }),
+            },
+          },
+          {
+            $addFields: {
+              blacklist: {
+                $setDifference: ['$blacklistUsers', '$whitelistUsers'],
+              },
+              completedUser: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.name', userName] },
+                      { $eq: ['$$user.status', 'completed'] },
+                    ],
+                  },
+                },
+              },
+              assignedUser: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.name', userName] },
+                      { $eq: ['$$user.status', 'assigned'] },
+                    ],
+                  },
+                },
+              },
+              thisMonthCompleted: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.status', 'completed'] },
+                      {
+                        $gte: [
+                          '$$user.updatedAt',
+                          moment.utc().startOf('month').toDate(),
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+              assigned: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: { $eq: ['$$user.status', 'assigned'] },
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              assignedUser: { $size: '$assignedUser' },
+              thisMonthCompleted: { $size: '$thisMonthCompleted' },
+              assigned: { $size: '$assigned' },
+              completedUser: {
+                $arrayElemAt: [
+                  '$completedUser',
+                  {
+                    $indexOfArray: [
+                      '$completedUser.updatedAt',
+                      { $max: '$array.updatedAt' },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          {
+            $addFields: {
+              monthBudget: {
+                $multiply: [
+                  '$reward',
+                  { $sum: ['$thisMonthCompleted', '$assigned'] },
+                ],
+              },
+              daysPassed: {
+                $dateDiff: {
+                  startDate: '$completedUser.updatedAt',
+                  endDate: moment.utc().toDate(),
+                  unit: 'day',
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              canAssignByBudget: { $gt: ['$budget', '$monthBudget'] },
+              canAssignByCurrentDay: {
+                $eq: [`$reservationTimetable.${currentDay}`, true],
+              },
+              posts: { $gte: [user.count_posts, '$userRequirements.minPosts'] },
+              followers: {
+                $gte: [user.followers_count, '$userRequirements.followers'],
+              },
+              expertise: {
+                $gte: [user.wobjects_weight, '$userRequirements.expertise'],
+              },
+              notAssigned: { $eq: ['$assignedUser', 0] },
+              frequency: {
+                $or: [
+                  { $gt: ['$daysPassed', '$frequencyAssign'] },
+                  { $eq: ['$daysPassed', null] },
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              canAssignByBudget: true,
+              canAssignByCurrentDay: true,
+              posts: true,
+              followers: true,
+              expertise: true,
+              notAssigned: true,
+              frequency: true,
+              blacklist: { $ne: userName },
+            },
+          },
+          { $unwind: { path: '$objects' } },
+          { $sort: { rewardInUsd: -1 } },
+          { $skip: skip },
+          { $limit: limit + 1 },
+          {
+            $lookup: {
+              from: COLLECTION.WOBJECTS,
+              localField: 'objects',
+              foreignField: 'author_permlink',
+              as: 'object',
+            },
+          },
+          {
+            $project: {
+              object: { $arrayElemAt: ['$object', 0] },
+              payoutToken: 1,
+              currency: 1,
+              reward: 1,
+              rewardInUSD: 1,
+              guideName: 1,
+              requirements: 1,
+              userRequirements: 1,
+            },
+          },
+        ],
+      });
+
+    const app = await this.appRepository.findOneByHost(host);
+    for (const reward of rewards) {
+      if (!reward.object) continue;
+      reward.object = await this.wobjectHelper.processWobjects({
+        wobjects: reward.object,
+        fields: CAMPAIGN_FIELDS,
+        app,
+        returnArray: false,
+      });
+    }
+
+    return {
+      rewards: _.take(rewards, limit),
+      hasMore: rewards.length > limit,
+    };
   }
 
   async getRewardsMain({
@@ -378,6 +573,7 @@ export class RewardsAll implements RewardsAllInterface {
       });
     const app = await this.appRepository.findOneByHost(host);
     for (const reward of rewards) {
+      if (!reward.object) continue;
       reward.object = await this.wobjectHelper.processWobjects({
         wobjects: reward.object,
         fields: CAMPAIGN_FIELDS,

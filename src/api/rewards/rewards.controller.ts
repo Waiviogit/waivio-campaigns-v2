@@ -57,6 +57,19 @@ export class RewardsController {
     });
   }
 
+  @Get('eligible/object/:requiredObject')
+  @RewardsControllerDoc.getAllRewards()
+  async getEligibleByObject(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Query() rewardsAllInDto: RewardsAllInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getEligibleByObject({
+      ...rewardsAllInDto,
+      host,
+    });
+  }
+
   @Get('all/sponsors')
   @RewardsControllerDoc.getSponsors()
   async getAllSponsors(): Promise<RewardSponsorsDto> {

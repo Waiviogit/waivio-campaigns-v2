@@ -33,6 +33,12 @@ export class RewardsService {
     return this.rewardsAll.getRewardsByRequiredObject(params);
   }
 
+  async getEligibleByObject(
+    params: GetRewardsEligibleType,
+  ): Promise<RewardsByObjectType> {
+    return this.rewardsAll.getEligibleByObject(params);
+  }
+
   async getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType> {
     return this.rewardsAll.getSponsorsAll(requiredObject);
   }
