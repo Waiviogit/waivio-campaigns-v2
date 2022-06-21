@@ -7,7 +7,6 @@ import {
   RewardsByObjectOutDto,
 } from '../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
-import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
 import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
 import { RewardsAllInDto } from '../../common/dto/rewards/in';
 
@@ -29,10 +28,10 @@ export class RewardsController {
     });
   }
 
-  @Get('all/:requiredObject')
+  @Get('all/object/:requiredObject')
   @RewardsControllerDoc.getAllRewardsByRequiredObject()
   async getAllRewardsByRequiredObject(
-    @Query() skipLimitDto: SkipLimitDto,
+    @Query() rewardsAllInDto: RewardsAllInDto,
     @CustomHeaders(new HostPipe())
     host: string,
     @Param('requiredObject')
@@ -41,17 +40,17 @@ export class RewardsController {
     return this.rewardsService.getAllRewardsByRequiredObject({
       requiredObject,
       host,
-      ...skipLimitDto,
+      ...rewardsAllInDto,
     });
   }
 
-  @Get('sponsors/all')
+  @Get('all/sponsors')
   @RewardsControllerDoc.getSponsors()
   async getAllSponsors(): Promise<RewardSponsorsDto> {
     return this.rewardsService.getSponsorsAll();
   }
 
-  @Get('sponsors/all/:requiredObject')
+  @Get('all/sponsors/object/:requiredObject')
   @RewardsControllerDoc.getSponsors()
   async getAllSponsorsByObject(
     @Param('requiredObject')

@@ -4,7 +4,7 @@ import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
 } from '../../common/dto/rewards/out';
-import {RewardSponsorsDto} from "../../common/dto/rewards/out/reward-sponsors.dto";
+import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
 
 export class RewardsControllerDoc {
   static main(): ClassDecorator {

@@ -188,6 +188,7 @@ export class RewardsAll implements RewardsAllInterface {
             },
           },
           { $unwind: { path: '$objects' } },
+          { $sort: { rewardInUsd: -1 } },
           { $skip: skip },
           { $limit: limit + 1 },
           {
