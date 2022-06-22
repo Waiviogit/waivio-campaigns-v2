@@ -10,6 +10,12 @@ export const CAMPAIGN_STATUS = Object.freeze({
   SUSPENDED: 'suspended',
 });
 
+export const REWARDS_TAB = Object.freeze({
+  ALL: 'all',
+  ELIGIBLE: 'eligible',
+  RESERVED: 'reserved',
+});
+
 export const CAMPAIGN_SORTS = Object.freeze({
   REWARD: 'reward',
   DATE: 'date',

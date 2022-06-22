@@ -5,6 +5,7 @@ import { RewardsService } from './rewards.service';
 import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
+  RewardsTabDto,
 } from '../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
@@ -14,6 +15,15 @@ import { RewardsAllInDto } from '../../common/dto/rewards/in';
 @Controller('rewards')
 export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}
+
+  @Get('tab-type/:userName')
+  @RewardsControllerDoc.getTabType()
+  async getTabType(
+    @Param('userName')
+    userName: string,
+  ): Promise<RewardsTabDto> {
+    return this.rewardsService.getTabType(userName);
+  }
 
   @Get('all')
   @RewardsControllerDoc.getAllRewards()

@@ -11,6 +11,7 @@ import {
   RESERVATION_STATUS,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
+  REWARDS_TAB,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -26,12 +27,14 @@ import {
   RewardsByObjectType,
   RewardsByRequiredType,
   RewardsMainType,
+  RewardsTabType,
 } from './types/rewards-all.types';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { RewardsAllInterface } from './interface/rewards-all.interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
+import { configService } from '../../../common/config';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -45,6 +48,24 @@ export class RewardsAll implements RewardsAllInterface {
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
   ) {}
+
+  async getRewardsTab(userName: string): Promise<RewardsTabType> {
+    const { rewards } = await this.getReserved({
+      userName,
+      skip: 0,
+      limit: 1,
+      host: configService.getAppHost(),
+    });
+    if (rewards.length) return { tabType: REWARDS_TAB.RESERVED };
+    const { rewards: eligible } = await this.getRewardsEligibleMain({
+      userName,
+      skip: 0,
+      limit: 1,
+      host: configService.getAppHost(),
+    });
+    if (eligible.length) return { tabType: REWARDS_TAB.ELIGIBLE };
+    return { tabType: REWARDS_TAB.ALL };
+  }
 
   async getReserved({
     userName,
@@ -80,8 +101,7 @@ export class RewardsAll implements RewardsAllInterface {
     });
     for (const campaign of campaigns) {
       const user = campaign.users.find(
-        (u) =>
-          u.name === userName && u.status === RESERVATION_STATUS.ASSIGNED,
+        (u) => u.name === userName && u.status === RESERVATION_STATUS.ASSIGNED,
       );
       if (!user) continue;
       const object = objects.find(

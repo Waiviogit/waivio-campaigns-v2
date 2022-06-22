@@ -3,6 +3,7 @@ import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
+  RewardsTabDto,
 } from '../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
 
@@ -21,6 +22,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.BAD_REQUEST,
         description: 'Validation error',
+      }),
+    );
+  }
+
+  static getTabType(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get tab type',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsTabDto,
       }),
     );
   }

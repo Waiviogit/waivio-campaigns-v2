@@ -80,3 +80,7 @@ export type GetSortedRewardsReservedType = {
   sort?: string;
   rewards: RewardsByRequiredType[];
 };
+
+export type RewardsTabType = {
+  tabType: string;
+};

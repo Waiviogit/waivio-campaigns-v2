@@ -6,6 +6,7 @@ import {
   GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
+  RewardsTabType,
 } from '../types/rewards-all.types';
 
 export interface RewardsAllInterface {
@@ -57,4 +58,6 @@ export interface RewardsAllInterface {
     type,
     sponsors,
   }: GetReservedType): Promise<RewardsByObjectType>;
+
+  getRewardsTab(userName: string): Promise<RewardsTabType>;
 }

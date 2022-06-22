@@ -9,6 +9,7 @@ import {
   GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
+  RewardsTabType,
 } from '../../domain/campaign/rewards/types/rewards-all.types';
 
 @Injectable()
@@ -46,5 +47,9 @@ export class RewardsService {
 
   async getReserved(params: GetReservedType): Promise<RewardsByObjectType> {
     return this.rewardsAll.getReserved(params);
+  }
+
+  async getTabType(userName: string): Promise<RewardsTabType> {
+    return this.rewardsAll.getRewardsTab(userName);
   }
 }
