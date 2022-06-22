@@ -319,7 +319,7 @@ export class CampaignDto {
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => UserRequirementsDto)
+  @Type(() => ReservationTimetableDto)
   @ApiProperty({ type: () => ReservationTimetableDto, required: false })
   reservationTimetable: ReservationTimetableDto;
 
