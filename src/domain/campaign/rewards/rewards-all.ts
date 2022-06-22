@@ -15,10 +15,12 @@ import {
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
   GetPrimaryObjectRewards,
+  GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
   GetRewardsMainType,
   GetSortedCampaignMainType,
+  GetSortedRewardsReservedType,
   GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
@@ -43,6 +45,74 @@ export class RewardsAll implements RewardsAllInterface {
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
   ) {}
+
+  async getReserved({
+    userName,
+    skip,
+    limit,
+    host,
+    sort,
+    area,
+    type,
+    sponsors,
+  }: GetReservedType): Promise<RewardsByObjectType> {
+    const rewards = [];
+    const campaigns: CampaignDocumentType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              'users.status': RESERVATION_STATUS.ASSIGNED,
+              'users.name': userName,
+              ...(sponsors && { $in: sponsors }),
+              ...(sponsors && { $in: type }),
+            },
+          },
+        ],
+      });
+
+    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
+      links: _.uniq([
+        ..._.map(campaigns, 'requiredObject'),
+        ..._.map(campaigns, 'users.objectPermlink'),
+      ]),
+      host,
+    });
+    for (const campaign of campaigns) {
+      const user = campaign.users.find(
+        (u) =>
+          u.name === userName && u.status === RESERVATION_STATUS.ASSIGNED,
+      );
+      if (!user) continue;
+      const object = objects.find(
+        (o) => o.author_permlink === user.objectPermlink,
+      );
+      const payout = this.getPayedForMain([campaign]);
+      const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
+      rewards.push({
+        payout,
+        payoutToken: campaign.payoutToken,
+        currency: campaign.currency,
+        reward: campaign.reward,
+        rewardInUSD: campaign.rewardInUSD,
+        guideName: campaign.guideName,
+        requirements: campaign.requirements,
+        userRequirements: campaign.userRequirements,
+        createdAt: campaign.createdAt,
+        distance:
+          area && coordinates.length === 2
+            ? this.getDistance(area, coordinates)
+            : null,
+        object,
+      });
+    }
+    const sorted = this.getSortedRewardsReserved({ sort, rewards });
+
+    return {
+      rewards: sorted.slice(skip, skip + limit),
+      hasMore: sorted.slice(skip).length > limit,
+    };
+  }
 
   async getRewardsEligibleMain({
     skip,
@@ -469,7 +539,7 @@ export class RewardsAll implements RewardsAllInterface {
 
     return {
       rewards: sorted.slice(skip, skip + limit),
-      hasMore: rewards.length > limit,
+      hasMore: sorted.slice(skip).length > limit,
     };
   }
 
@@ -627,6 +697,29 @@ export class RewardsAll implements RewardsAllInterface {
         return _.sortBy(rewards, (campaign) => campaign.distance);
       case CAMPAIGN_SORTS.REWARD:
         return _.orderBy(rewards, ['maxReward', 'lastCreated'], ['desc']);
+      case CAMPAIGN_SORTS.PAYOUT:
+        return _.orderBy(rewards, ['payout'], ['desc']);
+      case CAMPAIGN_SORTS.DEFAULT:
+      default:
+        return _.orderBy(
+          rewards,
+          [(reward) => reward.distance, 'payout'],
+          ['asc', 'desc'],
+        );
+    }
+  }
+
+  getSortedRewardsReserved({
+    sort,
+    rewards,
+  }: GetSortedRewardsReservedType): RewardsByRequiredType[] {
+    switch (sort) {
+      case CAMPAIGN_SORTS.DATE:
+        return _.orderBy(rewards, ['createdAt'], ['desc']);
+      case CAMPAIGN_SORTS.PROXIMITY:
+        return _.sortBy(rewards, (campaign) => campaign.distance);
+      case CAMPAIGN_SORTS.REWARD:
+        return _.orderBy(rewards, ['reward', 'createdAt'], ['desc']);
       case CAMPAIGN_SORTS.PAYOUT:
         return _.orderBy(rewards, ['payout'], ['desc']);
       case CAMPAIGN_SORTS.DEFAULT:

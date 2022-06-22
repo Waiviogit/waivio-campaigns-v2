@@ -43,6 +43,10 @@ export type GetRewardsMainType = {
   area?: number[];
 };
 
+export type GetReservedType = GetRewardsMainType & {
+  userName: string;
+};
+
 export type GetRewardsEligibleType = GetRewardsMainType & {
   userName?: string;
 };
@@ -70,4 +74,9 @@ export type GetSponsorsType = {
 export type GetSortedCampaignMainType = {
   sort?: string;
   rewards: RewardsMainType[];
+};
+
+export type GetSortedRewardsReservedType = {
+  sort?: string;
+  rewards: RewardsByRequiredType[];
 };

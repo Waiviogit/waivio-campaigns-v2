@@ -84,4 +84,20 @@ export class RewardsController {
   ): Promise<RewardSponsorsDto> {
     return this.rewardsService.getSponsorsAll(requiredObject);
   }
+
+  @Get('reserved/:userName')
+  @RewardsControllerDoc.getAllRewards()
+  async getReserved(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Query() rewardsAllInDto: RewardsAllInDto,
+    @Param('userName')
+    userName: string,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getReserved({
+      ...rewardsAllInDto,
+      host,
+      userName,
+    });
+  }
 }

@@ -1,4 +1,5 @@
 import {
+  GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
   GetRewardsMainType,
@@ -46,4 +47,14 @@ export interface RewardsAllInterface {
     type,
     userName,
   }: GetRewardsEligibleType): Promise<RewardsByObjectType>;
+  getReserved({
+    userName,
+    skip,
+    limit,
+    host,
+    sort,
+    area,
+    type,
+    sponsors,
+  }: GetReservedType): Promise<RewardsByObjectType>;
 }
