@@ -202,7 +202,7 @@ export class Campaign {
   expiredAt: Date;
 
   @Prop({ type: Date })
-  stoppedAt: Date;
+  stoppedAt?: Date;
 
   createdAt?: Date;
 

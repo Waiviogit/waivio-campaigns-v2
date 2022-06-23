@@ -334,9 +334,10 @@ export class CampaignDto {
   @ApiProperty({ type: Date, required: true })
   expiredAt: Date;
 
+  @IsOptional()
   @IsString()
   @ApiProperty({ type: Date })
-  stoppedAt: Date;
+  stoppedAt?: Date;
 
   @IsOptional()
   @IsString()
