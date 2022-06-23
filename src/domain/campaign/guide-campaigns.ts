@@ -117,7 +117,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               },
             },
           },
-          { $sort: { expiredAt: -1 } },
+          { $sort: { stoppedAt: -1 } },
           { $skip: skip },
           { $limit: limit + 1 },
           {

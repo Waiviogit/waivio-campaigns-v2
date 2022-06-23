@@ -336,6 +336,11 @@ export class CampaignDto {
 
   @IsOptional()
   @IsString()
+  @ApiProperty({ type: Date })
+  stoppedAt?: Date;
+
+  @IsOptional()
+  @IsString()
   @ApiProperty({ type: Date, required: false })
   createdAt?: Date;
 

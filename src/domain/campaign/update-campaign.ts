@@ -25,9 +25,10 @@ export class UpdateCampaign implements UpdateCampaignInterface {
         campaign.reward,
       );
     }
-    const updatedCampaign = await this.campaignRepository.updateCampaign(
-      campaign,
-    );
+    const updatedCampaign = await this.campaignRepository.updateCampaign({
+      ...campaign,
+      ...(campaign.expiredAt && { stoppedAt: campaign.expiredAt }),
+    });
     if (updatedCampaign) {
       await this.campaignHelper.setExpireTTLCampaign(
         updatedCampaign.expiredAt,

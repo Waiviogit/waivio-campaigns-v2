@@ -28,6 +28,7 @@ export class CreateCampaign implements CreateCampaignInterface {
     const createdCampaign = await this.campaignRepository.create({
       ...campaign,
       rewardInUSD,
+      stoppedAt: campaign.expiredAt,
     });
 
     if (createdCampaign) {
