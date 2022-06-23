@@ -137,7 +137,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               requiredObject: 1,
               requirements: 1,
               userRequirements: 1,
-              expiredAt: 1,
+              expiredAt: '$stoppedAt',
               createdAt: 1,
               guideName: 1,
               currency: 1,
