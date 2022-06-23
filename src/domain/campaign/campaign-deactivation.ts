@@ -65,7 +65,7 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
       update: {
         status,
         deactivationPermlink,
-        expiredAt: process.env.BLOCK_MAIN_TIMESTAMP,
+        stoppedAt: process.env.BLOCK_MAIN_TIMESTAMP,
       },
     });
 
