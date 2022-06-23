@@ -41,7 +41,6 @@ export type CreateCampaignType = Omit<
   | 'activationPermlink'
   | 'deactivationPermlink'
   | 'payments'
-  | 'stoppedAt'
   | 'canAssign'
 >;
 
@@ -55,7 +54,6 @@ export type UpdateCampaignType = Partial<
     | 'activationPermlink'
     | 'deactivationPermlink'
     | 'payments'
-    | 'stoppedAt'
     | 'canAssign'
   >
 >;
