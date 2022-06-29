@@ -201,7 +201,7 @@ export class CampaignHelper implements CampaignHelperInterface {
 
   async getCurrencyInUSD(currency: string, amount: number): Promise<number> {
     if (currency === SUPPORTED_CURRENCY.USD) return amount;
-    const result = this.currencyRatesRepository.findOne({
+    const result = await this.currencyRatesRepository.findOne({
       filter: { base: SUPPORTED_CURRENCY.USD },
       projection: { [`rates.${currency}`]: 1 },
       options: { sort: { dateString: -1 } },
