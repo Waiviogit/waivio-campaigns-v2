@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import {
   CampaignActivationProvider,
   CampaignDeactivationProvider,
+  CampaignExpiredListenerProvider,
   CampaignProviderHelper,
   CampaignSuspendProvider,
   CreateCampaignProvider,
@@ -50,6 +51,7 @@ import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
     DebtObligationsProvider,
     RewardsAllProvider,
     CampaignSuspendProvider,
+    CampaignExpiredListenerProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -66,6 +68,7 @@ import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
     DebtObligationsProvider,
     RewardsAllProvider,
     CampaignSuspendProvider,
+    CampaignExpiredListenerProvider,
   ],
 })
 export class CampaignModule {}

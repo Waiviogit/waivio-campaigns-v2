@@ -9,7 +9,8 @@ import { CampaignActivation } from './campaign-activation';
 import { CampaignDeactivation } from './campaign-deactivation';
 import { GuideCampaigns } from './guide-campaigns';
 import { DebtObligations } from './debt-obligations';
-import {CampaignSuspend} from "./campaign-suspend";
+import { CampaignSuspend } from './campaign-suspend';
+import { CampaignExpiredListener } from './campaign-expired-listener';
 
 export const CreateCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CREATE_CAMPAIGN,
@@ -54,4 +55,9 @@ export const DebtObligationsProvider: Provider = {
 export const CampaignSuspendProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.SUSPEND,
   useClass: CampaignSuspend,
+};
+
+export const CampaignExpiredListenerProvider: Provider = {
+  provide: CAMPAIGN_PROVIDE.EXPIRED_LISTENER,
+  useClass: CampaignExpiredListener,
 };
