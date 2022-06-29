@@ -43,7 +43,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
   async addBudgetUsdToCampaigns(
     campaigns: GuideManageCampaignType[],
   ): Promise<GuideManageCampaignType[]> {
-    const currencyRate = this.currencyRatesRepository.findOne({
+    const currencyRate = await this.currencyRatesRepository.findOne({
       filter: { base: SUPPORTED_CURRENCY.USD },
       options: { sort: { dateString: -1 } },
     });
