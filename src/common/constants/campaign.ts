@@ -10,6 +10,11 @@ export const CAMPAIGN_STATUS = Object.freeze({
   SUSPENDED: 'suspended',
 });
 
+export const EXPIRED_CAMPAIGN_TYPE = Object.freeze({
+  CAMPAIGN: 'campaign',
+  ASSIGN: 'assign',
+});
+
 export const REWARDS_TAB = Object.freeze({
   ALL: 'all',
   ELIGIBLE: 'eligible',

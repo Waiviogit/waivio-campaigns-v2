@@ -5,10 +5,11 @@ import {
 } from './redis-client.provider';
 import { RedisCampaignSubscriber } from './subscribers/campaign-subscriber';
 import { SponsorsBotModule } from '../../domain/sponsors-bot/sponsors-bot.module';
+import { CampaignModule } from '../../domain/campaign/campaign.module';
 
 @Global()
 @Module({
-  imports: [SponsorsBotModule],
+  imports: [SponsorsBotModule, CampaignModule],
   providers: [
     RedisBlockProvider,
     RedisCampaignProvider,
