@@ -15,6 +15,11 @@ export const USER_PROVIDE = Object.freeze({
   REPOSITORY: 'UserRepository',
 });
 
+export const BLACKLIST_PROVIDE = Object.freeze({
+  REPOSITORY: 'BlacklistRepository',
+  HELPER: 'BlacklistHelper',
+});
+
 export const APP_PROVIDE = Object.freeze({
   REPOSITORY: 'AppRepository',
 });

@@ -26,6 +26,7 @@ import { WobjectModule } from '../wobject/wobject.module';
 import { RewardsAllProvider } from './rewards/rewards.provider';
 import { CampaignPaymentModule } from '../campaign-payment/campaign-payment.module';
 import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
+import { BlacklistModule } from '../blacklist/blacklist.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
     WobjectModule,
     CampaignPaymentModule,
     SponsorsBotModule,
+    BlacklistModule,
   ],
   providers: [
     CreateCampaignProvider,

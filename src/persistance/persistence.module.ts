@@ -11,9 +11,11 @@ import { CurrencyRatesPersistenceModule } from './currency-rates/currency-rates.
 import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-payment.persistence.module';
 import { SponsorsBotPersistenceModule } from './sponsors-bot/sponsors-bot.persistence.module';
 import { SponsorsBotUpvotePersistenceModule } from './sponsors-bot-upvote/sponsors-bot-upvote.persistence.module';
+import { BlacklistPersistenceModule } from './blacklist/blacklist.persistence.module';
 
 @Module({
   imports: [
+    BlacklistPersistenceModule,
     CampaignPersistenceModule,
     UserPersistenceModule,
     WobjectPersistenceModule,
@@ -27,6 +29,7 @@ import { SponsorsBotUpvotePersistenceModule } from './sponsors-bot-upvote/sponso
     SponsorsBotUpvotePersistenceModule,
   ],
   exports: [
+    BlacklistPersistenceModule,
     CampaignPersistenceModule,
     UserPersistenceModule,
     WobjectPersistenceModule,
