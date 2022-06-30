@@ -1,10 +1,12 @@
 import {
+  Document,
   FilterQuery,
   QueryOptions,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 import { BlacklistDocumentType } from './blacklist.types';
+import { Blacklist } from '../blacklist.schema';
 
 export type BlacklistFindOneType = {
   filter: FilterQuery<BlacklistDocumentType>;
@@ -17,3 +19,7 @@ export type BlacklistUpdateType = {
   update: UpdateWithAggregationPipeline | UpdateQuery<BlacklistDocumentType>;
   options?: QueryOptions;
 };
+
+export type BlacklistFindOneTypeOut = Blacklist & {
+  followLists: Blacklist[];
+} & Document;

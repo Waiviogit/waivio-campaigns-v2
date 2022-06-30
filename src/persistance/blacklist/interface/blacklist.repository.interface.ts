@@ -1,6 +1,7 @@
 import {
   BlacklistDocumentType,
   BlacklistFindOneType,
+  BlacklistFindOneTypeOut,
   BlacklistUpdateType,
 } from '../types';
 import { UpdateWriteOpResult } from 'mongoose';
@@ -10,7 +11,7 @@ export interface BlacklistRepositoryInterface {
     filter,
     projection,
     options,
-  }: BlacklistFindOneType): Promise<BlacklistDocumentType>;
+  }: BlacklistFindOneType): Promise<BlacklistFindOneTypeOut>;
 
   updateOne({
     filter,

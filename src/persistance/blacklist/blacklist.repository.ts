@@ -5,6 +5,7 @@ import {
   BlacklistFindOneType,
   BlacklistDocumentType,
   BlacklistUpdateType,
+  BlacklistFindOneTypeOut,
 } from './types';
 import { Blacklist } from './blacklist.schema';
 import { BlacklistRepositoryInterface } from './interface';
@@ -21,7 +22,7 @@ export class BlacklistRepository implements BlacklistRepositoryInterface {
     filter,
     projection,
     options,
-  }: BlacklistFindOneType): Promise<BlacklistDocumentType> {
+  }: BlacklistFindOneType): Promise<BlacklistFindOneTypeOut> {
     try {
       return this.model.findOne(filter, projection, options).lean();
     } catch (error) {
@@ -35,7 +36,7 @@ export class BlacklistRepository implements BlacklistRepositoryInterface {
     options,
   }: BlacklistFindOneType): Promise<BlacklistDocumentType[]> {
     try {
-      return this.model.findOne(filter, projection, options).lean();
+      return this.model.find(filter, projection, options).lean();
     } catch (error) {
       this.logger.error(error.message);
     }
