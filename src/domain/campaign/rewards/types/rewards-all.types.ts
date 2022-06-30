@@ -23,6 +23,7 @@ export type RewardsByRequiredType = {
   currency: string;
   reward: number;
   rewardInUSD: number;
+  countReservationDays: number;
   guideName: string;
   requirements: ReviewRequirementsType;
   userRequirements: UserRequirementsType;

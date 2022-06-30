@@ -112,6 +112,7 @@ export class RewardsAll implements RewardsAllInterface {
       rewards.push({
         payout,
         payoutToken: campaign.payoutToken,
+        countReservationDays: campaign.countReservationDays,
         currency: campaign.currency,
         reward: campaign.reward,
         rewardInUSD: campaign.rewardInUSD,
@@ -465,6 +466,7 @@ export class RewardsAll implements RewardsAllInterface {
               guideName: 1,
               requirements: 1,
               userRequirements: 1,
+              countReservationDays: 1,
             },
           },
         ],
@@ -657,6 +659,7 @@ export class RewardsAll implements RewardsAllInterface {
               guideName: 1,
               requirements: 1,
               userRequirements: 1,
+              countReservationDays: 1,
             },
           },
         ],
