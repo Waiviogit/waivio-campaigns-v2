@@ -6,4 +6,11 @@ export interface UserRepositoryInterface {
     projection,
     options,
   }: UserFindOneType): Promise<UserDocumentType>;
+
+  find({
+    filter,
+    projection,
+    options,
+  }: UserFindOneType): Promise<UserDocumentType[]>;
+  findByNames(names: string[]): Promise<string[]>;
 }

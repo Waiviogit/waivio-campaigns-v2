@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { PersistenceModule } from '../../persistance/persistence.module';
-import { BlacklistHelperProvider } from './blacklist.provider';
+import {
+  BlacklistHelperProvider,
+  BlacklistParserProvider,
+} from './blacklist.provider';
 
 @Module({
   imports: [PersistenceModule],
-  providers: [BlacklistHelperProvider],
-  exports: [BlacklistHelperProvider],
+  providers: [BlacklistHelperProvider, BlacklistParserProvider],
+  exports: [BlacklistHelperProvider, BlacklistParserProvider],
 })
 export class BlacklistModule {}

@@ -8,9 +8,10 @@ import {
 } from './hive-parser.provider';
 import { CampaignModule } from '../campaign/campaign.module';
 import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
+import { BlacklistModule } from '../blacklist/blacklist.module';
 
 @Module({
-  imports: [CampaignModule, SponsorsBotModule],
+  imports: [CampaignModule, SponsorsBotModule, BlacklistModule],
   providers: [
     HiveMainParserProvider,
     HiveCommentParserProvider,

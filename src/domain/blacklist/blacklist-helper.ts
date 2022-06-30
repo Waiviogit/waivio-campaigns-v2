@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import * as _ from 'lodash';
 import { BlacklistRepositoryInterface } from '../../persistance/blacklist/interface';
 import { BLACKLIST_PROVIDE } from '../../common/constants';
 import { BlacklistHelperInterface } from './interface';
@@ -20,8 +21,21 @@ export class BlacklistHelper implements BlacklistHelperInterface {
       blacklist.push(...item.blackList);
     }
     return {
-      blacklist,
+      blacklist: _.uniq(blacklist),
       whitelist: data.whiteList,
     };
+  }
+
+  async getUsersOwnBlacklists(users: string[]): Promise<string[]> {
+    const blacklist = [];
+    const data = await this.blacklistRepository.find({
+      filter: { user: { $in: users } },
+    });
+
+    for (const item of data) {
+      blacklist.push(...item.blackList);
+    }
+
+    return _.uniq(blacklist);
   }
 }
