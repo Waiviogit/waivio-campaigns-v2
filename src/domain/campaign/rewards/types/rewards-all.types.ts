@@ -50,6 +50,7 @@ export type GetReservedType = GetRewardsMainType & {
 
 export type GetRewardsEligibleType = GetRewardsMainType & {
   userName?: string;
+  activationPermlink?: string;
 };
 
 export type GetPrimaryObjectRewards = GetRewardsMainType & {
@@ -65,6 +66,7 @@ export type GetRewardsByRequiredObjectType = {
   type?: string[];
   sort?: string;
   area?: number[];
+  userName?: string;
 };
 
 export type GetSponsorsType = {
@@ -84,4 +86,14 @@ export type GetSortedRewardsReservedType = {
 
 export type RewardsTabType = {
   tabType: string;
+};
+
+export type CanReserveParamType = {
+  userName: string;
+  activationPermlink: string;
+  host: string;
+};
+
+export type CanReserveType = {
+  canReserve: boolean;
 };

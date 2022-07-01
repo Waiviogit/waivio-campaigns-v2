@@ -1,4 +1,6 @@
 import {
+  CanReserveParamType,
+  CanReserveType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
@@ -19,6 +21,7 @@ export interface RewardsAllInterface {
     sort,
     area,
   }: GetRewardsMainType): Promise<RewardsAllType>;
+
   getRewardsByRequiredObject({
     requiredObject,
     skip,
@@ -29,7 +32,9 @@ export interface RewardsAllInterface {
     sort,
     area,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType>;
+
   getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType>;
+
   getRewardsEligibleMain({
     skip,
     limit,
@@ -40,6 +45,7 @@ export interface RewardsAllInterface {
     area,
     userName,
   }: GetRewardsEligibleType): Promise<RewardsAllType>;
+
   getEligibleByObject({
     skip,
     limit,
@@ -48,6 +54,7 @@ export interface RewardsAllInterface {
     type,
     userName,
   }: GetRewardsEligibleType): Promise<RewardsByObjectType>;
+
   getReserved({
     userName,
     skip,
@@ -60,4 +67,10 @@ export interface RewardsAllInterface {
   }: GetReservedType): Promise<RewardsByObjectType>;
 
   getRewardsTab(userName: string): Promise<RewardsTabType>;
+
+  canReserve({
+    userName,
+    activationPermlink,
+    host,
+  }: CanReserveParamType): Promise<CanReserveType>;
 }

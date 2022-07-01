@@ -15,6 +15,8 @@ import {
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
+  CanReserveParamType,
+  CanReserveType,
   GetPrimaryObjectRewards,
   GetReservedType,
   GetRewardsByRequiredObjectType,
@@ -48,6 +50,25 @@ export class RewardsAll implements RewardsAllInterface {
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
   ) {}
+
+  async canReserve({
+    userName,
+    activationPermlink,
+    host,
+  }: CanReserveParamType): Promise<CanReserveType> {
+    if (!userName) return { canReserve: false };
+    const { rewards } = await this.getRewardsEligibleMain({
+      userName,
+      skip: 0,
+      activationPermlink,
+      limit: 1,
+      host,
+    });
+
+    return {
+      canReserve: !_.isEmpty(rewards),
+    };
+  }
 
   async getRewardsTab(userName: string): Promise<RewardsTabType> {
     const { rewards } = await this.getReserved({
@@ -144,12 +165,14 @@ export class RewardsAll implements RewardsAllInterface {
     sort,
     area,
     userName,
+    activationPermlink,
   }: GetRewardsEligibleType): Promise<RewardsAllType> {
     const currentDay = moment().format('dddd').toLowerCase();
     const user = await this.userRepository.findOne({
       filter: { name: userName },
       projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
     });
+    if (!user) return { rewards: [], hasMore: false };
     const campaigns: CampaignDocumentType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
@@ -158,6 +181,7 @@ export class RewardsAll implements RewardsAllInterface {
               status: CAMPAIGN_STATUS.ACTIVE,
               ...(sponsors && { $in: sponsors }),
               ...(sponsors && { $in: type }),
+              ...(activationPermlink && { activationPermlink }),
             },
           },
           {
@@ -286,7 +310,6 @@ export class RewardsAll implements RewardsAllInterface {
           },
         ],
       });
-
     return this.getPrimaryObjectRewards({
       skip,
       limit,
@@ -310,6 +333,7 @@ export class RewardsAll implements RewardsAllInterface {
       filter: { name: userName },
       projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
     });
+    if (!user) return { rewards: [], hasMore: false };
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
@@ -467,6 +491,7 @@ export class RewardsAll implements RewardsAllInterface {
               requirements: 1,
               userRequirements: 1,
               countReservationDays: 1,
+              activationPermlink: 1,
             },
           },
         ],
@@ -624,6 +649,7 @@ export class RewardsAll implements RewardsAllInterface {
     sponsors,
     type,
     sort,
+    userName,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType> {
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
@@ -649,8 +675,25 @@ export class RewardsAll implements RewardsAllInterface {
             },
           },
           {
+            $addFields: {
+              assignedUser: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.status', RESERVATION_STATUS.ASSIGNED] },
+                      { $eq: ['$$user.name', userName] },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
+              reserved: { $gt: ['$assignedUser', []] },
               payoutToken: 1,
               currency: 1,
               reward: 1,
@@ -660,6 +703,7 @@ export class RewardsAll implements RewardsAllInterface {
               requirements: 1,
               userRequirements: 1,
               countReservationDays: 1,
+              activationPermlink: 1,
             },
           },
         ],

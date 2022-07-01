@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { REWARDS_PROVIDE } from '../../common/constants';
 import { RewardsAllInterface } from '../../domain/campaign/rewards/interface/rewards-all.interface';
 import {
+  CanReserveParamType,
+  CanReserveType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
@@ -51,5 +53,9 @@ export class RewardsService {
 
   async getTabType(userName: string): Promise<RewardsTabType> {
     return this.rewardsAll.getRewardsTab(userName);
+  }
+
+  async canReserve(params: CanReserveParamType): Promise<CanReserveType> {
+    return this.rewardsAll.canReserve(params);
   }
 }

@@ -34,6 +34,12 @@ export const ACTIVE_CAMPAIGN_STATUSES = [
   CAMPAIGN_STATUS.REACHED_LIMIT,
 ];
 
+export const CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST = [
+  CAMPAIGN_STATUS.ACTIVE,
+  CAMPAIGN_STATUS.REACHED_LIMIT,
+  CAMPAIGN_STATUS.PENDING,
+];
+
 export const CAMPAIGN_STATUSES_FOR_ON_HOLD = [
   CAMPAIGN_STATUS.ACTIVE,
   CAMPAIGN_STATUS.ON_HOLD,
@@ -64,12 +70,6 @@ export const SUPPORTED_CURRENCY = Object.freeze({
   RUB: 'RUB',
   UAH: 'UAH',
 });
-
-// export const PAYMENT_STATUS = Object.freeze({
-//   ACTIVE: 'active',
-//   REJECTED: 'rejected',
-//   PAYED: 'payed',
-// });
 
 export const PAYOUT_TOKEN = Object.freeze({
   HIVE: 'HIVE',
