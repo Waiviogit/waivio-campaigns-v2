@@ -65,6 +65,7 @@ export type GetRewardsByRequiredObjectType = {
   type?: string[];
   sort?: string;
   area?: number[];
+  userName?: string;
 };
 
 export type GetSponsorsType = {

@@ -624,6 +624,7 @@ export class RewardsAll implements RewardsAllInterface {
     sponsors,
     type,
     sort,
+    userName,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType> {
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
@@ -649,8 +650,25 @@ export class RewardsAll implements RewardsAllInterface {
             },
           },
           {
+            $addFields: {
+              assignedUser: {
+                $filter: {
+                  input: '$users',
+                  as: 'user',
+                  cond: {
+                    $and: [
+                      { $eq: ['$$user.status', RESERVATION_STATUS.ASSIGNED] },
+                      { $eq: ['$$user.name', userName] },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
+              reserved: { $gt: ['$assignedUser', []] },
               payoutToken: 1,
               currency: 1,
               reward: 1,
