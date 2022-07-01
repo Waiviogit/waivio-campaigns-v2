@@ -5,11 +5,15 @@ import { RewardsService } from './rewards.service';
 import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
+  RewardsCanReserveOutDto,
   RewardsTabDto,
 } from '../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
-import { RewardsAllInDto } from '../../common/dto/rewards/in';
+import {
+  RewardsAllInDto,
+  RewardsCanReserveInDto,
+} from '../../common/dto/rewards/in';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -108,6 +112,19 @@ export class RewardsController {
       ...rewardsAllInDto,
       host,
       userName,
+    });
+  }
+
+  @Get('availability')
+  @RewardsControllerDoc.getReserve()
+  async canReserve(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Query() canReserveInDto: RewardsCanReserveInDto,
+  ): Promise<RewardsCanReserveOutDto> {
+    return this.rewardsService.canReserve({
+      ...canReserveInDto,
+      host,
     });
   }
 }

@@ -3,6 +3,7 @@ import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
+  RewardsCanReserveOutDto,
   RewardsTabDto,
 } from '../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
@@ -69,6 +70,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: RewardSponsorsDto,
+      }),
+    );
+  }
+
+  static getReserve(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'validate user reservation',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsCanReserveOutDto,
       }),
     );
   }
