@@ -47,19 +47,13 @@ export class BlacklistHelper implements BlacklistHelperInterface {
       filter: { user },
     });
     if (!blackList) {
-      const currentUser = await this.userRepository.findOne({
-        filter: { name: user },
-        projection: { name: 1, json_metadata: 1, wobjects_weight: 1 },
-      });
       return {
-        user: currentUser,
         blackList: [],
         whiteList: [],
         followLists: [],
       };
     }
     const userNames = [
-      blackList.user,
       ...blackList.followLists,
       ...blackList.whiteList,
       ...blackList.blackList,
@@ -70,7 +64,6 @@ export class BlacklistHelper implements BlacklistHelperInterface {
     });
     console.log();
     return {
-      user: users.find((user) => user.name === blackList.user),
       blackList: _.compact(
         blackList.blackList.map((name) => {
           const currentUser = users.find((user) => user.name === name);

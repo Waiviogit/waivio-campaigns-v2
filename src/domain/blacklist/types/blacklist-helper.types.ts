@@ -4,7 +4,6 @@ export type GetBlacklistType = {
 };
 
 export type GetApiBlacklistType = {
-  user: BlacklistUserType;
   blackList: BlacklistUserType[];
   whiteList: BlacklistUserType[];
   followLists: BlacklistUserType[];

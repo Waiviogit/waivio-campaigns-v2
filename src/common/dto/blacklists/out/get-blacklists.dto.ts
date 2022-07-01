@@ -13,9 +13,6 @@ class BlacklistUserDTO {
 }
 
 export class GetBlacklistsDto {
-  @ApiProperty({ type: () => BlacklistUserDTO })
-  user: BlacklistUserType;
-
   @ApiProperty({ type: () => [BlacklistUserDTO] })
   blackList: BlacklistUserType[];
 
