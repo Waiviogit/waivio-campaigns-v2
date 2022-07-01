@@ -9,6 +9,7 @@ import {
   validateAssignType,
 } from './types';
 import {
+  BLACKLIST_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   RESERVATION_STATUS,
@@ -17,6 +18,7 @@ import {
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CampaignHelperInterface } from '../interface';
+import { BlacklistHelperInterface } from '../../blacklist/interface';
 
 @Injectable()
 export class AssignReservation {
@@ -27,6 +29,8 @@ export class AssignReservation {
     private readonly userRepository: UserRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(BLACKLIST_PROVIDE.HELPER)
+    private readonly blacklistHelper: BlacklistHelperInterface,
   ) {}
 
   async assign({
@@ -92,6 +96,15 @@ export class AssignReservation {
         status: CAMPAIGN_STATUS.ACTIVE,
       },
     });
+    const { blacklist } = await this.blacklistHelper.getBlacklist(
+      campaign.guideName,
+    );
+    if (_.includes(blacklist, name)) {
+      return {
+        isValid: false,
+        message: 'User is blacklisted',
+      };
+    }
     const user = await this.userRepository.findOne({ filter: { name } });
     const todaySpendTime =
       new Date().getUTCHours() * 3600 +
