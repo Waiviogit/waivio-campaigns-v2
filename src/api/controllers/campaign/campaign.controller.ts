@@ -15,17 +15,17 @@ import {
   UpdateCampaignDto,
   ValidateActivationDto,
   ValidateDeactivationDto,
-} from '../../common/dto/campaign/in';
+} from '../../../common/dto/campaign/in';
 import { CampaignService } from './campaign.service';
 
-import { AuthGuard, ChangeCampaignGuard } from '../guards';
+import { AuthGuard, ChangeCampaignGuard } from '../../guards';
 import {
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
   ValidationResponseDto,
-} from '../../common/dto/campaign/out';
-import { CampaignDto } from '../../common/dto/campaign/campaign.dto';
+} from '../../../common/dto/campaign/out';
+import { CampaignDto } from '../../../common/dto/campaign/campaign.dto';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()

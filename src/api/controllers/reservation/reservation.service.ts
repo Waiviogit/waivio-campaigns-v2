@@ -1,14 +1,14 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { RESERVATION_PROVIDE } from '../../common/constants';
+import { RESERVATION_PROVIDE } from '../../../common/constants';
 import {
   AssignReservationInterface,
   RejectReservationInterface,
-} from '../../domain/campaign/reservation/interface';
+} from '../../../domain/campaign/reservation/interface';
 import {
   RejectReservationType,
   ValidateAssignType,
-} from '../../domain/campaign/reservation/types';
-import { CampaignCustomException } from '../../common/exeptions';
+} from '../../../domain/campaign/reservation/types';
+import { CampaignCustomException } from '../../../common/exeptions';
 
 @Injectable()
 export class ReservationService {

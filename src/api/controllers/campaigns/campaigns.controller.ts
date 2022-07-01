@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service';
-import { GuideManageCampaignDto } from '../../common/dto/campaign/out';
+import { GuideManageCampaignDto } from '../../../common/dto/campaign/out';
 import { CampaignsControllerDocs } from './campaigns.controller.doc';
-import { GuideBalanceDto } from '../../common/dto/campaign/out/guide-balance.dto';
-import { SkipLimitDto } from '../../common/dto/skip-limit.dto';
-import { GuideHistoryCampaignDto } from '../../common/dto/campaign/out/guide-history-campaign.dto';
+import { GuideBalanceDto } from '../../../common/dto/campaign/out/guide-balance.dto';
+import { SkipLimitDto } from '../../../common/dto/skip-limit.dto';
+import { GuideHistoryCampaignDto } from '../../../common/dto/campaign/out/guide-history-campaign.dto';
 
 @Controller('campaigns')
 @CampaignsControllerDocs.main()

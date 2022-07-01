@@ -2,8 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import {
   ValidateCampaignAssignDto,
   ValidateCampaignRejectDto,
-} from '../../common/dto/campaign/in';
-import { ValidationResponseDto } from '../../common/dto/campaign/out';
+} from '../../../common/dto/campaign/in';
+import { ValidationResponseDto } from '../../../common/dto/campaign/out';
 import { ReservationService } from './reservation.service';
 import { ReservationControllerDoc } from './reservation.controller.doc';
 

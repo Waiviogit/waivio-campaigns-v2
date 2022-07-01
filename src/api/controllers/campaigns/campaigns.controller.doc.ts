@@ -1,9 +1,9 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 
-import { GuideManageCampaignDto } from '../../common/dto/campaign/out';
-import { GuideBalanceDto } from '../../common/dto/campaign/out/guide-balance.dto';
-import { GuideHistoryCampaignDto } from '../../common/dto/campaign/out/guide-history-campaign.dto';
+import { GuideManageCampaignDto } from '../../../common/dto/campaign/out';
+import { GuideBalanceDto } from '../../../common/dto/campaign/out/guide-balance.dto';
+import { GuideHistoryCampaignDto } from '../../../common/dto/campaign/out/guide-history-campaign.dto';
 
 export class CampaignsControllerDocs {
   static main(): ClassDecorator {

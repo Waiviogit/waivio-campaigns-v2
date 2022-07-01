@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { REWARDS_PROVIDE } from '../../common/constants';
-import { RewardsAllInterface } from '../../domain/campaign/rewards/interface/rewards-all.interface';
+import { REWARDS_PROVIDE } from '../../../common/constants';
+import { RewardsAllInterface } from '../../../domain/campaign/rewards/interface/rewards-all.interface';
 import {
   CanReserveParamType,
   CanReserveType,
@@ -12,7 +12,7 @@ import {
   RewardsAllType,
   RewardsByObjectType,
   RewardsTabType,
-} from '../../domain/campaign/rewards/types/rewards-all.types';
+} from '../../../domain/campaign/rewards/types/rewards-all.types';
 
 @Injectable()
 export class RewardsService {

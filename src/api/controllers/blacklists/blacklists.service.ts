@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { GetApiBlacklistType } from '../../domain/blacklist/types';
-import { BLACKLIST_PROVIDE } from '../../common/constants';
-import { BlacklistHelperInterface } from '../../domain/blacklist/interface';
+import { GetApiBlacklistType } from '../../../domain/blacklist/types';
+import { BLACKLIST_PROVIDE } from '../../../common/constants';
+import { BlacklistHelperInterface } from '../../../domain/blacklist/interface';
 
 @Injectable()
 export class BlacklistsService {
