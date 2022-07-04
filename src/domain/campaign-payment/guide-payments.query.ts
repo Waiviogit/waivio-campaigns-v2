@@ -19,6 +19,8 @@ import {
   GetPayablesType,
   getNotPayedDaysType,
   GetPayableOutType,
+  GetGuidesTotalPayedType,
+  GuidesTotalPayedType,
 } from './types';
 import { GuidePaymentsQueryInterface } from './interface';
 
@@ -28,6 +30,47 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
     private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
   ) {}
+
+  async getGuidesTotalPayed({
+    guideNames,
+    payoutToken,
+  }: GetGuidesTotalPayedType): Promise<GuidesTotalPayedType[]> {
+    const payed: GuidesTotalPayedType[] =
+      await this.campaignPaymentRepository.aggregate({
+        pipeline: [
+          {
+            $match: { guideName: { $in: guideNames }, payoutToken },
+          },
+          {
+            $group: {
+              _id: '$guideName',
+              transfers: {
+                $push: {
+                  $cond: [
+                    { $in: ['$type', CP_TRANSFER_TYPES] },
+                    '$$ROOT',
+                    '$$REMOVE',
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              payed: { $sum: '$transfers.amount' },
+            },
+          },
+          {
+            $project: {
+              payed: { $convert: { input: '$payed', to: 'double' } },
+              guideName: '$_id',
+            },
+          },
+        ],
+      });
+
+    return payed;
+  }
   //use in suspend task
   async getPayables({
     guideName,

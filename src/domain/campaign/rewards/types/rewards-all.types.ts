@@ -27,6 +27,7 @@ export type RewardsByRequiredType = {
   guideName: string;
   requirements: ReviewRequirementsType;
   userRequirements: UserRequirementsType;
+  totalPayed?: number;
 };
 
 export type RewardsByObjectType = {

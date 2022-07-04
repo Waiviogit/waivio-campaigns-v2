@@ -1,8 +1,10 @@
 import {
+  GetGuidesTotalPayedType,
   GetPayableOutType,
   GetPayablesOutType,
   GetPayablesType,
   GetPayableType,
+  GuidesTotalPayedType,
 } from '../types';
 
 export interface GuidePaymentsQueryInterface {
@@ -10,9 +12,15 @@ export interface GuidePaymentsQueryInterface {
     guideName,
     payoutToken,
   }: GetPayablesType): Promise<GetPayablesOutType>;
+
   getPayable({
     guideName,
     payoutToken,
     userName,
   }: GetPayableType): Promise<GetPayableOutType>;
+
+  getGuidesTotalPayed({
+    guideNames,
+    payoutToken,
+  }: GetGuidesTotalPayedType): Promise<GuidesTotalPayedType[]>;
 }
