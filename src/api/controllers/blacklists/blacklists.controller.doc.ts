@@ -1,6 +1,6 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetBlacklistsDto } from '../../common/dto/blacklists/out/get-blacklists.dto';
+import { GetBlacklistsDto } from '../../../common/dto/blacklists/out/get-blacklists.dto';
 
 export class BlacklistsControllerDoc {
   static main(): ClassDecorator {

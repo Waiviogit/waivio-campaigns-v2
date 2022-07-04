@@ -1,7 +1,7 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 
-import { ValidationResponseDto } from '../../common/dto/campaign/out';
+import { ValidationResponseDto } from '../../../common/dto/campaign/out';
 
 export class ReservationControllerDoc {
   static main(): ClassDecorator {

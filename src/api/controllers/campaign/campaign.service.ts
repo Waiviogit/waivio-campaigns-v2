@@ -1,31 +1,31 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 
-import { CAMPAIGN_PROVIDE, USER_PROVIDE } from '../../common/constants';
-import { UserRepositoryInterface } from '../../persistance/user/interface';
+import { CAMPAIGN_PROVIDE, USER_PROVIDE } from '../../../common/constants';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import {
   CampaignCustomException,
   CampaignServerException,
   UserForbiddenException,
   UserNotFoundException,
-} from '../../common/exeptions';
-import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
+} from '../../../common/exeptions';
+import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
   CampaignDocumentType,
   CreateCampaignType,
   DeleteCampaignType,
   UpdateCampaignType,
-} from '../../persistance/campaign/types';
+} from '../../../persistance/campaign/types';
 import {
   CampaignActivationInterface,
   CampaignDeactivationInterface,
   DeleteCampaignInterface,
   UpdateCampaignInterface,
   CreateCampaignInterface,
-} from '../../domain/campaign/interface';
+} from '../../../domain/campaign/interface';
 import {
   ActivateCampaignType,
   DeactivateCampaignType,
-} from '../../domain/campaign/types';
+} from '../../../domain/campaign/types';
 
 @Injectable()
 export class CampaignService {

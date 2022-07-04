@@ -1,19 +1,19 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { HostPipe } from '../pipes/host.pipe';
-import { CustomHeaders } from '../../common/decorators';
+import { HostPipe } from '../../pipes/host.pipe';
+import { CustomHeaders } from '../../../common/decorators';
 import { RewardsService } from './rewards.service';
 import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
   RewardsTabDto,
-} from '../../common/dto/rewards/out';
+} from '../../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
-import { RewardSponsorsDto } from '../../common/dto/rewards/out/reward-sponsors.dto';
+import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 import {
   RewardsAllInDto,
   RewardsCanReserveInDto,
-} from '../../common/dto/rewards/in';
+} from '../../../common/dto/rewards/in';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')

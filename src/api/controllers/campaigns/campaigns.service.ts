@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CAMPAIGN_PROVIDE } from '../../common/constants';
-import { GuideCampaignsInterface } from '../../domain/campaign/interface';
+import { CAMPAIGN_PROVIDE } from '../../../common/constants';
+import { GuideCampaignsInterface } from '../../../domain/campaign/interface';
 import {
   GuideManageCampaignType,
   GuideBalanceType,
   getInactiveCampaignsType,
   InactiveCampaignsType,
-} from '../../domain/campaign/types';
+} from '../../../domain/campaign/types';
 
 @Injectable()
 export class CampaignsService {

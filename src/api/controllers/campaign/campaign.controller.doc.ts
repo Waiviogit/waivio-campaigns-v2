@@ -6,8 +6,8 @@ import {
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
   ValidationResponseDto,
-} from '../../common/dto/campaign/out';
-import { CampaignDto } from '../../common/dto/campaign/campaign.dto';
+} from '../../../common/dto/campaign/out';
+import { CampaignDto } from '../../../common/dto/campaign/campaign.dto';
 
 export class CampaignControllerDocs {
   static main(): ClassDecorator {

@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { BlacklistsService } from './blacklists.service';
-import { GetBlacklistsDto } from '../../common/dto/blacklists/out/get-blacklists.dto';
+import { GetBlacklistsDto } from '../../../common/dto/blacklists/out/get-blacklists.dto';
 import { BlacklistsControllerDoc } from './blacklists.controller.doc';
 
 @Controller('blacklists')
