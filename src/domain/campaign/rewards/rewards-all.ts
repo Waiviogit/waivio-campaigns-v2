@@ -12,6 +12,8 @@ import {
   USER_PROVIDE,
   WOBJECT_PROVIDE,
   REWARDS_TAB,
+  CAMPAIGN_PAYMENT_PROVIDE,
+  TOKEN_WAIV,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -37,12 +39,16 @@ import { RewardsAllInterface } from './interface/rewards-all.interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { configService } from '../../../common/config';
+import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
+import { AddDataOnRewardsByObjectType } from '../../campaign-payment/types';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
   constructor(
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.GUIDE_PAYMENTS_Q)
+    private readonly guidePaymentsQuery: GuidePaymentsQueryInterface,
     @Inject(WOBJECT_PROVIDE.HELPER)
     private readonly wobjectHelper: WobjectHelperInterface,
     @Inject(APP_PROVIDE.REPOSITORY)
@@ -497,20 +503,14 @@ export class RewardsAll implements RewardsAllInterface {
         ],
       });
 
-    const app = await this.appRepository.findOneByHost(host);
-    for (const reward of rewards) {
-      if (!reward.object) continue;
-      reward.object = await this.wobjectHelper.processWobjects({
-        wobjects: reward.object,
-        fields: CAMPAIGN_FIELDS,
-        app,
-        returnArray: false,
-      });
-    }
+    const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
+      rewards,
+      host,
+    });
 
     return {
-      rewards: _.take(rewards, limit),
-      hasMore: rewards.length > limit,
+      rewards: _.take(rewardsWithAdditionalData, limit),
+      hasMore: rewardsWithAdditionalData.length > limit,
     };
   }
 
@@ -708,8 +708,30 @@ export class RewardsAll implements RewardsAllInterface {
           },
         ],
       });
+
+    const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
+      rewards,
+      host,
+    });
+
+    return {
+      rewards: _.take(rewardsWithAdditionalData, limit),
+      hasMore: rewardsWithAdditionalData.length > limit,
+    };
+  }
+
+  async addDataOnRewardsByObject({
+    rewards,
+    host,
+  }: AddDataOnRewardsByObjectType): Promise<RewardsByRequiredType[]> {
     const app = await this.appRepository.findOneByHost(host);
+    const payed = await this.guidePaymentsQuery.getGuidesTotalPayed({
+      guideNames: _.map(rewards, 'guideName'),
+      payoutToken: TOKEN_WAIV.SYMBOL,
+    });
     for (const reward of rewards) {
+      const guidePayed = payed.find((el) => el.guideName === reward.guideName);
+      reward.totalPayed = guidePayed?.payed || 0;
       if (!reward.object) continue;
       reward.object = await this.wobjectHelper.processWobjects({
         wobjects: reward.object,
@@ -718,11 +740,7 @@ export class RewardsAll implements RewardsAllInterface {
         returnArray: false,
       });
     }
-
-    return {
-      rewards: _.take(rewards, limit),
-      hasMore: rewards.length > limit,
-    };
+    return rewards;
   }
 
   async getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType> {
