@@ -118,13 +118,10 @@ export class RewardsController {
   @Get('availability')
   @RewardsControllerDoc.getReserve()
   async canReserve(
-    @CustomHeaders(new HostPipe())
-    host: string,
     @Query() canReserveInDto: RewardsCanReserveInDto,
   ): Promise<RewardsCanReserveOutDto> {
     return this.rewardsService.canReserve({
       ...canReserveInDto,
-      host,
     });
   }
 }

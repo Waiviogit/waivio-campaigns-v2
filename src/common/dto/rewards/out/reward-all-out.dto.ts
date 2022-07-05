@@ -11,7 +11,25 @@ export class RewardAllOutDto extends PickType(RewardDto, [
   'guideName',
   'requirements',
   'userRequirements',
-]) {}
+]) {
+  @ApiProperty({ type: Number })
+  totalPayed: number;
+
+  @ApiProperty({ type: Number })
+  frequencyAssign: number;
+
+  @ApiProperty({ type: [String] })
+  matchBots: string[];
+
+  @ApiProperty({ type: [String] })
+  agreementObjects: string[];
+
+  @ApiProperty({ type: String })
+  usersLegalNotice: string;
+
+  @ApiProperty({ type: String })
+  description: string;
+}
 
 export class RewardsByObjectOutDto {
   @ApiProperty({ type: [RewardAllOutDto] })

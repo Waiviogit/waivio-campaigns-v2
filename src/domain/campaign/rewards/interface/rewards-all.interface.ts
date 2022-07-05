@@ -71,6 +71,5 @@ export interface RewardsAllInterface {
   canReserve({
     userName,
     activationPermlink,
-    host,
   }: CanReserveParamType): Promise<CanReserveType>;
 }

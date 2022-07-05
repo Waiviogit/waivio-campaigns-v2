@@ -4,6 +4,7 @@ import {
   ReviewRequirementsType,
   UserRequirementsType,
 } from '../../../../persistance/campaign/types';
+import { UserDocumentType } from '../../../../persistance/user/types';
 
 export type RewardsMainType = {
   object: ProcessedWobjectType;
@@ -28,6 +29,11 @@ export type RewardsByRequiredType = {
   requirements: ReviewRequirementsType;
   userRequirements: UserRequirementsType;
   totalPayed?: number;
+  frequencyAssign: number;
+  matchBots: string[];
+  agreementObjects: string[];
+  usersLegalNotice: string;
+  description: string;
 };
 
 export type RewardsByObjectType = {
@@ -92,9 +98,25 @@ export type RewardsTabType = {
 export type CanReserveParamType = {
   userName: string;
   activationPermlink: string;
-  host: string;
 };
 
 export type CanReserveType = {
-  canReserve: boolean;
+  canAssignByBudget: boolean;
+  canAssignByCurrentDay: boolean;
+  posts: boolean;
+  followers: boolean;
+  expertise: boolean;
+  notAssigned: boolean;
+  frequency: boolean;
+  notBlacklisted: boolean;
 };
+
+export type GetEligiblePipeType = {
+  userName: string;
+  user: EligiblePipeUserType;
+};
+
+export type EligiblePipeUserType = Pick<
+  UserDocumentType,
+  'count_posts' | 'followers_count' | 'wobjects_weight'
+>;
