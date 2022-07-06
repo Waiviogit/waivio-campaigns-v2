@@ -14,11 +14,14 @@ import {
   REWARDS_TAB,
   CAMPAIGN_PAYMENT_PROVIDE,
   TOKEN_WAIV,
+  REDIS_PROVIDE,
+  REDIS_KEY,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
   CanReserveParamType,
   CanReserveType,
+  ExpertiseVariablesType,
   GetEligiblePipeType,
   GetPrimaryObjectRewards,
   GetReservedType,
@@ -43,6 +46,7 @@ import { configService } from '../../../common/config';
 import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
 import { AddDataOnRewardsByObjectType } from '../../campaign-payment/types';
 import { PipelineStage } from 'mongoose';
+import { RedisClientInterface } from '../../../services/redis/clients/interface';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -57,6 +61,8 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly appRepository: AppRepositoryInterface,
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
+    @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
+    private readonly redisBlockClient: RedisClientInterface,
   ) {}
 
   async canReserve({
@@ -79,7 +85,7 @@ export class RewardsAll implements RewardsAllInterface {
       filter: { name: userName },
       projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
     });
-    const eligiblePipe = this.getEligiblePipe({ userName, user });
+    const eligiblePipe = await this.getEligiblePipe({ userName, user });
     eligiblePipe.pop();
     const reserve: CanReserveType[] = await this.campaignRepository.aggregate({
       pipeline: [
@@ -221,7 +227,7 @@ export class RewardsAll implements RewardsAllInterface {
               ...(activationPermlink && { activationPermlink }),
             },
           },
-          ...this.getEligiblePipe({ userName, user }),
+          ...(await this.getEligiblePipe({ userName, user })),
         ],
       });
     return this.getPrimaryObjectRewards({
@@ -257,7 +263,7 @@ export class RewardsAll implements RewardsAllInterface {
               ...(sponsors && { $in: type }),
             },
           },
-          ...this.getEligiblePipe({ userName, user }),
+          ...(await this.getEligiblePipe({ userName, user })),
           { $unwind: { path: '$objects' } },
           { $sort: { rewardInUsd: -1 } },
           { $skip: skip },
@@ -564,11 +570,46 @@ export class RewardsAll implements RewardsAllInterface {
     return sponsors[0];
   }
 
-  getEligiblePipe({ userName, user }: GetEligiblePipeType): PipelineStage[] {
+  async getExpertiseVariables(): Promise<ExpertiseVariablesType> {
+    const rewardFund = await this.redisBlockClient.hGetAll(
+      REDIS_KEY.REWARD_FUND,
+    );
+    const median = await this.redisBlockClient.hGetAll(
+      REDIS_KEY.MEDIAN_HISTORY,
+    );
+    const recentClaims = parseFloat(_.get(rewardFund, 'recent_claims', '0'));
+    const rewardBalance = parseFloat(_.get(rewardFund, 'reward_balance', '0'));
+
+    const rate =
+      parseFloat(_.get(median, 'base', '0')) /
+      parseFloat(_.get(median, 'quote', '0'));
+
+    return {
+      rewardBalanceTimesRate: rewardBalance * rate,
+      claims: recentClaims / 1000000,
+    };
+  }
+
+  async getEligiblePipe({
+    userName,
+    user,
+  }: GetEligiblePipeType): Promise<PipelineStage[]> {
     const currentDay = moment().format('dddd').toLowerCase();
+
+    const { rewardBalanceTimesRate, claims } =
+      await this.getExpertiseVariables();
+
     return [
       {
         $addFields: {
+          requiredExpertise: {
+            $divide: [
+              {
+                $multiply: ['$userRequirements.minExpertise', claims],
+              },
+              rewardBalanceTimesRate,
+            ],
+          },
           blacklist: {
             $setDifference: ['$blacklistUsers', '$whitelistUsers'],
           },
@@ -668,7 +709,7 @@ export class RewardsAll implements RewardsAllInterface {
             $gte: [user.followers_count, '$userRequirements.minFollowers'],
           },
           expertise: {
-            $gte: [user.wobjects_weight, '$userRequirements.minExpertise'],
+            $gte: [user.wobjects_weight, '$requiredExpertise'],
           },
           notAssigned: { $eq: ['$assignedUser', 0] },
           frequency: {

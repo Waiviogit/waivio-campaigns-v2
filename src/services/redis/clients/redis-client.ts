@@ -53,4 +53,12 @@ export abstract class RedisClient
       this.logger.error(error.message);
     }
   }
+
+  async hGetAll(key: string): Promise<object> {
+    try {
+      return this.client.HGETALL(key);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }
