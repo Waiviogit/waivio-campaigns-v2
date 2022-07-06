@@ -665,10 +665,10 @@ export class RewardsAll implements RewardsAllInterface {
           },
           posts: { $gte: [user.count_posts, '$userRequirements.minPosts'] },
           followers: {
-            $gte: [user.followers_count, '$userRequirements.followers'],
+            $gte: [user.followers_count, '$userRequirements.minFollowers'],
           },
           expertise: {
-            $gte: [user.wobjects_weight, '$userRequirements.expertise'],
+            $gte: [user.wobjects_weight, '$userRequirements.minExpertise'],
           },
           notAssigned: { $eq: ['$assignedUser', 0] },
           frequency: {
