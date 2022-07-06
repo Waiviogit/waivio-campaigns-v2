@@ -19,6 +19,12 @@ export class BlacklistHelper implements BlacklistHelperInterface {
     const data = await this.blacklistRepository.findOne({
       filter: { user },
     });
+    if (!data) {
+      return {
+        blacklist: [],
+        whitelist: [],
+      };
+    }
     const blacklist = [...data.blackList];
     for (const item of data.followLists) {
       blacklist.push(...item.blackList);
