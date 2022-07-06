@@ -120,3 +120,8 @@ export type EligiblePipeUserType = Pick<
   UserDocumentType,
   'count_posts' | 'followers_count' | 'wobjects_weight'
 >;
+
+export type ExpertiseVariablesType = {
+  claims: number;
+  rewardBalanceTimesRate: number;
+};

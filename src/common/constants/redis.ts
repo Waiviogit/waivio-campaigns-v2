@@ -8,6 +8,8 @@ export const REDIS_KEY = Object.freeze({
   ASSIGN: 'assign:',
   REVIEW_DOWNVOTE: 'expire:reviewDownvote',
   SPONSOR_BOT_VOTE: 'expire:sponsorBotVote',
+  REWARD_FUND: 'reward_fund',
+  MEDIAN_HISTORY: 'current_median_history_price',
 });
 
 export const REDIS_EXPIRE = Object.freeze({
