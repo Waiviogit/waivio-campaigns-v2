@@ -10,7 +10,7 @@ import {
 import { BlacklistRepositoryInterface } from '../../persistance/blacklist/interface';
 
 import { UserRepositoryInterface } from '../../persistance/user/interface';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import {
   BlacklistHelperInterface,
   BlacklistParserInterface,
