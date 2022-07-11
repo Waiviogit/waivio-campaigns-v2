@@ -41,9 +41,6 @@ export class CampaignUser {
   @Prop({ type: String })
   rootName: string;
 
-  @Prop({ type: Number, default: 0 })
-  children: number;
-
   @Prop({ type: String })
   riseRewardPermlink: string;
 
@@ -79,6 +76,9 @@ export class CampaignUser {
 
   @Prop({ type: Date })
   completedAt: Date;
+
+  @Prop({ type: Number, default: 0 })
+  commentsCount: number;
 }
 
 export const CampaignUserSchema = SchemaFactory.createForClass(CampaignUser);

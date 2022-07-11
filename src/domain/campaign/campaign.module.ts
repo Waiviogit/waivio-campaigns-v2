@@ -59,6 +59,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CreateCampaignProvider,
     UpdateCampaignProvider,
     DeleteCampaignProvider,
+    CampaignProviderHelper,
     CampaignActivationProvider,
     CampaignDeactivationProvider,
     AssignReservationProvider,

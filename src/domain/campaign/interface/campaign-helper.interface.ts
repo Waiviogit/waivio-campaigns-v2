@@ -35,4 +35,14 @@ export interface CampaignHelperInterface {
     daysToSuspend,
     campaignId,
   }: SetExpireSuspendWarningType): Promise<void>;
+
+  incrReviewComment({
+    reservationPermlink,
+    rootName,
+  }: IncrReviewCommentInterface): Promise<void>;
+}
+
+export interface IncrReviewCommentInterface {
+  rootName: string;
+  reservationPermlink: string;
 }
