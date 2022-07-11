@@ -192,6 +192,8 @@ export class RewardsAll implements RewardsAllInterface {
         requirements: campaign.requirements,
         userRequirements: campaign.userRequirements,
         createdAt: campaign.createdAt,
+        activationPermlink: campaign.activationPermlink,
+        reservationPermlink: user.reservationPermlink,
         distance:
           area && coordinates.length === 2
             ? this.getDistance(area, coordinates)
