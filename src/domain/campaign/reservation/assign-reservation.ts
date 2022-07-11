@@ -49,13 +49,7 @@ export class AssignReservation {
       requiredObject,
     });
     if (!isValid) return;
-    await this.campaignHelper.setExpireAssign({
-      reservationTime,
-      requiredObject,
-      reservationPermlink,
-      name,
-      activationPermlink,
-    });
+
     const campaign = await this.campaignRepository.findOne({
       filter: {
         activationPermlink,
@@ -82,6 +76,13 @@ export class AssignReservation {
           },
         },
       },
+    });
+    await this.campaignHelper.setExpireAssign({
+      reservationTime,
+      requiredObject,
+      reservationPermlink,
+      name,
+      activationPermlink,
     });
   }
 
