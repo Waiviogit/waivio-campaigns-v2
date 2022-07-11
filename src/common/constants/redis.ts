@@ -10,6 +10,7 @@ export const REDIS_KEY = Object.freeze({
   SPONSOR_BOT_VOTE: 'expire:sponsorBotVote',
   REWARD_FUND: 'reward_fund',
   MEDIAN_HISTORY: 'current_median_history_price',
+  PUBLISH_EXPIRE_ASSIGN: 'expire:assign',
 });
 
 export const REDIS_EXPIRE = Object.freeze({

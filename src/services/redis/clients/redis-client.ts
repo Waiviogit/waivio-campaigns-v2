@@ -61,4 +61,12 @@ export abstract class RedisClient
       this.logger.error(error.message);
     }
   }
+
+  async publish(key: string, data: string): Promise<string> {
+    try {
+      return this.client.PUBLISH(key, data);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }

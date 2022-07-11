@@ -102,6 +102,11 @@ export class CampaignHelper implements CampaignHelperInterface {
         requiredObject,
       }),
     );
+
+    await this.campaignRedisClient.publish(
+      REDIS_KEY.PUBLISH_EXPIRE_ASSIGN,
+      reservationPermlink,
+    );
   }
 
   async delExpireAssign(reservationPermlink: string): Promise<void> {

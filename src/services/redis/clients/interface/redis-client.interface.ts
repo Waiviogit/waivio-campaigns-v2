@@ -4,4 +4,5 @@ export interface RedisClientInterface {
   setex(key: string, expire: number, value: string): Promise<string>;
   deleteKey(key: string): Promise<string>;
   hGetAll(key: string): Promise<object>;
+  publish(key: string, data: string): Promise<string>;
 }
