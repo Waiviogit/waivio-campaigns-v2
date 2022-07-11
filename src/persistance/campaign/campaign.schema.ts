@@ -1,6 +1,5 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongoose';
-import * as _ from 'lodash';
 
 import {
   CAMPAIGN_STATUS,
@@ -229,18 +228,6 @@ CampaignSchema.index({ createdAt: -1 });
 CampaignSchema.index({ reward: -1 });
 CampaignSchema.index({ rewardInUSD: -1 });
 CampaignSchema.index({ userName: 1, postPermlink: 1 });
-
-CampaignSchema.virtual('canAssign').get(function () {
-  const countAssigns = this.get('budget') / this.get('reward');
-  const filterUsers = _.filter(
-    this.get('users'),
-    (user) =>
-      ['assigned', 'completed'].includes(user.status) &&
-      new Date(user.createdAt).getMonth() === new Date().getMonth(),
-  );
-
-  return countAssigns > filterUsers.length;
-});
 
 //TODO validate in dto
 // CampaignSchema.pre('save', function (next) {

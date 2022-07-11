@@ -19,6 +19,7 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CampaignHelperInterface } from '../interface';
 import { BlacklistHelperInterface } from '../../blacklist/interface';
+import { CampaignDocumentType } from '../../../persistance/campaign/types';
 
 @Injectable()
 export class AssignReservation {
@@ -84,6 +85,18 @@ export class AssignReservation {
     });
   }
 
+  canAssign(campaign: CampaignDocumentType): boolean {
+    const countAssigns = campaign.budget / campaign.reward;
+    const filterUsers = _.filter(
+      campaign.users,
+      (user) =>
+        ['assigned', 'completed'].includes(user.status) &&
+        new Date(user.createdAt).getMonth() === new Date().getMonth(),
+    );
+
+    return countAssigns > filterUsers.length;
+  }
+
   async validateAssign({
     activationPermlink,
     reservationPermlink,
@@ -96,6 +109,10 @@ export class AssignReservation {
         status: CAMPAIGN_STATUS.ACTIVE,
       },
     });
+    if (!campaign) {
+      return { isValid: false, message: 'Campaign not found' };
+    }
+
     const { blacklist } = await this.blacklistHelper.getBlacklist(
       campaign.guideName,
     );
@@ -124,12 +141,13 @@ export class AssignReservation {
       };
     }
     const existPermlinkReservation = await this.campaignRepository.findOne({
-      filter: { 'users.permlink': reservationPermlink },
+      filter: { 'users.reservationPermlink': reservationPermlink },
     });
     if (existPermlinkReservation) {
       return { isValid: false, message: 'Reservation permlink not unique' };
     }
-    if (!campaign.canAssign) {
+
+    if (!this.canAssign(campaign)) {
       return { isValid: false, message: 'Reserve exceeded by budget' };
     }
     const { lastCompleted } =
