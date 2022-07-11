@@ -18,7 +18,10 @@ import {
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
-import { CampaignHelperInterface } from './interface';
+import {
+  CampaignHelperInterface,
+  IncrReviewCommentInterface,
+} from './interface';
 import {
   AggregateSameUserReservationType,
   GetCompletedUsersInSameCampaignsOutType,
@@ -231,5 +234,22 @@ export class CampaignHelper implements CampaignHelperInterface {
         update: { status: CAMPAIGN_STATUS.INACTIVE },
       });
     }
+  }
+
+  async incrReviewComment({
+    reservationPermlink,
+    rootName,
+  }: IncrReviewCommentInterface): Promise<void> {
+    await this.campaignRepository.updateOne({
+      filter: {
+        users: {
+          $elemMatch: {
+            rootName,
+            reservationPermlink,
+          },
+        },
+      },
+      update: { $inc: { 'users.$.commentsCount': 1 } },
+    });
   }
 }

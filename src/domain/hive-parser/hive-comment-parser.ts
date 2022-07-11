@@ -13,6 +13,7 @@ import {
 import {
   CampaignActivationInterface,
   CampaignDeactivationInterface,
+  CampaignHelperInterface,
 } from '../campaign/interface';
 import { ActivateCampaignType } from '../campaign/types';
 import {
@@ -38,6 +39,8 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     private readonly guideRejectReservation: GuideRejectReservationInterface,
     @Inject(REVIEW_PROVIDE.CREATE)
     private readonly createReview: CreateReviewInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
   async parse({ comment, options }: HiveCommentParseType): Promise<void> {
@@ -46,6 +49,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
       '[1].extensions[0][1].beneficiaries',
       null,
     );
+
     const metadata = parseJSON(comment.json_metadata, {});
     const app = metadata?.app;
 
@@ -60,6 +64,11 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     if (metadata?.waivioRewards) {
       await this.parseActions(comment, metadata, app);
     }
+
+    await this.campaignHelper.incrReviewComment({
+      rootName: comment.parent_author,
+      reservationPermlink: comment.parent_permlink,
+    });
   }
 
   async parseActions(

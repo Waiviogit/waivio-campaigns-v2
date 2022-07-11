@@ -60,10 +60,6 @@ export class CampaignUserDto {
   @ApiProperty({ type: String })
   rootName: string;
 
-  @IsNumber()
-  @ApiProperty({ type: Number })
-  children: number;
-
   @IsString()
   @ApiProperty({ type: String })
   riseRewardPermlink: string;
