@@ -160,7 +160,14 @@ export class RewardsAll implements RewardsAllInterface {
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
       links: _.uniq([
         ..._.map(campaigns, 'requiredObject'),
-        ..._.map(campaigns, 'users.objectPermlink'),
+        ..._.reduce(
+          campaigns,
+          (acc, el) => {
+            acc.push(..._.map(el.users, 'objectPermlink'));
+            return acc;
+          },
+          [],
+        ),
       ]),
       host,
     });
