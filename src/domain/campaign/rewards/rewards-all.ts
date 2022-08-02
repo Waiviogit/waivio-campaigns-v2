@@ -274,8 +274,8 @@ export class RewardsAll implements RewardsAllInterface {
             },
           },
           ...(await this.getEligiblePipe({ userName, user })),
-          { $unwind: { path: '$objects' } },
           { $sort: { rewardInUsd: -1 } },
+          { $unwind: { path: '$objects' } },
           { $skip: skip },
           { $limit: limit + 1 },
           {
@@ -467,8 +467,8 @@ export class RewardsAll implements RewardsAllInterface {
               ...(sponsors && { $in: type }),
             },
           },
-          { $unwind: { path: '$objects' } },
           { $sort: { rewardInUsd: -1 } },
+          { $unwind: { path: '$objects' } },
           { $skip: skip },
           { $limit: limit + 1 },
           {
@@ -507,6 +507,7 @@ export class RewardsAll implements RewardsAllInterface {
               payoutToken: 1,
               currency: 1,
               reward: 1,
+              objects: 1,
               rewardInUSD: 1,
               guideName: 1,
               requirements: 1,
