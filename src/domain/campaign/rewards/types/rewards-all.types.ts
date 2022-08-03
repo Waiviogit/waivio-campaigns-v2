@@ -58,6 +58,7 @@ export type GetReservedType = GetRewardsMainType & {
 export type GetRewardsEligibleType = GetRewardsMainType & {
   userName?: string;
   activationPermlink?: string;
+  requiredObject?: string;
 };
 
 export type GetPrimaryObjectRewards = GetRewardsMainType & {
