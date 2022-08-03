@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REWARDS_PROVIDE } from '../../../common/constants';
-import { RewardsAllInterface } from '../../../domain/campaign/rewards/interface/rewards-all.interface';
+import {
+  GetSponsorsEligibleInterface,
+  RewardsAllInterface,
+} from '../../../domain/campaign/rewards/interface/rewards-all.interface';
 import {
   CanReserveParamType,
   CanReserveType,
@@ -45,6 +48,12 @@ export class RewardsService {
 
   async getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType> {
     return this.rewardsAll.getSponsorsAll(requiredObject);
+  }
+
+  async getSponsorsEligible(
+    params: GetSponsorsEligibleInterface,
+  ): Promise<GetSponsorsType> {
+    return this.rewardsAll.getSponsorsEligible(params);
   }
 
   async getReserved(params: GetReservedType): Promise<RewardsByObjectType> {

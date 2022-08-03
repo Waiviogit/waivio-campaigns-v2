@@ -14,6 +14,7 @@ import {
   RewardsAllInDto,
   RewardsCanReserveInDto,
 } from '../../../common/dto/rewards/in';
+import { EligibleSponsorsDto } from '../../../common/dto/rewards/in/eligible-sponsors.dto';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -90,6 +91,14 @@ export class RewardsController {
     return this.rewardsService.getSponsorsAll();
   }
 
+  @Get('eligible/sponsors')
+  @RewardsControllerDoc.getSponsors()
+  async getEligibleSponsors(
+    @Query() query: EligibleSponsorsDto,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsEligible(query);
+  }
+
   @Get('all/sponsors/object/:requiredObject')
   @RewardsControllerDoc.getSponsors()
   async getAllSponsorsByObject(
@@ -97,6 +106,19 @@ export class RewardsController {
     requiredObject: string,
   ): Promise<RewardSponsorsDto> {
     return this.rewardsService.getSponsorsAll(requiredObject);
+  }
+
+  @Get('eligible/sponsors/object/:requiredObject')
+  @RewardsControllerDoc.getSponsors()
+  async getEligibleSponsorsByObjext(
+    @Param('requiredObject')
+    requiredObject: string,
+    @Query() query: EligibleSponsorsDto,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsEligible({
+      requiredObject,
+      ...query,
+    });
   }
 
   @Get('reserved/:userName')
