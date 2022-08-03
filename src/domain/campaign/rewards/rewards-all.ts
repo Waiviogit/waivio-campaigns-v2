@@ -260,6 +260,7 @@ export class RewardsAll implements RewardsAllInterface {
     sponsors,
     type,
     userName,
+    requiredObject,
   }: GetRewardsEligibleType): Promise<RewardsByObjectType> {
     const user = await this.userRepository.findOne({
       filter: { name: userName },
@@ -272,6 +273,7 @@ export class RewardsAll implements RewardsAllInterface {
           {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
+              ...(requiredObject && { requiredObject }),
               ...(sponsors && { $in: sponsors }),
               ...(sponsors && { $in: type }),
             },

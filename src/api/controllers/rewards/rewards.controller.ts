@@ -78,8 +78,10 @@ export class RewardsController {
     @CustomHeaders(new HostPipe())
     host: string,
     @Query() rewardsAllInDto: RewardsAllInDto,
+    @Param('requiredObject') requiredObject: string,
   ): Promise<RewardsByObjectOutDto> {
     return this.rewardsService.getEligibleByObject({
+      requiredObject,
       ...rewardsAllInDto,
       host,
     });
