@@ -65,7 +65,7 @@ export class RewardsControllerDoc {
   static getSponsors(): MethodDecorator {
     return applyDecorators(
       ApiOperation({
-        summary: 'get rewards by required object',
+        summary: 'filters for sponsors and types',
       }),
       ApiResponse({
         status: HttpStatus.OK,

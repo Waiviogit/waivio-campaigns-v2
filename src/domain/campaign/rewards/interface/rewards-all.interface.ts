@@ -72,4 +72,14 @@ export interface RewardsAllInterface {
     userName,
     activationPermlink,
   }: CanReserveParamType): Promise<CanReserveType>;
+
+  getSponsorsEligible({
+    userName,
+    requiredObject,
+  }: GetSponsorsEligibleInterface): Promise<GetSponsorsType>;
+}
+
+export interface GetSponsorsEligibleInterface {
+  userName: string;
+  requiredObject?: string;
 }

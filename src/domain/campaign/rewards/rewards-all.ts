@@ -39,7 +39,10 @@ import {
 } from './types/rewards-all.types';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
-import { RewardsAllInterface } from './interface/rewards-all.interface';
+import {
+  GetSponsorsEligibleInterface,
+  RewardsAllInterface,
+} from './interface/rewards-all.interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { configService } from '../../../common/config';
@@ -563,6 +566,43 @@ export class RewardsAll implements RewardsAllInterface {
               ...(requiredObject && { requiredObject }),
             },
           },
+          {
+            $group: {
+              _id: '$status',
+              type: { $addToSet: '$type' },
+              sponsors: { $addToSet: '$guideName' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ],
+      },
+    );
+    return sponsors[0];
+  }
+
+  async getSponsorsEligible({
+    userName,
+    requiredObject,
+  }: GetSponsorsEligibleInterface): Promise<GetSponsorsType> {
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+    if (!user) return { type: [], sponsors: [] };
+    const sponsors: GetSponsorsType[] = await this.campaignRepository.aggregate(
+      {
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              ...(requiredObject && { requiredObject }),
+            },
+          },
+          ...(await this.getEligiblePipe({ userName, user })),
           {
             $group: {
               _id: '$status',
