@@ -15,13 +15,21 @@ import {
   RewardsAllType,
   RewardsByObjectType,
   RewardsTabType,
-} from '../../../domain/campaign/rewards/types/rewards-all.types';
+} from '../../../domain/campaign/rewards/types';
+import { RewardsMapType } from '../../../domain/campaign/rewards/types';
+import {
+  GetMapAllInterface,
+  GetMapEligibleInterface,
+  RewardsMapInterface,
+} from '../../../domain/campaign/rewards/interface/rewards-map.interface';
 
 @Injectable()
 export class RewardsService {
   constructor(
     @Inject(REWARDS_PROVIDE.ALL)
     private readonly rewardsAll: RewardsAllInterface,
+    @Inject(REWARDS_PROVIDE.MAP)
+    private readonly rewardsMap: RewardsMapInterface,
   ) {}
 
   async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
@@ -66,5 +74,15 @@ export class RewardsService {
 
   async canReserve(params: CanReserveParamType): Promise<CanReserveType> {
     return this.rewardsAll.canReserve(params);
+  }
+
+  async getEligibleMap(
+    params: GetMapEligibleInterface,
+  ): Promise<RewardsMapType> {
+    return this.rewardsMap.getMapEligible(params);
+  }
+
+  async getAllMap(params: GetMapAllInterface): Promise<RewardsMapType> {
+    return this.rewardsMap.getMapAll(params);
   }
 }

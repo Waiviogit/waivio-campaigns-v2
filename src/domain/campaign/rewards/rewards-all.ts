@@ -36,7 +36,7 @@ import {
   RewardsByRequiredType,
   RewardsMainType,
   RewardsTabType,
-} from './types/rewards-all.types';
+} from './types';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import {

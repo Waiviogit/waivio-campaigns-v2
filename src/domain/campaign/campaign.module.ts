@@ -23,7 +23,10 @@ import {
   FraudDetectionProvider,
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
-import { RewardsAllProvider } from './rewards/rewards.provider';
+import {
+  RewardsAllProvider,
+  RewardsMapProvider,
+} from './rewards/rewards.provider';
 import { CampaignPaymentModule } from '../campaign-payment/campaign-payment.module';
 import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
 import { BlacklistModule } from '../blacklist/blacklist.module';
@@ -54,6 +57,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     RewardsAllProvider,
     CampaignSuspendProvider,
     CampaignExpiredListenerProvider,
+    RewardsMapProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -72,6 +76,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     RewardsAllProvider,
     CampaignSuspendProvider,
     CampaignExpiredListenerProvider,
+    RewardsMapProvider,
   ],
 })
 export class CampaignModule {}

@@ -1,6 +1,7 @@
 import {
   CanReserveParamType,
   CanReserveType,
+  GetEligiblePipeType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
@@ -9,7 +10,8 @@ import {
   RewardsAllType,
   RewardsByObjectType,
   RewardsTabType,
-} from '../types/rewards-all.types';
+} from '../types';
+import { PipelineStage } from 'mongoose';
 
 export interface RewardsAllInterface {
   getRewardsMain({
@@ -77,6 +79,8 @@ export interface RewardsAllInterface {
     userName,
     requiredObject,
   }: GetSponsorsEligibleInterface): Promise<GetSponsorsType>;
+
+  getEligiblePipe(params: GetEligiblePipeType): Promise<PipelineStage[]>;
 }
 
 export interface GetSponsorsEligibleInterface {
