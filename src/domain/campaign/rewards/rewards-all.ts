@@ -236,7 +236,7 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
               ...(sponsors && { $in: sponsors }),
-              ...(sponsors && { $in: type }),
+              ...(type && { $in: type }),
               ...(activationPermlink && { activationPermlink }),
             },
           },
@@ -337,7 +337,7 @@ export class RewardsAll implements RewardsAllInterface {
       filter: {
         status: CAMPAIGN_STATUS.ACTIVE,
         ...(sponsors && { $in: sponsors }),
-        ...(sponsors && { $in: type }),
+        ...(type && { $in: type }),
       },
     });
 
