@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REWARDS_PROVIDE } from '../../../common/constants';
 import {
+  GetReservedFiltersInterface,
   GetSponsorsEligibleInterface,
   RewardsAllInterface,
 } from '../../../domain/campaign/rewards/interface/rewards-all.interface';
@@ -84,5 +85,11 @@ export class RewardsService {
 
   async getAllMap(params: GetMapAllInterface): Promise<RewardsMapType> {
     return this.rewardsMap.getMapAll(params);
+  }
+
+  async getReservedFilters(
+    params: GetReservedFiltersInterface,
+  ): Promise<GetSponsorsType> {
+    return this.rewardsAll.getReservedFilters(params);
   }
 }

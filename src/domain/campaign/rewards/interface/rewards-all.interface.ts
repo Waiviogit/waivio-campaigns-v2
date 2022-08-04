@@ -81,9 +81,17 @@ export interface RewardsAllInterface {
   }: GetSponsorsEligibleInterface): Promise<GetSponsorsType>;
 
   getEligiblePipe(params: GetEligiblePipeType): Promise<PipelineStage[]>;
+
+  getReservedFilters(
+    params: GetReservedFiltersInterface,
+  ): Promise<GetSponsorsType>;
 }
 
 export interface GetSponsorsEligibleInterface {
   userName: string;
   requiredObject?: string;
+}
+
+export interface GetReservedFiltersInterface {
+  userName: string;
 }

@@ -40,6 +40,7 @@ import {
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import {
+  GetReservedFiltersInterface,
   GetSponsorsEligibleInterface,
   RewardsAllInterface,
 } from './interface/rewards-all.interface';
@@ -135,6 +136,37 @@ export class RewardsAll implements RewardsAllInterface {
     return { tabType: REWARDS_TAB.ALL };
   }
 
+  async getReservedFilters({
+    userName,
+  }: GetReservedFiltersInterface): Promise<GetSponsorsType> {
+    const sponsors: GetSponsorsType[] = await this.campaignRepository.aggregate(
+      {
+        pipeline: [
+          {
+            $match: {
+              'users.status': RESERVATION_STATUS.ASSIGNED,
+              'users.name': userName,
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              type: { $addToSet: '$type' },
+              sponsors: { $addToSet: '$guideName' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ],
+      },
+    );
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [] };
+    return sponsors[0];
+  }
+
   async getReserved({
     userName,
     skip,
@@ -153,8 +185,8 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               'users.status': RESERVATION_STATUS.ASSIGNED,
               'users.name': userName,
-              ...(sponsors && { $in: sponsors }),
-              ...(sponsors && { $in: type }),
+              ...(sponsors && { guideName: { $in: sponsors } }),
+              ...(sponsors && { type: { $in: type } }),
             },
           },
         ],
@@ -583,6 +615,7 @@ export class RewardsAll implements RewardsAllInterface {
         ],
       },
     );
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [] };
     return sponsors[0];
   }
 
@@ -620,6 +653,7 @@ export class RewardsAll implements RewardsAllInterface {
         ],
       },
     );
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [] };
     return sponsors[0];
   }
 

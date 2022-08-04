@@ -167,6 +167,17 @@ export class RewardsController {
     });
   }
 
+  @Get('reserved/:userName/filters')
+  @RewardsControllerDoc.getSponsors()
+  async getReservedFilters(
+    @Param('userName')
+    userName: string,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getReservedFilters({
+      userName,
+    });
+  }
+
   @Get('availability')
   @RewardsControllerDoc.getReserve()
   async canReserve(
