@@ -235,8 +235,8 @@ export class RewardsAll implements RewardsAllInterface {
           {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
-              ...(sponsors && { $in: sponsors }),
-              ...(sponsors && { $in: type }),
+              ...(sponsors && { guideName: { $in: sponsors } }),
+              ...(type && { type: { $in: type } }),
               ...(activationPermlink && { activationPermlink }),
             },
           },
@@ -274,8 +274,8 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
               ...(requiredObject && { requiredObject }),
-              ...(sponsors && { $in: sponsors }),
-              ...(sponsors && { $in: type }),
+              ...(sponsors && { guideName: { $in: sponsors } }),
+              ...(type && { type: { $in: type } }),
             },
           },
           ...(await this.getEligiblePipe({ userName, user })),
@@ -336,8 +336,8 @@ export class RewardsAll implements RewardsAllInterface {
     const campaigns = await this.campaignRepository.find({
       filter: {
         status: CAMPAIGN_STATUS.ACTIVE,
-        ...(sponsors && { $in: sponsors }),
-        ...(sponsors && { $in: type }),
+        ...(sponsors && { guideName: { $in: sponsors } }),
+        ...(type && { type: { $in: type } }),
       },
     });
 
@@ -468,8 +468,8 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               requiredObject,
               status: CAMPAIGN_STATUS.ACTIVE,
-              ...(sponsors && { $in: sponsors }),
-              ...(sponsors && { $in: type }),
+              ...(sponsors && { guideName: { $in: sponsors } }),
+              ...(type && { type: { $in: type } }),
             },
           },
           { $sort: { rewardInUsd: -1 } },
