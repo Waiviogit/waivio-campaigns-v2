@@ -4,6 +4,7 @@ import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
+  RewardsMapOutDto,
   RewardsTabDto,
 } from '../../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
@@ -82,6 +83,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: RewardsCanReserveOutDto,
+      }),
+    );
+  }
+
+  static getMap(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get map for campaigns',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsMapOutDto,
       }),
     );
   }

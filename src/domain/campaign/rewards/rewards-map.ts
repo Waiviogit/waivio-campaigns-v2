@@ -6,6 +6,7 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   REWARDS_PROVIDE,
+  USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
@@ -17,6 +18,8 @@ import {
 import {
   GetFormattedMapInterface,
   GetMapAllInterface,
+  GetMapEligibleInterface,
+  GetMapPipeInterface,
   RewardsMapInterface,
 } from './interface/rewards-map.interface';
 import { WobjectHelperInterface } from '../../wobject/interface';
@@ -24,6 +27,8 @@ import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import * as _ from 'lodash';
 import { parseJSON } from '../../../common/helpers';
 import { RewardsAllInterface } from './interface/rewards-all.interface';
+import { PipelineStage } from 'mongoose';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
 
 @Injectable()
 export class RewardsMap implements RewardsMapInterface {
@@ -36,7 +41,13 @@ export class RewardsMap implements RewardsMapInterface {
     private readonly appRepository: AppRepositoryInterface,
     @Inject(REWARDS_PROVIDE.ALL)
     private readonly rewardsAll: RewardsAllInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
+  private readonly notFoundResp = {
+    rewards: [],
+    hasMore: false,
+  };
 
   async getMapAll({
     host,
@@ -52,50 +63,12 @@ export class RewardsMap implements RewardsMapInterface {
               status: CAMPAIGN_STATUS.ACTIVE,
             },
           },
-          {
-            $group: {
-              _id: '$requiredObject',
-              maxReward: {
-                $max: '$rewardInUSD',
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: 'wobjects',
-              localField: '_id',
-              foreignField: 'author_permlink',
-              as: 'object',
-            },
-          },
-          {
-            $addFields: {
-              object: { $arrayElemAt: ['$object', 0] },
-            },
-          },
-          {
-            $match: {
-              'object.map': {
-                $geoWithin: {
-                  $box: [box.bottomPoint, box.topPoint],
-                },
-              },
-            },
-          },
-          {
-            $skip: skip,
-          },
-          {
-            $limit: limit + 1,
-          },
+          ...this.getMapPipe({ box, skip, limit }),
         ],
       });
 
     if (_.isEmpty(rewards)) {
-      return {
-        rewards: [],
-        hasMore: false,
-      };
+      return this.notFoundResp;
     }
 
     const formattedMap = await this.getFormattedMap({ rewards, host });
@@ -104,6 +77,90 @@ export class RewardsMap implements RewardsMapInterface {
       rewards: _.take(formattedMap, limit),
       hasMore: formattedMap.length > limit,
     };
+  }
+
+  async getMapEligible({
+    host,
+    box,
+    skip = 0,
+    limit = 10,
+    userName,
+  }: GetMapEligibleInterface): Promise<RewardsMapType> {
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+    if (!user) {
+      return this.notFoundResp;
+    }
+    const eligiblePipe = await this.rewardsAll.getEligiblePipe({
+      userName,
+      user,
+    });
+    const rewards: RewardsAggregateMapType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+            },
+          },
+          ...eligiblePipe,
+          ...this.getMapPipe({ box, skip, limit }),
+        ],
+      });
+
+    if (_.isEmpty(rewards)) {
+      return this.notFoundResp;
+    }
+
+    const formattedMap = await this.getFormattedMap({ rewards, host });
+
+    return {
+      rewards: _.take(formattedMap, limit),
+      hasMore: formattedMap.length > limit,
+    };
+  }
+
+  getMapPipe({ box, skip, limit }: GetMapPipeInterface): PipelineStage[] {
+    return [
+      {
+        $group: {
+          _id: '$requiredObject',
+          maxReward: {
+            $max: '$rewardInUSD',
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'wobjects',
+          localField: '_id',
+          foreignField: 'author_permlink',
+          as: 'object',
+        },
+      },
+      {
+        $addFields: {
+          object: { $arrayElemAt: ['$object', 0] },
+        },
+      },
+      {
+        $match: {
+          'object.map': {
+            $geoWithin: {
+              $box: [box.bottomPoint, box.topPoint],
+            },
+          },
+        },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit + 1,
+      },
+    ];
   }
 
   async getFormattedMap({

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { HostPipe } from '../../pipes/host.pipe';
 import { CustomHeaders } from '../../../common/decorators';
 import { RewardsService } from './rewards.service';
@@ -6,6 +6,7 @@ import {
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
+  RewardsMapOutDto,
   RewardsTabDto,
 } from '../../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
@@ -13,6 +14,7 @@ import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponso
 import {
   RewardsAllInDto,
   RewardsCanReserveInDto,
+  RewardsMapInDto,
 } from '../../../common/dto/rewards/in';
 import { EligibleSponsorsDto } from '../../../common/dto/rewards/in/eligible-sponsors.dto';
 
@@ -40,6 +42,19 @@ export class RewardsController {
     return this.rewardsService.getAllRewards({
       ...rewardsAllInDto,
       host,
+    });
+  }
+
+  @Post('all/map')
+  @RewardsControllerDoc.getMap()
+  async getAllMap(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Body() body: RewardsMapInDto,
+  ): Promise<RewardsMapOutDto> {
+    return this.rewardsService.getAllMap({
+      host,
+      ...body,
     });
   }
 
@@ -120,6 +135,19 @@ export class RewardsController {
     return this.rewardsService.getSponsorsEligible({
       requiredObject,
       ...query,
+    });
+  }
+
+  @Post('eligible/map')
+  @RewardsControllerDoc.getMap()
+  async getEligibleMap(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Body() body: RewardsMapInDto,
+  ): Promise<RewardsMapOutDto> {
+    return this.rewardsService.getEligibleMap({
+      host,
+      ...body,
     });
   }
 
