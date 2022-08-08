@@ -29,7 +29,12 @@ export class CampaignExpiredListener
 
   async expireCampaign(_id: string): Promise<void> {
     await this.campaignRepository.updateOne({
-      filter: { _id },
+      filter: {
+        _id,
+        status: {
+          $in: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.REACHED_LIMIT],
+        },
+      },
       update: { status: CAMPAIGN_STATUS.EXPIRED },
     });
   }
