@@ -10,6 +10,7 @@ import {
   REDIS_DAYS_TO_SUSPEND,
   REDIS_EXPIRE,
   REFERRAL_TYPES,
+  REGEX_WOBJECT_REF,
   RESERVATION_STATUS,
   REVIEW_PROVIDE,
   SPONSORS_BOT_PROVIDE,
@@ -45,6 +46,7 @@ import { ObjectId } from 'mongoose';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
+import { getBodyLinksArray } from '../../../common/helpers';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -80,9 +82,20 @@ export class CreateReview implements CreateReviewInterface {
       botName = comment.author;
     } else postAuthor = comment.author;
 
-    if (!metadata?.wobj) return;
+    const metadataWobj = _.map(
+      _.get(metadata, 'wobj.wobjects'),
+      'author_permlink',
+    );
 
-    const objects = _.map(metadata.wobj.wobjects, 'author_permlink');
+    const bodyWobj = getBodyLinksArray({
+      body: comment.body,
+      regularExpression: REGEX_WOBJECT_REF,
+    });
+
+    const objects = _.uniq([...metadataWobj, ...bodyWobj]);
+
+    if (_.isEmpty(objects)) return;
+
     const campaignsForReview = await this.findReviewCampaigns(
       postAuthor,
       objects,
