@@ -14,3 +14,4 @@ export * from './hive-engine';
 export * from './reg-exp';
 export * from './sponsors-bot';
 export * from './blacklist';
+export * from './regexp';
