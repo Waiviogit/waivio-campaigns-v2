@@ -181,9 +181,9 @@ export class CampaignHelper implements CampaignHelperInterface {
 
   async getPayoutTokenRateUSD(token: string): Promise<number> {
     switch (token) {
-      case PAYOUT_TOKEN.WAIV:
-        return this.getHiveRateUSD();
       case PAYOUT_TOKEN.HIVE:
+        return this.getHiveRateUSD();
+      case PAYOUT_TOKEN.WAIV:
         return this.getWaivRateUSD();
     }
   }

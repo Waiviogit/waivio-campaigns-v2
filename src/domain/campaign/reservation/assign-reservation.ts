@@ -61,6 +61,8 @@ export class AssignReservation {
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
+
+    if (!payoutTokenRateUSD) return;
     await this.campaignRepository.updateOne({
       filter: { activationPermlink, status: CAMPAIGN_STATUS.ACTIVE },
       update: {
