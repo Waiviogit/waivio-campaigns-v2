@@ -33,6 +33,7 @@ import { CampaignRepositoryInterface } from '../../persistance/campaign/interfac
 import axios from 'axios';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
+import { configService } from '../../common/config';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -191,9 +192,9 @@ export class CampaignHelper implements CampaignHelperInterface {
   async getHiveRateUSD(): Promise<number> {
     try {
       const result = await axios.get(
-        'https://api.coingecko.com/api/v3/simple/price?ids=hive&vs_currencies=usd',
+        `https://${configService.getAppHost()}/currencies-api/marketInfo?ids=hive&currencies=usd`,
       );
-      return _.get(result, 'data.hive.usd');
+      return _.get(result, 'data.current.hive.usd');
     } catch (error) {
       this.logger.error(error.message);
     }
