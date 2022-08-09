@@ -5,7 +5,7 @@ import { CAMPAIGN_PAYMENT, PAYOUT_TOKEN } from '../../common/constants';
 import { CampaignPaymentBeneficiariesType } from './types';
 import BigNumber from 'bignumber.js';
 
-@Schema({ versionKey: false })
+@Schema({ versionKey: false, timestamps: true })
 export class CampaignPayment {
   _id: mongoose.ObjectId;
 
