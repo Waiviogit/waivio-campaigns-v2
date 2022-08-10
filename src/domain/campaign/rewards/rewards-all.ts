@@ -199,7 +199,7 @@ export class RewardsAll implements RewardsAllInterface {
               'users.status': RESERVATION_STATUS.ASSIGNED,
               'users.name': userName,
               ...(sponsors && { guideName: { $in: sponsors } }),
-              ...(sponsors && { type: { $in: type } }),
+              ...(type && { type: { $in: type } }),
             },
           },
         ],
