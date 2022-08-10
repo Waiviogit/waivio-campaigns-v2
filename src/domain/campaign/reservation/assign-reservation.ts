@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 
 import {
@@ -23,6 +23,7 @@ import { CampaignDocumentType } from '../../../persistance/campaign/types';
 
 @Injectable()
 export class AssignReservation {
+  private readonly logger = new Logger(AssignReservation.name);
   constructor(
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
@@ -42,13 +43,17 @@ export class AssignReservation {
     rootName,
     referralServer,
   }: AssignReservationType): Promise<void> {
-    const { isValid, reservationTime } = await this.validateAssign({
+    const { isValid, reservationTime, message } = await this.validateAssign({
       activationPermlink,
       reservationPermlink,
       name,
       requiredObject,
     });
-    if (!isValid) return;
+    if (!isValid) {
+      //TODO REMOVE
+      this.logger.error(`Not Valid ${message}`);
+      return;
+    }
 
     const campaign = await this.campaignRepository.findOne({
       filter: {
@@ -62,7 +67,10 @@ export class AssignReservation {
       campaign.payoutToken,
     );
 
-    if (!payoutTokenRateUSD) return;
+    if (!payoutTokenRateUSD) {
+      this.logger.error(`No payoutTokenRateUSD`);
+      return;
+    }
     await this.campaignRepository.updateOne({
       filter: { activationPermlink, status: CAMPAIGN_STATUS.ACTIVE },
       update: {

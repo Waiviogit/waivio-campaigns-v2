@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUSES_FOR_ON_HOLD,
@@ -12,6 +12,7 @@ import { RejectReservationInterface } from './interface';
 
 @Injectable()
 export class RejectReservation implements RejectReservationInterface {
+  private readonly logger = new Logger(RejectReservation.name);
   constructor(
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
@@ -25,13 +26,18 @@ export class RejectReservation implements RejectReservationInterface {
     rejectionPermlink,
     name,
   }: RejectReservationType): Promise<void> {
-    const { isValid } = await this.validateRejectAssign({
+    const { isValid, message } = await this.validateRejectAssign({
       activationPermlink,
       reservationPermlink,
       rejectionPermlink,
       name,
     });
-    if (!isValid) return;
+    if (!isValid) {
+      //TODO REMOVE
+      this.logger.error(`Not Valid ${message}`);
+      return;
+    }
+
     const result = await this.campaignRepository.updateOne({
       filter: {
         activationPermlink,
