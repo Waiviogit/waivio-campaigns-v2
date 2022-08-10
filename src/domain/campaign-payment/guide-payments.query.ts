@@ -155,7 +155,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
             $project: {
               _id: 0,
               userName: '$_id',
-              payable: 1,
+              payable: { $convert: { input: '$payable', to: 'double' } },
               alias: 1,
               notPayedDate: {
                 $cond: [
