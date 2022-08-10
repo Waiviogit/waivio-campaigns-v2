@@ -69,6 +69,18 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly redisBlockClient: RedisClientInterface,
   ) {}
 
+  async findAssignedMainObjects(userName: string): Promise<string[]> {
+    if (!userName) return [];
+    const campaigns = await this.campaignRepository.find({
+      filter: {
+        'users.status': RESERVATION_STATUS.ASSIGNED,
+        'users.name': userName,
+      },
+      projection: { requiredObject: 1 },
+    });
+    return _.uniq(_.map(campaigns, 'requiredObject'));
+  }
+
   async canReserve({
     userName,
     activationPermlink,
@@ -89,6 +101,7 @@ export class RewardsAll implements RewardsAllInterface {
       filter: { name: userName },
       projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
     });
+    if (!user) return errResponse;
     const eligiblePipe = await this.getEligiblePipe({ userName, user });
     eligiblePipe.pop();
     const reserve: CanReserveType[] = await this.campaignRepository.aggregate({
@@ -272,7 +285,10 @@ export class RewardsAll implements RewardsAllInterface {
               ...(activationPermlink && { activationPermlink }),
             },
           },
-          ...(await this.getEligiblePipe({ userName, user })),
+          ...(await this.getEligiblePipe({
+            userName,
+            user,
+          })),
         ],
       });
     return this.getPrimaryObjectRewards({
@@ -682,6 +698,7 @@ export class RewardsAll implements RewardsAllInterface {
     user,
   }: GetEligiblePipeType): Promise<PipelineStage[]> {
     const currentDay = moment().format('dddd').toLowerCase();
+    const assignedObjects = await this.findAssignedMainObjects(userName);
 
     const { rewardBalanceTimesRate, claims } =
       await this.getExpertiseVariables();
@@ -708,18 +725,6 @@ export class RewardsAll implements RewardsAllInterface {
                 $and: [
                   { $eq: ['$$user.name', userName] },
                   { $eq: ['$$user.status', 'completed'] },
-                ],
-              },
-            },
-          },
-          assignedUser: {
-            $filter: {
-              input: '$users',
-              as: 'user',
-              cond: {
-                $and: [
-                  { $eq: ['$$user.name', userName] },
-                  { $eq: ['$$user.status', 'assigned'] },
                 ],
               },
             },
@@ -752,7 +757,6 @@ export class RewardsAll implements RewardsAllInterface {
       },
       {
         $addFields: {
-          assignedUser: { $size: '$assignedUser' },
           thisMonthCompleted: { $size: '$thisMonthCompleted' },
           assigned: { $size: '$assigned' },
           completedUser: {
@@ -798,7 +802,9 @@ export class RewardsAll implements RewardsAllInterface {
           expertise: {
             $gte: [user.wobjects_weight, '$requiredExpertise'],
           },
-          notAssigned: { $eq: ['$assignedUser', 0] },
+          notAssigned: {
+            $cond: [{ $in: ['$requiredObject', assignedObjects] }, false, true],
+          },
           frequency: {
             $or: [
               { $gt: ['$daysPassed', '$frequencyAssign'] },
