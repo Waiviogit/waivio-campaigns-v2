@@ -41,7 +41,6 @@ export class RejectReservation implements RejectReservationInterface {
     const result = await this.campaignRepository.updateOne({
       filter: {
         activationPermlink,
-        status: { $in: CAMPAIGN_STATUSES_FOR_ON_HOLD },
         users: {
           $elemMatch: {
             name,
