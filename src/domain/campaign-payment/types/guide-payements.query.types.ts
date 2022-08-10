@@ -3,7 +3,7 @@ import { RewardsByRequiredType } from '../../campaign/rewards/types/rewards-all.
 
 export type PayablesAllType = {
   userName: string;
-  payable: string;
+  payable: number;
   alias: string;
   notPayedDate: string;
   notPayedPeriod?: number;
