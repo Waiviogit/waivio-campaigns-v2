@@ -542,6 +542,9 @@ export class RewardsAll implements RewardsAllInterface {
                     $and: [
                       { $eq: ['$$user.status', RESERVATION_STATUS.ASSIGNED] },
                       { $eq: ['$$user.name', userName] },
+                      {
+                        $eq: ['$$user.objectPermlink', '$objects'],
+                      },
                     ],
                   },
                 },
