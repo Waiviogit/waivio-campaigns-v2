@@ -5,6 +5,6 @@ import { PAYOUT_TOKEN } from '../../../constants';
 export class PayablesInDto {
   @IsString()
   @IsOptional()
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   payoutToken: string = PAYOUT_TOKEN.WAIV;
 }

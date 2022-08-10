@@ -1,6 +1,9 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GuidePayablesOutDto } from '../../../common/dto/payables/out';
+import {
+  GuidePayablesOutDto,
+  GuidePayablesUserOutDto,
+} from '../../../common/dto/payables/out';
 
 export class PayablesControllerDoc {
   static main(): ClassDecorator {
@@ -24,11 +27,23 @@ export class PayablesControllerDoc {
   static getGuidePayments(): MethodDecorator {
     return applyDecorators(
       ApiOperation({
-        summary: 'get main page payables',
+        summary: 'get guide main page payables',
       }),
       ApiResponse({
         status: HttpStatus.OK,
         type: GuidePayablesOutDto,
+      }),
+    );
+  }
+
+  static getGuidePaymentsByUser(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get guide payables by user',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: GuidePayablesUserOutDto,
       }),
     );
   }

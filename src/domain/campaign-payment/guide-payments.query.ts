@@ -263,7 +263,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
           {
             $project: {
               _id: 0,
-              payable: 1,
+              payable: { $convert: { input: '$payable', to: 'double' } },
             },
           },
         ],
@@ -284,6 +284,12 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
         pipeline: [
           {
             $match: { guideName, payoutToken, userName },
+          },
+          {
+            $addFields: {
+              commission: { $convert: { input: '$commission', to: 'double' } },
+              amount: { $convert: { input: '$amount', to: 'double' } },
+            },
           },
           { $sort: { createdAt: 1 } },
         ],

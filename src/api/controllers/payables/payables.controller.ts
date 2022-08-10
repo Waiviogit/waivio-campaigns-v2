@@ -1,5 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { GuidePayablesOutDto } from '../../../common/dto/payables/out';
+import {
+  GuidePayablesOutDto,
+  GuidePayablesUserOutDto,
+} from '../../../common/dto/payables/out';
 import { PayablesService } from './payables.service';
 import { PayablesInDto } from '../../../common/dto/payables/in';
 import { PayablesControllerDoc } from './payables.controller.doc';
@@ -17,5 +20,21 @@ export class PayablesController {
     @Query() query: PayablesInDto,
   ): Promise<GuidePayablesOutDto> {
     return this.payablesService.getGuidePayments({ guideName, ...query });
+  }
+
+  @Get('guide/:guideName/:userName')
+  @PayablesControllerDoc.getGuidePaymentsByUser()
+  async getGuidePaymentsByUser(
+    @Param('guideName')
+    guideName: string,
+    @Param('userName')
+    userName: string,
+    @Query() query: PayablesInDto,
+  ): Promise<GuidePayablesUserOutDto> {
+    return this.payablesService.getGuidePaymentsByUser({
+      guideName,
+      userName,
+      ...query,
+    });
   }
 }
