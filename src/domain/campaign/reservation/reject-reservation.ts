@@ -70,10 +70,7 @@ export class RejectReservation implements RejectReservationInterface {
     name,
   }: RejectReservationType): Promise<validateAssignType> {
     const campaign = await this.campaignRepository.findOne({
-      filter: {
-        activationPermlink,
-        status: { $in: CAMPAIGN_STATUSES_FOR_ON_HOLD },
-      },
+      filter: { activationPermlink },
     });
 
     if (!campaign || !reservationPermlink || !name || !rejectionPermlink) {
