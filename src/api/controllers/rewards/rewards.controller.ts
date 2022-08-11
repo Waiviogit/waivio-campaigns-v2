@@ -3,6 +3,7 @@ import { HostPipe } from '../../pipes/host.pipe';
 import { CustomHeaders } from '../../../common/decorators';
 import { RewardsService } from './rewards.service';
 import {
+  ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
@@ -12,6 +13,7 @@ import {
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 import {
+  ObjectRewardsInDto,
   RewardsAllInDto,
   RewardsCanReserveInDto,
   RewardsMapInDto,
@@ -185,6 +187,22 @@ export class RewardsController {
   ): Promise<RewardsCanReserveOutDto> {
     return this.rewardsService.canReserve({
       ...canReserveInDto,
+    });
+  }
+
+  @Get('object/:authorPermlink')
+  @RewardsControllerDoc.getRewardsByObject()
+  async getRewardsByObject(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('authorPermlink')
+    authorPermlink: string,
+    @Query() query: ObjectRewardsInDto,
+  ): Promise<ObjectRewardsOutDto> {
+    return this.rewardsService.getRewardsByObject({
+      host,
+      authorPermlink,
+      ...query,
     });
   }
 }

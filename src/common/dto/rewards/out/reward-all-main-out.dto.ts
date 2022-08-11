@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { RewardDto } from './reward.dto';
-import { RewardsMainType } from '../../../../domain/campaign/rewards/types/rewards-all.types';
+import { RewardsMainType } from '../../../../domain/campaign/rewards/types';
 
 export class RewardsMainDto extends PickType(RewardDto, [
   'object',

@@ -381,12 +381,14 @@ export class RewardsAll implements RewardsAllInterface {
     type,
     sort,
     area,
+    requiredObjects,
   }: GetRewardsMainType): Promise<RewardsAllType> {
     const campaigns = await this.campaignRepository.find({
       filter: {
         status: CAMPAIGN_STATUS.ACTIVE,
         ...(sponsors && { guideName: { $in: sponsors } }),
         ...(type && { type: { $in: type } }),
+        ...(requiredObjects && { requiredObject: { $in: requiredObjects } }),
       },
     });
 

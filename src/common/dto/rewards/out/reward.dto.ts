@@ -4,7 +4,6 @@ import {
   UserRequirementsDto,
 } from '../../campaign/campaign.dto';
 import { ProcessedWobjectType } from '../../../../domain/wobject/types';
-import { type } from 'os';
 import { ProcessedWobjectDto } from '../../wobject/processed-wobject.dto';
 
 export class RewardDto {

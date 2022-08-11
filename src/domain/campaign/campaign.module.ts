@@ -24,6 +24,7 @@ import {
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
 import {
+  ObjectRewardsProvider,
   RewardsAllProvider,
   RewardsMapProvider,
 } from './rewards/rewards.provider';
@@ -58,6 +59,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CampaignSuspendProvider,
     CampaignExpiredListenerProvider,
     RewardsMapProvider,
+    ObjectRewardsProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -77,6 +79,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CampaignSuspendProvider,
     CampaignExpiredListenerProvider,
     RewardsMapProvider,
+    ObjectRewardsProvider,
   ],
 })
 export class CampaignModule {}
