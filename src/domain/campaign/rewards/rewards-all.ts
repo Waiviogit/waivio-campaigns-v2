@@ -73,8 +73,9 @@ export class RewardsAll implements RewardsAllInterface {
     if (!userName) return [];
     const campaigns = await this.campaignRepository.find({
       filter: {
-        'users.status': RESERVATION_STATUS.ASSIGNED,
-        'users.name': userName,
+        users: {
+          $elemMatch: { name: userName, status: RESERVATION_STATUS.ASSIGNED },
+        },
       },
       projection: { requiredObject: 1 },
     });
