@@ -21,8 +21,11 @@ import { RewardsMapType } from '../../../domain/campaign/rewards/types';
 import {
   GetMapAllInterface,
   GetMapEligibleInterface,
+  ObjectRewardsInterface,
   RewardsMapInterface,
-} from '../../../domain/campaign/rewards/interface/rewards-map.interface';
+} from '../../../domain/campaign/rewards/interface';
+import { GetObjectRewardsInterface } from '../../../domain/campaign/rewards/interface';
+import { ObjectRewardsType } from '../../../domain/campaign/rewards/types/object-rewards.types';
 
 @Injectable()
 export class RewardsService {
@@ -31,6 +34,8 @@ export class RewardsService {
     private readonly rewardsAll: RewardsAllInterface,
     @Inject(REWARDS_PROVIDE.MAP)
     private readonly rewardsMap: RewardsMapInterface,
+    @Inject(REWARDS_PROVIDE.OBJECT)
+    private readonly objectRewards: ObjectRewardsInterface,
   ) {}
 
   async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
@@ -91,5 +96,11 @@ export class RewardsService {
     params: GetReservedFiltersInterface,
   ): Promise<GetSponsorsType> {
     return this.rewardsAll.getReservedFilters(params);
+  }
+
+  async getRewardsByObject(
+    params: GetObjectRewardsInterface,
+  ): Promise<ObjectRewardsType> {
+    return this.objectRewards.getObjectRewards(params);
   }
 }

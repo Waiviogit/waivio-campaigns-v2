@@ -49,6 +49,7 @@ export type GetRewardsMainType = {
   type?: string[];
   sort?: string;
   area?: number[];
+  requiredObjects?: string[];
 };
 
 export type GetReservedType = GetRewardsMainType & {
