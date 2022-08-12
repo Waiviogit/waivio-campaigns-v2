@@ -96,6 +96,7 @@ export const RESERVATION_PROVIDE = Object.freeze({
   ASSIGN: 'AssignReservation',
   REJECT: 'RejectReservation',
   GUIDE_REJECT: 'GuideRejectReservation',
+  DETAILS: 'ReservationDetails',
 });
 
 export const REVIEW_PROVIDE = Object.freeze({
