@@ -9,9 +9,11 @@ import {
   GetSponsorsType,
   RewardsAllType,
   RewardsByObjectType,
+  RewardsByRequiredType,
   RewardsTabType,
 } from '../types';
 import { PipelineStage } from 'mongoose';
+import { AddDataOnRewardsByObjectType } from '../../../campaign-payment/types';
 
 export interface RewardsAllInterface {
   getRewardsMain({
@@ -85,6 +87,11 @@ export interface RewardsAllInterface {
   getReservedFilters(
     params: GetReservedFiltersInterface,
   ): Promise<GetSponsorsType>;
+
+  addDataOnRewardsByObject({
+    rewards,
+    host,
+  }: AddDataOnRewardsByObjectType): Promise<RewardsByRequiredType[]>;
 }
 
 export interface GetSponsorsEligibleInterface {

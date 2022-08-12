@@ -6,6 +6,8 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   NOTIFICATIONS_PROVIDE,
+  REDIS_KEY,
+  REDIS_PROVIDE,
   RESERVATION_STATUS,
   WOBJECT_PROVIDE,
 } from '../../common/constants';
@@ -17,6 +19,7 @@ import {
   validateActivationDeactivationType,
 } from './types';
 import { CampaignDeactivationInterface } from './interface';
+import { RedisClientInterface } from '../../services/redis/clients/interface';
 
 @Injectable()
 export class CampaignDeactivation implements CampaignDeactivationInterface {
@@ -27,6 +30,8 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
     private readonly wobjectRepository: WobjectRepositoryInterface,
     @Inject(NOTIFICATIONS_PROVIDE.SERVICE)
     private readonly notifications: NotificationsInterface,
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
 
   async deactivate({
@@ -40,7 +45,13 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
       activationPermlink,
     });
 
-    if (!result.isValid) return;
+    if (!result.isValid) {
+      await this.campaignRedisClient.publish(
+        REDIS_KEY.PUBLISH_EXPIRE_DEACTIVATION_FALSE,
+        deactivationPermlink,
+      );
+      return;
+    }
     const campaign =
       await this.campaignRepository.findCampaignByStatusGuideNameActivation({
         statuses: ACTIVE_CAMPAIGN_STATUSES,
@@ -69,13 +80,22 @@ export class CampaignDeactivation implements CampaignDeactivationInterface {
       },
     });
 
-    if (deactivatedCampaign) {
-      await this.wobjectRepository.updateCampaignsCount(campaign._id, status, [
-        campaign.requiredObject,
-        ...campaign.objects,
-      ]);
-      await this.notifications.deactivateCampaign(campaign._id.toString());
+    if (!deactivatedCampaign.modifiedCount) {
+      await this.campaignRedisClient.publish(
+        REDIS_KEY.PUBLISH_EXPIRE_DEACTIVATION_FALSE,
+        deactivationPermlink,
+      );
+      return;
     }
+    await this.wobjectRepository.updateCampaignsCount(campaign._id, status, [
+      campaign.requiredObject,
+      ...campaign.objects,
+    ]);
+    await this.notifications.deactivateCampaign(campaign._id.toString());
+    await this.campaignRedisClient.publish(
+      REDIS_KEY.PUBLISH_EXPIRE_DEACTIVATION,
+      deactivationPermlink,
+    );
   }
 
   async validateDeactivation({

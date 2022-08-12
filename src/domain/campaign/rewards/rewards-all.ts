@@ -231,6 +231,7 @@ export class RewardsAll implements RewardsAllInterface {
       const payout = this.getPayedForMain([campaign]);
       const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
       rewards.push({
+        _id: campaign._id,
         payout,
         payoutToken: campaign.payoutToken,
         countReservationDays: campaign.countReservationDays,
@@ -381,12 +382,14 @@ export class RewardsAll implements RewardsAllInterface {
     type,
     sort,
     area,
+    requiredObjects,
   }: GetRewardsMainType): Promise<RewardsAllType> {
     const campaigns = await this.campaignRepository.find({
       filter: {
         status: CAMPAIGN_STATUS.ACTIVE,
         ...(sponsors && { guideName: { $in: sponsors } }),
         ...(type && { type: { $in: type } }),
+        ...(requiredObjects && { requiredObject: { $in: requiredObjects } }),
       },
     });
 

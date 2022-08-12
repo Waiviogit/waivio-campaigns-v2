@@ -106,4 +106,5 @@ export const REVIEW_PROVIDE = Object.freeze({
 export const REWARDS_PROVIDE = Object.freeze({
   ALL: 'RewardsAll',
   MAP: 'RewardsMap',
+  OBJECT: 'RewardsObject',
 });

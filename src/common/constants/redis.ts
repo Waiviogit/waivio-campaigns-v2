@@ -11,6 +11,11 @@ export const REDIS_KEY = Object.freeze({
   REWARD_FUND: 'reward_fund',
   MEDIAN_HISTORY: 'current_median_history_price',
   PUBLISH_EXPIRE_ASSIGN: 'expire:assign',
+  PUBLISH_EXPIRE_ASSIGN_FALSE: 'expire:assign:false',
+  PUBLISH_EXPIRE_RELEASE: 'expire:release',
+  PUBLISH_EXPIRE_RELEASE_FALSE: 'expire:release:false',
+  PUBLISH_EXPIRE_DEACTIVATION: 'expire:deactivation',
+  PUBLISH_EXPIRE_DEACTIVATION_FALSE: 'expire:deactivation:false',
 });
 
 export const REDIS_EXPIRE = Object.freeze({

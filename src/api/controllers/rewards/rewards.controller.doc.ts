@@ -1,6 +1,7 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
+  ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
@@ -95,6 +96,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: RewardsMapOutDto,
+      }),
+    );
+  }
+
+  static getRewardsByObject(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return rewards for object by author permlink',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: ObjectRewardsOutDto,
       }),
     );
   }

@@ -1,7 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   CAMPAIGN_PROVIDE,
-  CAMPAIGN_STATUSES_FOR_ON_HOLD,
+  REDIS_KEY,
+  REDIS_PROVIDE,
   RESERVATION_STATUS,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
@@ -9,15 +10,17 @@ import * as _ from 'lodash';
 import { validateAssignType, RejectReservationType } from './types';
 import { CampaignHelperInterface } from '../interface';
 import { RejectReservationInterface } from './interface';
+import { RedisClientInterface } from '../../../services/redis/clients/interface';
 
 @Injectable()
 export class RejectReservation implements RejectReservationInterface {
-  private readonly logger = new Logger(RejectReservation.name);
   constructor(
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
 
   async rejectReservation({
@@ -26,15 +29,17 @@ export class RejectReservation implements RejectReservationInterface {
     rejectionPermlink,
     name,
   }: RejectReservationType): Promise<void> {
-    const { isValid, message } = await this.validateRejectAssign({
+    const { isValid } = await this.validateRejectAssign({
       activationPermlink,
       reservationPermlink,
       rejectionPermlink,
       name,
     });
     if (!isValid) {
-      //TODO REMOVE
-      this.logger.error(`Not Valid ${message}`);
+      await this.campaignRedisClient.publish(
+        REDIS_KEY.PUBLISH_EXPIRE_RELEASE_FALSE,
+        rejectionPermlink,
+      );
       return;
     }
 
@@ -56,10 +61,19 @@ export class RejectReservation implements RejectReservationInterface {
         },
       },
     });
-    if (result) {
-      await this.campaignHelper.delExpireAssign(reservationPermlink);
-      await this.campaignHelper.checkOnHoldStatus(activationPermlink);
+    if (!result.modifiedCount) {
+      await this.campaignRedisClient.publish(
+        REDIS_KEY.PUBLISH_EXPIRE_RELEASE_FALSE,
+        rejectionPermlink,
+      );
+      return;
     }
+    await this.campaignRedisClient.publish(
+      REDIS_KEY.PUBLISH_EXPIRE_RELEASE,
+      rejectionPermlink,
+    );
+    await this.campaignHelper.delExpireAssign(reservationPermlink);
+    await this.campaignHelper.checkOnHoldStatus(activationPermlink);
   }
 
   async validateRejectAssign({

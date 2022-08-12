@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 
 import {
@@ -12,6 +12,8 @@ import {
   BLACKLIST_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  REDIS_KEY,
+  REDIS_PROVIDE,
   RESERVATION_STATUS,
   USER_PROVIDE,
 } from '../../../common/constants';
@@ -20,10 +22,10 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CampaignHelperInterface } from '../interface';
 import { BlacklistHelperInterface } from '../../blacklist/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
+import { RedisClientInterface } from '../../../services/redis/clients/interface';
 
 @Injectable()
 export class AssignReservation {
-  private readonly logger = new Logger(AssignReservation.name);
   constructor(
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
@@ -33,6 +35,8 @@ export class AssignReservation {
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(BLACKLIST_PROVIDE.HELPER)
     private readonly blacklistHelper: BlacklistHelperInterface,
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
 
   async assign({
@@ -43,15 +47,17 @@ export class AssignReservation {
     rootName,
     referralServer,
   }: AssignReservationType): Promise<void> {
-    const { isValid, reservationTime, message } = await this.validateAssign({
+    const { isValid, reservationTime } = await this.validateAssign({
       activationPermlink,
       reservationPermlink,
       name,
       requiredObject,
     });
     if (!isValid) {
-      //TODO REMOVE
-      this.logger.error(`Not Valid ${message}`);
+      await this.campaignRedisClient.publish(
+        REDIS_KEY.PUBLISH_EXPIRE_ASSIGN_FALSE,
+        reservationPermlink,
+      );
       return;
     }
 
@@ -68,9 +74,13 @@ export class AssignReservation {
     );
 
     if (!payoutTokenRateUSD) {
-      this.logger.error(`No payoutTokenRateUSD`);
+      await this.campaignRedisClient.publish(
+        REDIS_KEY.PUBLISH_EXPIRE_ASSIGN_FALSE,
+        reservationPermlink,
+      );
       return;
     }
+
     await this.campaignRepository.updateOne({
       filter: { activationPermlink, status: CAMPAIGN_STATUS.ACTIVE },
       update: {
@@ -87,6 +97,7 @@ export class AssignReservation {
         },
       },
     });
+
     await this.campaignHelper.setExpireAssign({
       reservationTime,
       requiredObject,
