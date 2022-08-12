@@ -2,13 +2,16 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { RESERVATION_PROVIDE } from '../../../common/constants';
 import {
   AssignReservationInterface,
+  GetReservationDetailsInterface,
   RejectReservationInterface,
+  ReservationDetailsInterface,
 } from '../../../domain/campaign/reservation/interface';
 import {
   RejectReservationType,
   ValidateAssignType,
 } from '../../../domain/campaign/reservation/types';
 import { CampaignCustomException } from '../../../common/exeptions';
+import { GetReservationDetailsType } from '../../../domain/campaign/reservation/types/reservation-details.types';
 
 @Injectable()
 export class ReservationService {
@@ -17,6 +20,8 @@ export class ReservationService {
     private readonly assignReservation: AssignReservationInterface,
     @Inject(RESERVATION_PROVIDE.REJECT)
     private readonly rejectReservation: RejectReservationInterface,
+    @Inject(RESERVATION_PROVIDE.DETAILS)
+    private readonly reservationDetails: ReservationDetailsInterface,
   ) {}
   async validateAssign(
     params: ValidateAssignType,
@@ -45,5 +50,18 @@ export class ReservationService {
       );
     }
     return { isValid };
+  }
+
+  async getReservationDetails(
+    params: GetReservationDetailsInterface,
+  ): Promise<GetReservationDetailsType> {
+    const details = await this.reservationDetails.getDetails(params);
+    if (!details) {
+      throw new CampaignCustomException(
+        'Reservation not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return details;
   }
 }

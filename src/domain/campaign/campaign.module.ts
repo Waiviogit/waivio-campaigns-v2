@@ -16,7 +16,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import {
   AssignReservationProvider,
   GuideRejectReservationProvider,
-  RejectReservationProvider,
+  RejectReservationProvider, ReservationDetailsProvider,
 } from './reservation/reservation.providers';
 import {
   CreateReviewProvider,
@@ -60,6 +60,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CampaignExpiredListenerProvider,
     RewardsMapProvider,
     ObjectRewardsProvider,
+    ReservationDetailsProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -80,6 +81,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CampaignExpiredListenerProvider,
     RewardsMapProvider,
     ObjectRewardsProvider,
+    ReservationDetailsProvider,
   ],
 })
 export class CampaignModule {}
