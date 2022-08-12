@@ -231,6 +231,7 @@ export class RewardsAll implements RewardsAllInterface {
       const payout = this.getPayedForMain([campaign]);
       const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
       rewards.push({
+        _id: campaign._id,
         payout,
         payoutToken: campaign.payoutToken,
         countReservationDays: campaign.countReservationDays,
