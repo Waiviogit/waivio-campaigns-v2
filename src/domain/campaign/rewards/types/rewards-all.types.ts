@@ -5,6 +5,7 @@ import {
   UserRequirementsType,
 } from '../../../../persistance/campaign/types';
 import { UserDocumentType } from '../../../../persistance/user/types';
+import { ReservationDetailsObjectType } from '../../reservation/types/reservation-details.types';
 
 export type RewardsMainType = {
   object: ProcessedWobjectType;
@@ -20,6 +21,7 @@ export type RewardsAllType = {
 
 export type RewardsByRequiredType = {
   object: ProcessedWobjectType;
+  requiredObject: ReservationDetailsObjectType;
   payoutToken: string;
   currency: string;
   reward: number;
