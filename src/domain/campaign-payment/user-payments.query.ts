@@ -20,10 +20,9 @@ export class UserPaymentsQuery implements UserPaymentsQueryInterface {
     payable,
     days,
   }: GetReceivablesInterface) {
-    const payables = await this.campaignPaymentRepository.aggregate({
+    const receivables = await this.campaignPaymentRepository.aggregate({
       pipeline: getUserPayablesPipe({ userName, payoutToken, payable, days }),
     });
-
-    return payables;
+    return receivables;
   }
 }

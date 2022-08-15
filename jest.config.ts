@@ -1,6 +1,5 @@
 import type { Config } from '@jest/types';
 
-// Sync object
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'test',
@@ -11,5 +10,6 @@ const config: Config.InitialOptions = {
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/jest.setup.ts'],
 };
 export default config;

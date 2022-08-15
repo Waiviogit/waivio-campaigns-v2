@@ -37,10 +37,10 @@ export class CampaignPayment {
       },
     ]),
   )
-  beneficiaries?: CampaignPaymentBeneficiariesType;
+  beneficiaries?: CampaignPaymentBeneficiariesType[];
 
   @Prop({ type: mongoose.Types.ObjectId })
-  campaignId?: mongoose.ObjectId;
+  campaignId?: mongoose.Types.ObjectId;
 
   @Prop({ type: String })
   transactionId?: string;
