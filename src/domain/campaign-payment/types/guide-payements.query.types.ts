@@ -17,6 +17,8 @@ export type GetPayablesOutType = {
 export type GetPayablesType = {
   guideName: string;
   payoutToken: string;
+  days?: number;
+  payable?: number;
 };
 
 export type GetPayableType = {

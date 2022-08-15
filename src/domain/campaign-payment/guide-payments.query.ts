@@ -7,8 +7,6 @@ import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-p
 import {
   CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
-  CP_REVIEW_TYPES,
-  CP_TRANSFER_TYPES,
 } from '../../common/constants';
 import {
   CampaignPaymentUserType,
@@ -23,6 +21,13 @@ import {
   GuidesTotalPayedType,
 } from './types';
 import { GuidePaymentsQueryInterface } from './interface';
+import {
+  getGuidesTotalPayedPipe,
+  getHistoriesByUserPipe,
+  getPayableByUserPipe,
+  getPayablesPipe,
+  getTotalGuideTotalPayablePipe,
+} from './pipes';
 
 @Injectable()
 export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
@@ -37,150 +42,29 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
   }: GetGuidesTotalPayedType): Promise<GuidesTotalPayedType[]> {
     const payed: GuidesTotalPayedType[] =
       await this.campaignPaymentRepository.aggregate({
-        pipeline: [
-          {
-            $match: { guideName: { $in: guideNames }, payoutToken },
-          },
-          {
-            $group: {
-              _id: '$guideName',
-              transfers: {
-                $push: {
-                  $cond: [
-                    { $in: ['$type', CP_TRANSFER_TYPES] },
-                    '$$ROOT',
-                    '$$REMOVE',
-                  ],
-                },
-              },
-            },
-          },
-          {
-            $addFields: {
-              payed: { $sum: '$transfers.amount' },
-            },
-          },
-          {
-            $project: {
-              payed: { $convert: { input: '$payed', to: 'double' } },
-              guideName: '$_id',
-            },
-          },
-        ],
+        pipeline: getGuidesTotalPayedPipe({ guideNames, payoutToken }),
       });
 
     return payed;
   }
+
   //use in suspend task
   async getPayables({
     guideName,
     payoutToken,
+    payable,
+    days,
   }: GetPayablesType): Promise<GetPayablesOutType> {
     const histories: PayablesAllType[] =
       await this.campaignPaymentRepository.aggregate({
-        pipeline: [
-          {
-            $match: { guideName, payoutToken },
-          },
-          {
-            $group: {
-              _id: '$userName',
-              reviews: {
-                $push: {
-                  $cond: [
-                    { $in: ['$type', CP_REVIEW_TYPES] },
-                    '$$ROOT',
-                    '$$REMOVE',
-                  ],
-                },
-              },
-              transfers: {
-                $push: {
-                  $cond: [
-                    { $in: ['$type', CP_TRANSFER_TYPES] },
-                    '$$ROOT',
-                    '$$REMOVE',
-                  ],
-                },
-              },
-            },
-          },
-          {
-            $addFields: {
-              payable: {
-                $subtract: [
-                  { $sum: '$reviews.amount' },
-                  { $sum: '$transfers.amount' },
-                ],
-              },
-            },
-          },
-          {
-            $addFields: {
-              notPayed: {
-                $reduce: {
-                  input: '$reviews',
-                  initialValue: { counter: '$payable', notPayedReviews: [] },
-                  in: {
-                    counter: {
-                      $subtract: ['$$value.counter', '$$this.amount'],
-                    },
-                    notPayedReviews: {
-                      $concatArrays: [
-                        '$$value.notPayedReviews',
-                        {
-                          $cond: [
-                            { $gte: ['$$value.counter', 0] },
-                            ['$$this'],
-                            [],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: 'users',
-              localField: '_id',
-              foreignField: 'name',
-              as: 'user',
-            },
-          },
-          { $addFields: { alias: { $arrayElemAt: ['$user.alias', 0] } } },
-          {
-            $project: {
-              _id: 0,
-              userName: '$_id',
-              payable: { $convert: { input: '$payable', to: 'double' } },
-              alias: 1,
-              notPayedDate: {
-                $cond: [
-                  { $gt: ['$payable', 0] },
-                  { $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', -1] },
-                  new Date(),
-                ],
-              },
-            },
-          },
-        ],
+        pipeline: getPayablesPipe({ guideName, payoutToken, payable, days }),
       });
 
-    for (const history of histories) {
-      history.notPayedPeriod = moment
-        .utc()
-        .diff(moment.utc(_.get(history, 'notPayedDate', {})), 'days');
-    }
-    const totalPayable = _.reduce(
-      histories,
-      (acc, el) => acc.plus(el.payable),
-      new BigNumber(0),
-    );
+    const totalPayable = await this.campaignPaymentRepository.aggregate({
+      pipeline: getTotalGuideTotalPayablePipe({ guideName, payoutToken }),
+    });
 
-    return { histories, totalPayable: totalPayable.toNumber() };
+    return { histories, totalPayable: _.get(totalPayable, '[0].total', 0) };
   }
 
   async getPayable({
@@ -223,50 +107,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
   }: GetPayableType): Promise<number> {
     const payables: GetPayableAggregateType[] =
       await this.campaignPaymentRepository.aggregate({
-        pipeline: [
-          {
-            $match: { guideName, payoutToken, userName },
-          },
-          {
-            $group: {
-              _id: '$userName',
-              reviews: {
-                $push: {
-                  $cond: [
-                    { $in: ['$type', CP_REVIEW_TYPES] },
-                    '$$ROOT',
-                    '$$REMOVE',
-                  ],
-                },
-              },
-              transfers: {
-                $push: {
-                  $cond: [
-                    { $in: ['$type', CP_TRANSFER_TYPES] },
-                    '$$ROOT',
-                    '$$REMOVE',
-                  ],
-                },
-              },
-            },
-          },
-          {
-            $addFields: {
-              payable: {
-                $subtract: [
-                  { $sum: '$reviews.amount' },
-                  { $sum: '$transfers.amount' },
-                ],
-              },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              payable: { $convert: { input: '$payable', to: 'double' } },
-            },
-          },
-        ],
+        pipeline: getPayableByUserPipe({ guideName, userName, payoutToken }),
       });
 
     return payables[0]?.payable;
@@ -281,18 +122,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
 
     const histories: CampaignPaymentUserType[] =
       await this.campaignPaymentRepository.aggregate({
-        pipeline: [
-          {
-            $match: { guideName, payoutToken, userName },
-          },
-          {
-            $addFields: {
-              commission: { $convert: { input: '$commission', to: 'double' } },
-              amount: { $convert: { input: '$amount', to: 'double' } },
-            },
-          },
-          { $sort: { createdAt: 1 } },
-        ],
+        pipeline: getHistoriesByUserPipe({ guideName, userName, payoutToken }),
       });
 
     for (const history of histories) {
