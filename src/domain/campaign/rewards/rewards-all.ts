@@ -257,6 +257,8 @@ export class RewardsAll implements RewardsAllInterface {
           'avatar',
           'name',
           'default_name',
+          'defaultShowLink',
+          'author_permlink',
         ]),
       });
     }
