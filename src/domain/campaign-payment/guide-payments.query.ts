@@ -75,6 +75,8 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
   async getPayables({
     guideName,
     payoutToken,
+    payable,
+    days,
   }: GetPayablesType): Promise<GetPayablesOutType> {
     const histories: PayablesAllType[] =
       await this.campaignPaymentRepository.aggregate({
@@ -164,23 +166,88 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
                   new Date(),
                 ],
               },
+              notPayedPeriod: {
+                $cond: [
+                  { $gt: ['$payable', 0] },
+                  {
+                    $dateDiff: {
+                      startDate: {
+                        $arrayElemAt: [
+                          '$notPayed.notPayedReviews.createdAt',
+                          -1,
+                        ],
+                      },
+                      endDate: new Date(),
+                      unit: 'day',
+                    },
+                  },
+                  0,
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              ...(days && { notPayedPeriod: { $gte: days } }),
+              ...(payable && { payable: { $gte: payable } }),
             },
           },
         ],
       });
 
-    for (const history of histories) {
-      history.notPayedPeriod = moment
-        .utc()
-        .diff(moment.utc(_.get(history, 'notPayedDate', {})), 'days');
-    }
-    const totalPayable = _.reduce(
-      histories,
-      (acc, el) => acc.plus(el.payable),
-      new BigNumber(0),
-    );
+    const totalPayable = await this.campaignPaymentRepository.aggregate({
+      pipeline: [
+        {
+          $match: { guideName, payoutToken },
+        },
+        {
+          $group: {
+            _id: '$userName',
+            reviews: {
+              $push: {
+                $cond: [
+                  { $in: ['$type', CP_REVIEW_TYPES] },
+                  '$$ROOT',
+                  '$$REMOVE',
+                ],
+              },
+            },
+            transfers: {
+              $push: {
+                $cond: [
+                  { $in: ['$type', CP_TRANSFER_TYPES] },
+                  '$$ROOT',
+                  '$$REMOVE',
+                ],
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            payable: {
+              $subtract: [
+                { $sum: '$reviews.amount' },
+                { $sum: '$transfers.amount' },
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$payable' },
+          },
+        },
+        {
+          $project: {
+            total: { $convert: { input: '$total', to: 'double' } },
+          },
+        },
+      ],
+    });
 
-    return { histories, totalPayable: totalPayable.toNumber() };
+    return { histories, totalPayable: _.get(totalPayable, '[0].total', 0) };
   }
 
   async getPayable({

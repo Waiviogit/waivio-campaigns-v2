@@ -4,7 +4,10 @@ import {
   GuidePayablesUserOutDto,
 } from '../../../common/dto/payables/out';
 import { PayablesService } from './payables.service';
-import { PayablesInDto } from '../../../common/dto/payables/in';
+import {
+  GuidePayablesAllInDto,
+  PayablesInDto,
+} from '../../../common/dto/payables/in';
 import { PayablesControllerDoc } from './payables.controller.doc';
 
 @Controller('payables')
@@ -17,7 +20,7 @@ export class PayablesController {
   async getGuidePayments(
     @Param('guideName')
     guideName: string,
-    @Query() query: PayablesInDto,
+    @Query() query: GuidePayablesAllInDto,
   ): Promise<GuidePayablesOutDto> {
     return this.payablesService.getGuidePayments({ guideName, ...query });
   }
