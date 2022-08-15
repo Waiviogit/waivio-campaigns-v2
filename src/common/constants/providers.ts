@@ -90,6 +90,7 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
 export const CAMPAIGN_PAYMENT_PROVIDE = Object.freeze({
   REPOSITORY: 'CampaignPaymentRepository',
   GUIDE_PAYMENTS_Q: 'GuidePaymentsQuery',
+  USER_PAYMENTS_Q: 'UserPaymentsQuery',
 });
 
 export const RESERVATION_PROVIDE = Object.freeze({

@@ -22,3 +22,10 @@ export interface GetPayableByUserPipeInterface {
 }
 
 export type GetHistoriesByUserPipeInterface = GetPayableByUserPipeInterface;
+
+export type getUserPayablesPipeInterface = {
+  userName: string;
+  payoutToken: string;
+  days?: number;
+  payable?: number;
+};
