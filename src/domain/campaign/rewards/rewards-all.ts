@@ -230,6 +230,9 @@ export class RewardsAll implements RewardsAllInterface {
       );
       const payout = this.getPayedForMain([campaign]);
       const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
+      const requiredObject = objects.find(
+        (o) => o.author_permlink === campaign.requiredObject,
+      );
       rewards.push({
         _id: campaign._id,
         payout,
@@ -250,6 +253,11 @@ export class RewardsAll implements RewardsAllInterface {
             ? this.getDistance(area, coordinates)
             : null,
         object,
+        requiredObject: _.pick(requiredObject, [
+          'avatar',
+          'name',
+          'default_name',
+        ]),
       });
     }
     const sorted = this.getSortedRewardsReserved({ sort, rewards });
