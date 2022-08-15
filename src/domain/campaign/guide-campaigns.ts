@@ -56,6 +56,21 @@ export class GuideCampaigns implements GuideCampaignsInterface {
           : new BigNumber(campaign.budget)
               .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
               .toNumber(),
+      payed: _.reduce(
+        campaign.users,
+        (acc, usr) => {
+          if (usr.status === 'completed') {
+            acc = new BigNumber(campaign.rewardInUSD)
+              .div(usr.payoutTokenRateUSD)
+              .plus(usr.rewardRaisedBy)
+              .plus(acc)
+              .dp(8)
+              .toNumber();
+          }
+          return acc;
+        },
+        0,
+      ),
     }));
   }
 
