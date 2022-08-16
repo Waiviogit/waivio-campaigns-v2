@@ -53,22 +53,12 @@ export class ReservationDetails implements ReservationDetailsInterface {
       return;
     }
 
-    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: [campaign.requiredObject, campaign.users[0].objectPermlink],
-      host,
-    });
-
-    const mappedObjects = _.map(objects, (o) =>
-      _.pick(o, ['author_permlink', 'name', 'default_name']),
-    );
-    const requiredObject = _.find(
-      mappedObjects,
-      (w) => w.author_permlink === campaign.requiredObject,
-    );
-    const secondaryObject = _.find(
-      mappedObjects,
-      (w) => w.author_permlink === campaign.users[0].objectPermlink,
-    );
+    const { requiredObject, secondaryObject } =
+      await this.wobjectHelper.getRequiredAndSecondaryObjects({
+        requiredPermlink: campaign.requiredObject,
+        secondaryPermlink: campaign.users[0].objectPermlink,
+        host,
+      });
 
     return {
       _id: campaignId,

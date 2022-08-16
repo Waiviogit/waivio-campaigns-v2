@@ -9,7 +9,7 @@ import {
   UserRequirementsDto,
 } from '../../campaign/campaign.dto';
 
-class ReservationDetailsObjectDto {
+export class ReservationDetailsObjectDto {
   @ApiProperty({ type: String })
   default_name: string;
 
