@@ -24,4 +24,7 @@ export class GuidePayablesOutDto {
 
   @ApiProperty({ type: Number })
   totalPayable: number;
+
+  @ApiProperty({ type: Boolean })
+  hasMore: boolean;
 }

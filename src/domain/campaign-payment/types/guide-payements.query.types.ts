@@ -12,6 +12,7 @@ export type PayablesAllType = {
 export type GetPayablesOutType = {
   histories: PayablesAllType[];
   totalPayable: number;
+  hasMore: boolean;
 };
 
 export type GetPayablesType = {
@@ -19,6 +20,8 @@ export type GetPayablesType = {
   payoutToken: string;
   days?: number;
   payable?: number;
+  skip?: number;
+  limit?: number;
 };
 
 export type GetPayableType = {

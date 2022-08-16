@@ -3,6 +3,7 @@ import {
   WobjectFieldsDocumentType,
 } from '../../../persistance/wobject/types';
 import { AppDocumentType } from '../../../persistance/app/types';
+import { ReservationDetailsObjectType } from '../../campaign/reservation/types/reservation-details.types';
 
 export type ProcessWobjectsType = {
   wobjects: ProcessedWobjectType | ProcessedWobjectType[];
@@ -115,4 +116,9 @@ export type SpecialFieldFilterType = {
 export type GetWobjectsForCampaignsType = {
   links: string[];
   host: string;
+};
+
+export type RequiredSecondaryType = {
+  requiredObject: ReservationDetailsObjectType;
+  secondaryObject: ReservationDetailsObjectType;
 };

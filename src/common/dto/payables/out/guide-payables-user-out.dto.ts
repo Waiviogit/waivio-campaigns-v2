@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CAMPAIGN_PAYMENT, PAYOUT_TOKEN } from '../../../constants';
 import { CampaignPaymentBeneficiariesType } from '../../../../persistance/campaign-payment/types';
 
-class BeneficiariesDto {
+export class BeneficiariesDto {
   @ApiProperty({ type: String })
   account: string;
   @ApiProperty({ type: Number })

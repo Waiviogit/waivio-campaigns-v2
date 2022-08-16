@@ -7,4 +7,5 @@ export type UserReceivablesType = Omit<PayablesAllType, 'userName'> & {
 export type ReceivablesOutType = {
   histories: UserReceivablesType[];
   totalPayable: number;
+  hasMore: boolean;
 };

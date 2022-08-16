@@ -21,6 +21,9 @@ export class CampaignPayment {
   @Prop({ type: mongoose.Schema.Types.Decimal128, required: true })
   amount: BigNumber;
 
+  @Prop({ type: mongoose.Schema.Types.Decimal128 })
+  votesAmount?: BigNumber;
+
   @Prop({
     type: String,
     enum: Object.values(PAYOUT_TOKEN),

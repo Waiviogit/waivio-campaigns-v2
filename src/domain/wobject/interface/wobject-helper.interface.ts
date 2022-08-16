@@ -3,6 +3,7 @@ import {
   ProcessedWobjectType,
   ProcessWobjectsManyType,
   ProcessWobjectsSingleType,
+  RequiredSecondaryType,
 } from '../types';
 import { FilterQuery } from 'mongoose';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
@@ -20,4 +21,13 @@ export interface WobjectHelperInterface {
     links,
     host,
   }: GetWobjectsForCampaignsType): Promise<ProcessedWobjectType[]>;
+  getRequiredAndSecondaryObjects(
+    params: GetRequiredAndSecondaryObjectsInterface,
+  ): Promise<RequiredSecondaryType>;
+}
+
+export interface GetRequiredAndSecondaryObjectsInterface {
+  requiredPermlink: string;
+  secondaryPermlink: string;
+  host: string;
 }

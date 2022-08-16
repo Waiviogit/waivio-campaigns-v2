@@ -12,6 +12,7 @@ import {
   ProcessWobjectsManyType,
   ProcessWobjectsSingleType,
   ProcessWobjectsType,
+  RequiredSecondaryType,
   SpecialFieldFilterType,
 } from './types';
 import {
@@ -33,7 +34,10 @@ import { WobjectFieldsDocumentType } from '../../persistance/wobject/types';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
 import { AppRepositoryInterface } from '../../persistance/app/interface';
 import { configService } from '../../common/config';
-import { WobjectHelperInterface } from './interface';
+import {
+  GetRequiredAndSecondaryObjectsInterface,
+  WobjectHelperInterface,
+} from './interface';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { FilterQuery } from 'mongoose';
 import { CampaignDocumentType } from '../../persistance/campaign/types';
@@ -552,5 +556,33 @@ export class WobjectHelper implements WobjectHelperInterface {
       app,
       returnArray: true,
     });
+  }
+
+  async getRequiredAndSecondaryObjects({
+    requiredPermlink,
+    secondaryPermlink,
+    host,
+  }: GetRequiredAndSecondaryObjectsInterface): Promise<RequiredSecondaryType> {
+    const objects = await this.getWobjectsForCampaigns({
+      links: [requiredPermlink, secondaryPermlink],
+      host,
+    });
+
+    const mappedObjects = _.map(objects, (o) =>
+      _.pick(o, ['author_permlink', 'name', 'default_name']),
+    );
+    const requiredObject = _.find(
+      mappedObjects,
+      (w) => w.author_permlink === requiredPermlink,
+    );
+    const secondaryObject = _.find(
+      mappedObjects,
+      (w) => w.author_permlink === secondaryPermlink,
+    );
+
+    return {
+      requiredObject,
+      secondaryObject,
+    };
   }
 }

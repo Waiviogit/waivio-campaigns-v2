@@ -24,6 +24,8 @@ export class UserPaymentsQuery implements UserPaymentsQueryInterface {
     payoutToken,
     payable,
     days,
+    skip = 0,
+    limit = 0,
   }: GetReceivablesInterface): Promise<ReceivablesOutType> {
     const histories: UserReceivablesType[] =
       await this.campaignPaymentRepository.aggregate({
@@ -34,6 +36,10 @@ export class UserPaymentsQuery implements UserPaymentsQueryInterface {
       pipeline: getUserTotalPayablePipe({ userName, payoutToken }),
     });
 
-    return { histories, totalPayable: _.get(totalPayable, '[0].total', 0) };
+    return {
+      totalPayable: _.get(totalPayable, '[0].total', 0),
+      histories: limit ? histories.slice(skip, skip + limit) : histories,
+      hasMore: histories.slice(skip).length > limit,
+    };
   }
 }
