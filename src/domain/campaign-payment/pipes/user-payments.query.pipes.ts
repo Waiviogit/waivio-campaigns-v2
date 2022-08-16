@@ -1,26 +1,23 @@
-import { CP_REVIEW_TYPES, CP_TRANSFER_TYPES } from '../../../common/constants';
 import {
-  GetGuidesTotalPayedPipeInterface,
-  GetHistoriesByUserPipeInterface,
-  GetPayableByUserPipeInterface,
-  GetPayablesPipeInterface,
-  GetTotalGuideTotalPayablePipeInterface,
+  getUserPayablesPipeInterface,
+  GetUserTotalPayablePipeInterface,
 } from '../interface';
 import { PipelineStage } from 'mongoose';
+import { CP_REVIEW_TYPES, CP_TRANSFER_TYPES } from '../../../common/constants';
 
-export const getPayablesPipe = ({
-  guideName,
+export const getUserPayablesPipe = ({
+  userName,
   payoutToken,
   payable,
   days,
-}: GetPayablesPipeInterface): PipelineStage[] => {
+}: getUserPayablesPipeInterface): PipelineStage[] => {
   return [
     {
-      $match: { guideName, payoutToken },
+      $match: { userName, payoutToken },
     },
     {
       $group: {
-        _id: '$userName',
+        _id: '$guideName',
         reviews: {
           $push: {
             $cond: [{ $in: ['$type', CP_REVIEW_TYPES] }, '$$ROOT', '$$REMOVE'],
@@ -82,7 +79,7 @@ export const getPayablesPipe = ({
     {
       $project: {
         _id: 0,
-        userName: '$_id',
+        guideName: '$_id',
         payable: { $convert: { input: '$payable', to: 'double' } },
         alias: 1,
         notPayedDate: {
@@ -118,17 +115,17 @@ export const getPayablesPipe = ({
   ];
 };
 
-export const getGuideTotalPayablePipe = ({
-  guideName,
+export const getUserTotalPayablePipe = ({
+  userName,
   payoutToken,
-}: GetTotalGuideTotalPayablePipeInterface): PipelineStage[] => {
+}: GetUserTotalPayablePipeInterface): PipelineStage[] => {
   return [
     {
-      $match: { guideName, payoutToken },
+      $match: { userName, payoutToken },
     },
     {
       $group: {
-        _id: '$userName',
+        _id: '$guideName',
         reviews: {
           $push: {
             $cond: [{ $in: ['$type', CP_REVIEW_TYPES] }, '$$ROOT', '$$REMOVE'],
@@ -166,107 +163,5 @@ export const getGuideTotalPayablePipe = ({
         total: { $convert: { input: '$total', to: 'double' } },
       },
     },
-  ];
-};
-
-export const getGuidesTotalPayedPipe = ({
-  guideNames,
-  payoutToken,
-}: GetGuidesTotalPayedPipeInterface): PipelineStage[] => {
-  return [
-    {
-      $match: { guideName: { $in: guideNames }, payoutToken },
-    },
-    {
-      $group: {
-        _id: '$guideName',
-        transfers: {
-          $push: {
-            $cond: [
-              { $in: ['$type', CP_TRANSFER_TYPES] },
-              '$$ROOT',
-              '$$REMOVE',
-            ],
-          },
-        },
-      },
-    },
-    {
-      $addFields: {
-        payed: { $sum: '$transfers.amount' },
-      },
-    },
-    {
-      $project: {
-        payed: { $convert: { input: '$payed', to: 'double' } },
-        guideName: '$_id',
-      },
-    },
-  ];
-};
-
-export const getPayableByUserPipe = ({
-  guideName,
-  payoutToken,
-  userName,
-}: GetPayableByUserPipeInterface): PipelineStage[] => {
-  return [
-    {
-      $match: { guideName, payoutToken, userName },
-    },
-    {
-      $group: {
-        _id: '$userName',
-        reviews: {
-          $push: {
-            $cond: [{ $in: ['$type', CP_REVIEW_TYPES] }, '$$ROOT', '$$REMOVE'],
-          },
-        },
-        transfers: {
-          $push: {
-            $cond: [
-              { $in: ['$type', CP_TRANSFER_TYPES] },
-              '$$ROOT',
-              '$$REMOVE',
-            ],
-          },
-        },
-      },
-    },
-    {
-      $addFields: {
-        payable: {
-          $subtract: [
-            { $sum: '$reviews.amount' },
-            { $sum: '$transfers.amount' },
-          ],
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        payable: { $convert: { input: '$payable', to: 'double' } },
-      },
-    },
-  ];
-};
-
-export const getHistoriesByUserPipe = ({
-  guideName,
-  userName,
-  payoutToken,
-}: GetHistoriesByUserPipeInterface): PipelineStage[] => {
-  return [
-    {
-      $match: { guideName, payoutToken, userName },
-    },
-    {
-      $addFields: {
-        commission: { $convert: { input: '$commission', to: 'double' } },
-        amount: { $convert: { input: '$amount', to: 'double' } },
-      },
-    },
-    { $sort: { createdAt: 1 } },
   ];
 };

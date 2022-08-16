@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
+  UserReceivablesOutDto,
 } from '../../../common/dto/payables/out';
 
 export class PayablesControllerDoc {
@@ -44,6 +45,18 @@ export class PayablesControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: GuidePayablesUserOutDto,
+      }),
+    );
+  }
+
+  static getUserReceivables(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get user receivables main',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: UserReceivablesOutDto,
       }),
     );
   }

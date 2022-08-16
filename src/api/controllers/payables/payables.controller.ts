@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
+  UserReceivablesOutDto,
 } from '../../../common/dto/payables/out';
 import { PayablesService } from './payables.service';
 import {
@@ -39,5 +40,15 @@ export class PayablesController {
       userName,
       ...query,
     });
+  }
+
+  @Get('user/:userName')
+  @PayablesControllerDoc.getUserReceivables()
+  async getUserReceivables(
+    @Param('userName')
+    userName: string,
+    @Query() query: GuidePayablesAllInDto,
+  ): Promise<UserReceivablesOutDto> {
+    return this.payablesService.getUserReceivables({ userName, ...query });
   }
 }
