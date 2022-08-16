@@ -54,17 +54,28 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     payoutToken,
     payable,
     days,
+    skip = 0,
+    limit = 0,
   }: GetPayablesType): Promise<GetPayablesOutType> {
     const histories: PayablesAllType[] =
       await this.campaignPaymentRepository.aggregate({
-        pipeline: getPayablesPipe({ guideName, payoutToken, payable, days }),
+        pipeline: getPayablesPipe({
+          guideName,
+          payoutToken,
+          payable,
+          days,
+        }),
       });
 
     const totalPayable = await this.campaignPaymentRepository.aggregate({
       pipeline: getGuideTotalPayablePipe({ guideName, payoutToken }),
     });
 
-    return { histories, totalPayable: _.get(totalPayable, '[0].total', 0) };
+    return {
+      totalPayable: _.get(totalPayable, '[0].total', 0),
+      histories: limit ? histories.slice(skip, skip + limit) : histories,
+      hasMore: histories.slice(skip).length > limit,
+    };
   }
 
   async getPayable({

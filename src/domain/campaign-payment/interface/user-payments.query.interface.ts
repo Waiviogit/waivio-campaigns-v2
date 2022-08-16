@@ -9,4 +9,6 @@ export interface GetReceivablesInterface {
   payoutToken: string;
   days?: number;
   payable?: number;
+  skip?: number;
+  limit?: number;
 }

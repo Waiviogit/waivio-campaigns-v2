@@ -13,4 +13,7 @@ export class UserReceivablesOutDto {
 
   @ApiProperty({ type: Number })
   totalPayable: number;
+
+  @ApiProperty({ type: Boolean })
+  hasMore: boolean;
 }
