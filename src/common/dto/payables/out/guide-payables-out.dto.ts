@@ -1,7 +1,7 @@
 import { PayablesAllType } from '../../../../domain/campaign-payment/types';
 import { ApiProperty } from '@nestjs/swagger';
 
-class PayablesAllDto {
+export class PayablesAllDto {
   @ApiProperty({ type: String })
   userName: string;
 
