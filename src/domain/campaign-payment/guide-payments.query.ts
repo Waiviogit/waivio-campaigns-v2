@@ -26,7 +26,7 @@ import {
   getHistoriesByUserPipe,
   getPayableByUserPipe,
   getPayablesPipe,
-  getTotalGuideTotalPayablePipe,
+  getGuideTotalPayablePipe,
 } from './pipes';
 
 @Injectable()
@@ -61,7 +61,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       });
 
     const totalPayable = await this.campaignPaymentRepository.aggregate({
-      pipeline: getTotalGuideTotalPayablePipe({ guideName, payoutToken }),
+      pipeline: getGuideTotalPayablePipe({ guideName, payoutToken }),
     });
 
     return { histories, totalPayable: _.get(totalPayable, '[0].total', 0) };

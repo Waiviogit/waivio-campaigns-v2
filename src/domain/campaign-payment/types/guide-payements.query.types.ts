@@ -1,5 +1,5 @@
 import { CampaignPayment } from '../../../persistance/campaign-payment/campaign-payment.schema';
-import { RewardsByRequiredType } from '../../campaign/rewards/types/rewards-all.types';
+import { RewardsByRequiredType } from '../../campaign/rewards/types';
 
 export type PayablesAllType = {
   userName: string;

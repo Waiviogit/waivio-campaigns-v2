@@ -1,5 +1,7 @@
+import { ReceivablesOutType } from '../types/user-payments.query.types';
+
 export interface UserPaymentsQueryInterface {
-  getReceivables(params: GetReceivablesInterface);
+  getReceivables(params: GetReceivablesInterface): Promise<ReceivablesOutType>;
 }
 
 export interface GetReceivablesInterface {

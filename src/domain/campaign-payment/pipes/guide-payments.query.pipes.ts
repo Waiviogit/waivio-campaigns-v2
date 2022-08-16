@@ -118,7 +118,7 @@ export const getPayablesPipe = ({
   ];
 };
 
-export const getTotalGuideTotalPayablePipe = ({
+export const getGuideTotalPayablePipe = ({
   guideName,
   payoutToken,
 }: GetTotalGuideTotalPayablePipeInterface): PipelineStage[] => {
