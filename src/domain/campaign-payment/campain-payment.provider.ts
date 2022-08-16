@@ -9,6 +9,6 @@ export const GuidePaymentQProvider: Provider = {
 };
 
 export const UserPaymentQProvider: Provider = {
-  provide: CAMPAIGN_PAYMENT_PROVIDE.GUIDE_PAYMENTS_Q,
+  provide: CAMPAIGN_PAYMENT_PROVIDE.USER_PAYMENTS_Q,
   useClass: UserPaymentsQuery,
 };
