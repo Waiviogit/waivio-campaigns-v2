@@ -28,6 +28,7 @@ export type GetPayableType = {
   guideName: string;
   payoutToken: string;
   userName: string;
+  host?: string;
 };
 
 export type GetPayableAggregateType = {

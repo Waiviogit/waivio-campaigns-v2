@@ -33,6 +33,8 @@ export class PayablesController {
   @Get('guide/:guideName/:userName')
   @PayablesControllerDoc.getGuidePaymentsByUser()
   async getGuidePaymentsByUser(
+    @CustomHeaders(new HostPipe())
+    host: string,
     @Param('guideName')
     guideName: string,
     @Param('userName')
@@ -42,6 +44,7 @@ export class PayablesController {
     return this.payablesService.getGuidePaymentsByUser({
       guideName,
       userName,
+      host,
       ...query,
     });
   }

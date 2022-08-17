@@ -7,6 +7,7 @@ import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-p
 import {
   CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
+  WOBJECT_PROVIDE,
 } from '../../common/constants';
 import {
   CampaignPaymentUserType,
@@ -28,12 +29,15 @@ import {
   getPayablesPipe,
   getGuideTotalPayablePipe,
 } from './pipes';
+import { WobjectHelperInterface } from '../wobject/interface';
 
 @Injectable()
 export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
   constructor(
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
     private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
+    @Inject(WOBJECT_PROVIDE.HELPER)
+    private readonly wobjectHelper: WobjectHelperInterface,
   ) {}
 
   async getGuidesTotalPayed({
@@ -82,12 +86,14 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     guideName,
     payoutToken,
     userName,
+    host,
   }: GetPayableType): Promise<GetPayableOutType> {
     const histories = await this.getHistoriesByUser({
       guideName,
       payoutToken,
       userName,
     });
+
     const totalPayable = await this.getPayableByUser({
       guideName,
       payoutToken,
@@ -95,6 +101,29 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     });
 
     const notPayedPeriod = this.getNotPayedDays({ totalPayable, histories });
+
+    const links = [
+      ..._.map(histories, 'reviewObject'),
+      ..._.map(histories, 'mainObject'),
+    ];
+    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
+      links,
+      host,
+    });
+
+    for (const history of histories) {
+      const reviewObject = _.pick(
+        _.find(objects, (o) => o.author_permlink === history.reviewObject),
+        ['name', 'defaultShowLink'],
+      );
+      const mainObject = _.pick(
+        _.find(objects, (o) => o.author_permlink === history.mainObject),
+        ['name', 'defaultShowLink'],
+      );
+
+      if (reviewObject) history.reviewObject = reviewObject;
+      if (mainObject) history.mainObject = mainObject;
+    }
 
     return { histories, totalPayable, notPayedPeriod };
   }
