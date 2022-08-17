@@ -116,6 +116,7 @@ export type SpecialFieldFilterType = {
 export type GetWobjectsForCampaignsType = {
   links: string[];
   host: string;
+  fields?: string[];
 };
 
 export type RequiredSecondaryType = {
