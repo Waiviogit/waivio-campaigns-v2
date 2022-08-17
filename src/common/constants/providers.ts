@@ -112,4 +112,5 @@ export const REWARDS_PROVIDE = Object.freeze({
   OBJECT: 'RewardsObject',
   HELPER: 'RewardsHelper',
   GUIDE_RESERVATIONS: 'GuideReservations',
+  USER_HISTORY: 'UserHistoryRewards',
 });

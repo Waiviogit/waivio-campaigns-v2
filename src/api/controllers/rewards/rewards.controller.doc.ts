@@ -8,6 +8,7 @@ import {
   RewardsCanReserveOutDto,
   RewardsMapOutDto,
   RewardsTabDto,
+  UserHistoryFiltersDto,
 } from '../../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 
@@ -133,6 +134,30 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: GuideReservationFiltersDto,
+      }),
+    );
+  }
+
+  static getUserHistory(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return users reward history',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsByObjectOutDto,
+      }),
+    );
+  }
+
+  static getUserHistoryFilters(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return users reward history filters',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: UserHistoryFiltersDto,
       }),
     );
   }

@@ -30,6 +30,7 @@ import {
   RewardsAllProvider,
   RewardsHelperProvider,
   RewardsMapProvider,
+  UserHistoryProvider,
 } from './rewards/rewards.provider';
 import { CampaignPaymentModule } from '../campaign-payment/campaign-payment.module';
 import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
@@ -66,6 +67,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     ReservationDetailsProvider,
     RewardsHelperProvider,
     GuideReservationsProvider,
+    UserHistoryProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -88,6 +90,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     ObjectRewardsProvider,
     ReservationDetailsProvider,
     GuideReservationsProvider,
+    UserHistoryProvider,
   ],
 })
 export class CampaignModule {}
