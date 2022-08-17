@@ -25,7 +25,7 @@ import {
 import { WobjectModule } from '../wobject/wobject.module';
 import {
   ObjectRewardsProvider,
-  RewardsAllProvider,
+  RewardsAllProvider, RewardsHelperProvider,
   RewardsMapProvider,
 } from './rewards/rewards.provider';
 import { CampaignPaymentModule } from '../campaign-payment/campaign-payment.module';
@@ -61,6 +61,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     RewardsMapProvider,
     ObjectRewardsProvider,
     ReservationDetailsProvider,
+    RewardsHelperProvider,
   ],
   exports: [
     CreateCampaignProvider,
