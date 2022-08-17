@@ -48,7 +48,7 @@ export const getUserPayablesPipe = ({
       $addFields: {
         notPayed: {
           $reduce: {
-            input: '$reviews',
+            input: { $reverseArray: '$reviews' },
             initialValue: { counter: '$payable', notPayedReviews: [] },
             in: {
               counter: {
@@ -85,7 +85,7 @@ export const getUserPayablesPipe = ({
         notPayedDate: {
           $cond: [
             { $gt: ['$payable', 0] },
-            { $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', 0] },
+            { $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', -1] },
             new Date(),
           ],
         },
@@ -95,7 +95,7 @@ export const getUserPayablesPipe = ({
             {
               $dateDiff: {
                 startDate: {
-                  $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', 0],
+                  $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', -1],
                 },
                 endDate: new Date(),
                 unit: 'day',
