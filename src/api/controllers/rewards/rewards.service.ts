@@ -8,6 +8,7 @@ import {
 import {
   CanReserveParamType,
   CanReserveType,
+  FilterReservationsType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
@@ -19,8 +20,11 @@ import {
 } from '../../../domain/campaign/rewards/types';
 import { RewardsMapType } from '../../../domain/campaign/rewards/types';
 import {
+  GetGuideReservationFiltersInterface,
   GetMapAllInterface,
   GetMapEligibleInterface,
+  GetReservationsInterface,
+  GuideReservationsInterface,
   ObjectRewardsInterface,
   RewardsMapInterface,
 } from '../../../domain/campaign/rewards/interface';
@@ -36,6 +40,8 @@ export class RewardsService {
     private readonly rewardsMap: RewardsMapInterface,
     @Inject(REWARDS_PROVIDE.OBJECT)
     private readonly objectRewards: ObjectRewardsInterface,
+    @Inject(REWARDS_PROVIDE.GUIDE_RESERVATIONS)
+    private readonly guideReservations: GuideReservationsInterface,
   ) {}
 
   async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
@@ -102,5 +108,17 @@ export class RewardsService {
     params: GetObjectRewardsInterface,
   ): Promise<ObjectRewardsType> {
     return this.objectRewards.getObjectRewards(params);
+  }
+
+  async getGuideReservations(
+    params: GetReservationsInterface,
+  ): Promise<RewardsByObjectType> {
+    return this.guideReservations.getReservations(params);
+  }
+
+  async getGuideReservationsFilters(
+    params: GetGuideReservationFiltersInterface,
+  ): Promise<FilterReservationsType> {
+    return this.guideReservations.getFilters(params);
   }
 }

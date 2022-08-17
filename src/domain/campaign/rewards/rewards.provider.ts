@@ -5,6 +5,7 @@ import { RewardsAll } from './rewards-all';
 import { RewardsMap } from './rewards-map';
 import { ObjectRewards } from './object-rewards';
 import {RewardsHelper} from "./rewards-helper";
+import {GuideReservations} from "./guide-reservations";
 
 export const RewardsAllProvider: Provider = {
   provide: REWARDS_PROVIDE.ALL,
@@ -24,4 +25,9 @@ export const ObjectRewardsProvider: Provider = {
 export const RewardsHelperProvider: Provider = {
   provide: REWARDS_PROVIDE.HELPER,
   useClass: RewardsHelper,
+};
+
+export const GuideReservationsProvider: Provider = {
+  provide: REWARDS_PROVIDE.GUIDE_RESERVATIONS,
+  useClass: GuideReservations,
 };

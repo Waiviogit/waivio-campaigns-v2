@@ -51,7 +51,6 @@ export const RESERVATION_STATUS = Object.freeze({
   COMPLETED: 'completed',
   REJECTED: 'rejected',
   EXPIRED: 'expired',
-  ACTIVE: 'active',
 });
 
 export const CAMPAIGN_TYPE = Object.freeze({

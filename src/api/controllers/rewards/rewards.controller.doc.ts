@@ -1,6 +1,7 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
+  GuideReservationFiltersDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
@@ -108,6 +109,30 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: ObjectRewardsOutDto,
+      }),
+    );
+  }
+
+  static getGuideReservations(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return guide campaigns reservations',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsByObjectOutDto,
+      }),
+    );
+  }
+
+  static getGuideReservationsFilters(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return guide reservation filters',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: GuideReservationFiltersDto,
       }),
     );
   }

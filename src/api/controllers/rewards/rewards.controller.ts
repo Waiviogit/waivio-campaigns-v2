@@ -3,6 +3,7 @@ import { HostPipe } from '../../pipes/host.pipe';
 import { CustomHeaders } from '../../../common/decorators';
 import { RewardsService } from './rewards.service';
 import {
+  GuideReservationFiltersDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
@@ -13,6 +14,7 @@ import {
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 import {
+  GuideReservationsInDto,
   ObjectRewardsInDto,
   RewardsAllInDto,
   RewardsCanReserveInDto,
@@ -203,6 +205,32 @@ export class RewardsController {
       host,
       authorPermlink,
       ...query,
+    });
+  }
+  @Post('reservations/:guideName')
+  @RewardsControllerDoc.getGuideReservations()
+  async getGuideReservations(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('guideName')
+    guideName: string,
+    @Body() body: GuideReservationsInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getGuideReservations({
+      host,
+      guideName,
+      ...body,
+    });
+  }
+
+  @Get('reservations/:guideName/filters')
+  @RewardsControllerDoc.getGuideReservationsFilters()
+  async getGuideReservationsFilters(
+    @Param('guideName')
+    guideName: string,
+  ): Promise<GuideReservationFiltersDto> {
+    return this.rewardsService.getGuideReservationsFilters({
+      guideName,
     });
   }
 }
