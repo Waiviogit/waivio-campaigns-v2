@@ -544,6 +544,7 @@ export class WobjectHelper implements WobjectHelperInterface {
   async getWobjectsForCampaigns({
     links,
     host,
+    fields = CAMPAIGN_FIELDS,
   }: GetWobjectsForCampaignsType): Promise<ProcessedWobjectType[]> {
     const app = await this.appRepository.findOneByHost(host);
     const wobjects = (await this.wobjectRepository.find({
@@ -552,7 +553,7 @@ export class WobjectHelper implements WobjectHelperInterface {
 
     return this.processWobjects({
       wobjects,
-      fields: CAMPAIGN_FIELDS,
+      fields,
       app,
       returnArray: true,
     });
