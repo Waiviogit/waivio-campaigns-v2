@@ -48,7 +48,7 @@ export const getUserPayablesPipe = ({
       $addFields: {
         notPayed: {
           $reduce: {
-            input: '$reviews',
+            input: { $reverseArray: '$reviews' },
             initialValue: { counter: '$payable', notPayedReviews: [] },
             in: {
               counter: {
