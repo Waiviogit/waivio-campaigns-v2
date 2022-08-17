@@ -102,19 +102,27 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
 
     const notPayedPeriod = this.getNotPayedDays({ totalPayable, histories });
 
-    const links = _.map(histories, 'reviewObject');
+    const links = [
+      ..._.map(histories, 'reviewObject'),
+      ..._.map(histories, 'mainObject'),
+    ];
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
       links,
       host,
     });
 
     for (const history of histories) {
-      const object = _.find(
-        objects,
-        (o) => o.author_permlink === history.reviewObject,
+      const reviewObject = _.pick(
+        _.find(objects, (o) => o.author_permlink === history.reviewObject),
+        ['name', 'defaultShowLink'],
       );
-      if (!object) continue;
-      history.reviewObject = _.pick(object, ['name', 'defaultShowLink']);
+      const mainObject = _.pick(
+        _.find(objects, (o) => o.author_permlink === history.mainObject),
+        ['name', 'defaultShowLink'],
+      );
+
+      if (reviewObject) history.reviewObject = reviewObject;
+      if (mainObject) history.mainObject = mainObject;
     }
 
     return { histories, totalPayable, notPayedPeriod };
