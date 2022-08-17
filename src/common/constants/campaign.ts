@@ -85,8 +85,6 @@ export const GUEST_BNF_ACC = 'waivio.hpower';
 
 export const CAMPAIGN_PAYMENT = {
   REVIEW: 'review',
-  TRANSFER: 'transfer',
-  TRANSFER_TO_GUEST: 'transferToGuest',
   CAMPAIGNS_SERVER_FEE: 'campaignServerFee',
   REFERRAL_SERVER_FEE: 'referralServerFee',
   BENEFICIARY_FEE: 'beneficiaryFee',
@@ -97,6 +95,8 @@ export const CAMPAIGN_PAYMENT = {
   //USER_TO_GUEST_TRANSFER: 'user_to_guest_transfer',
   COMPENSATION_FEE: 'compensationFee',
   OVERPAYMENT_REFUND: 'overpaymentRefund', //?
+  TRANSFER: 'transfer',
+  TRANSFER_TO_GUEST: 'transferToGuest',
 };
 
 export const CP_TRANSFER_TYPES = [

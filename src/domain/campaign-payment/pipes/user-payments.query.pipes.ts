@@ -85,7 +85,7 @@ export const getUserPayablesPipe = ({
         notPayedDate: {
           $cond: [
             { $gt: ['$payable', 0] },
-            { $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', -1] },
+            { $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', 0] },
             new Date(),
           ],
         },
@@ -95,7 +95,7 @@ export const getUserPayablesPipe = ({
             {
               $dateDiff: {
                 startDate: {
-                  $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', -1],
+                  $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', 0],
                 },
                 endDate: new Date(),
                 unit: 'day',
