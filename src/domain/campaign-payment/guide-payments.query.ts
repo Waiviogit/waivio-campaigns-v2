@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as moment from 'moment';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
@@ -16,7 +15,6 @@ import {
   GetPayableType,
   PayablesAllType,
   GetPayablesType,
-  getNotPayedDaysType,
   GetPayableOutType,
   GetGuidesTotalPayedType,
   GuidesTotalPayedType,

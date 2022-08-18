@@ -61,7 +61,7 @@ export const getPayablesPipe = ({
                 $concatArrays: [
                   '$$value.notPayedReviews',
                   {
-                    $cond: [{ $gte: ['$$value.counter', 0] }, ['$$this'], []],
+                    $cond: [{ $gt: ['$$value.counter', 0] }, ['$$this'], []],
                   },
                 ],
               },
@@ -257,7 +257,7 @@ export const getPayableByUserPipe = ({
                 $concatArrays: [
                   '$$value.notPayedReviews',
                   {
-                    $cond: [{ $gte: ['$$value.counter', 0] }, ['$$this'], []],
+                    $cond: [{ $gt: ['$$value.counter', 0] }, ['$$this'], []],
                   },
                 ],
               },
