@@ -38,6 +38,7 @@ export type GetPayableAggregateType = {
 
 export type CampaignPaymentUserType = CampaignPayment & {
   balance: number;
+  currentUser?: string;
 };
 
 export type getNotPayedDaysType = {

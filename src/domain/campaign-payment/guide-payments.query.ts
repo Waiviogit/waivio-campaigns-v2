@@ -108,7 +108,43 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       host,
     });
 
+    const reviews: CampaignPaymentUserType[] =
+      await this.campaignPaymentRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              $and: [
+                {
+                  reservationPermlink: {
+                    $in: _.map(histories, 'reservationPermlink'),
+                  },
+                },
+                {
+                  type: CAMPAIGN_PAYMENT.REVIEW,
+                },
+              ],
+            },
+          },
+        ],
+      });
+
     for (const history of histories) {
+      if (
+        _.includes(
+          ['transfer', 'demo_debt', 'overpayment_refund'],
+          history.type,
+        )
+      ) {
+        return;
+      }
+
+      const reviewPayment = _.find(
+        reviews,
+        (payment) =>
+          payment.reservationPermlink === history.reservationPermlink,
+      );
+      history.currentUser = history.userName;
+      history.userName = _.get(reviewPayment, 'userName', null);
       const reviewObject = _.pick(
         _.find(objects, (o) => o.author_permlink === history.reviewObject),
         ['name', 'defaultShowLink'],
