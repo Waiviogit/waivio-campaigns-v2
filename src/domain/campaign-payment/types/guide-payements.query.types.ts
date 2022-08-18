@@ -33,6 +33,7 @@ export type GetPayableType = {
 
 export type GetPayableAggregateType = {
   payable: number;
+  notPayedPeriod: number;
 };
 
 export type CampaignPaymentUserType = CampaignPayment & {
