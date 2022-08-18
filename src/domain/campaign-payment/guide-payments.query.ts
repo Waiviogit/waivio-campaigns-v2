@@ -135,7 +135,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
           history.type,
         )
       ) {
-        return;
+        continue;
       }
 
       const reviewPayment = _.find(
