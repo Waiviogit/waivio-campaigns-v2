@@ -59,7 +59,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
       comment,
       metadata,
       app,
-      beneficiaries: _.get(beneficiaries, 'value.beneficiaries'),
+      beneficiaries: _.get(beneficiaries, 'value.beneficiaries', []),
     });
 
     if (metadata?.waivioRewards) {
