@@ -5,6 +5,17 @@ import { CAMPAIGN_PAYMENT, PAYOUT_TOKEN } from '../../common/constants';
 import { CampaignPaymentBeneficiariesType } from './types';
 import BigNumber from 'bignumber.js';
 
+@Schema({ _id: false })
+class Beneficiaries {
+  @Prop({ type: String })
+  account: string;
+
+  @Prop({ type: Number })
+  weight: number;
+}
+
+const BeneficiariesSchema = SchemaFactory.createForClass(Beneficiaries);
+
 @Schema({ versionKey: false, timestamps: true })
 export class CampaignPayment {
   _id: mongoose.ObjectId;
@@ -32,14 +43,7 @@ export class CampaignPayment {
   })
   payoutToken: string;
 
-  @Prop(
-    raw([
-      {
-        account: { type: String },
-        weight: { type: Number },
-      },
-    ]),
-  )
+  @Prop({ type: [BeneficiariesSchema] })
   beneficiaries?: CampaignPaymentBeneficiariesType[];
 
   @Prop({ type: mongoose.Types.ObjectId })
