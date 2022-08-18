@@ -244,9 +244,47 @@ export const getPayableByUserPipe = ({
       },
     },
     {
+      $addFields: {
+        notPayed: {
+          $reduce: {
+            input: { $reverseArray: '$reviews' },
+            initialValue: { counter: '$payable', notPayedReviews: [] },
+            in: {
+              counter: {
+                $subtract: ['$$value.counter', '$$this.amount'],
+              },
+              notPayedReviews: {
+                $concatArrays: [
+                  '$$value.notPayedReviews',
+                  {
+                    $cond: [{ $gte: ['$$value.counter', 0] }, ['$$this'], []],
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
+    {
       $project: {
         _id: 0,
         payable: { $convert: { input: '$payable', to: 'double' } },
+        notPayedPeriod: {
+          $cond: [
+            { $gt: ['$payable', 0] },
+            {
+              $dateDiff: {
+                startDate: {
+                  $arrayElemAt: ['$notPayed.notPayedReviews.createdAt', -1],
+                },
+                endDate: new Date(),
+                unit: 'day',
+              },
+            },
+            0,
+          ],
+        },
       },
     },
   ];

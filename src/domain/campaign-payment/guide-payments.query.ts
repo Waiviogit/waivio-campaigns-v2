@@ -94,13 +94,12 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       userName,
     });
 
-    const totalPayable = await this.getPayableByUser({
-      guideName,
-      payoutToken,
-      userName,
-    });
-
-    const notPayedPeriod = this.getNotPayedDays({ totalPayable, histories });
+    const { payable: totalPayable, notPayedPeriod } =
+      await this.getPayableByUser({
+        guideName,
+        payoutToken,
+        userName,
+      });
 
     const links = [
       ..._.map(histories, 'reviewObject'),
@@ -128,29 +127,17 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     return { histories, totalPayable, notPayedPeriod };
   }
 
-  getNotPayedDays({ histories, totalPayable }: getNotPayedDaysType): number {
-    if (totalPayable <= 0) return 0;
-    let count = new BigNumber(totalPayable);
-    let lastDate = new Date();
-    for (const history of histories) {
-      if (count.lte(0)) break;
-      count = count.minus(history.amount);
-      lastDate = history.createdAt;
-    }
-    return moment.utc().diff(moment.utc(lastDate), 'days');
-  }
-
   async getPayableByUser({
     guideName,
     payoutToken,
     userName,
-  }: GetPayableType): Promise<number> {
+  }: GetPayableType): Promise<GetPayableAggregateType> {
     const payables: GetPayableAggregateType[] =
       await this.campaignPaymentRepository.aggregate({
         pipeline: getPayableByUserPipe({ guideName, userName, payoutToken }),
       });
 
-    return payables[0]?.payable;
+    return payables[0];
   }
 
   async getHistoriesByUser({
