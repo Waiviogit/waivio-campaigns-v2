@@ -124,6 +124,7 @@ export class PaymentReport implements PaymentReportInterface {
       reviewDate: _.get(rewardRecord, 'createdAt', ''),
       title: _.get(rewardRecord, 'title', ''),
       activationPermlink: campaign.activationPermlink,
+      reservationPermlink: _.get(reservation, 'reservationPermlink', ''),
       requiredObject,
       secondaryObject,
       rewardTokenAmount,

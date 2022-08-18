@@ -67,6 +67,9 @@ export class CampaignPayment {
   reviewPermlink?: string;
 
   @Prop({ type: String })
+  reservationPermlink?: string;
+
+  @Prop({ type: String })
   title?: string;
   //why?
   @Prop({ type: String })

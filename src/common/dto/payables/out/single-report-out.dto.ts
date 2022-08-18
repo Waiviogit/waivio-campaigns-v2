@@ -45,6 +45,9 @@ export class SingleReportOutDto {
   activationPermlink: string;
 
   @ApiProperty({ type: String })
+  reservationPermlink: string;
+
+  @ApiProperty({ type: String })
   title: string;
 
   @ApiProperty({ type: String })
