@@ -17,6 +17,7 @@ export type SingleReportType = {
   requiredObject: ReservationDetailsObjectType;
   secondaryObject: ReservationDetailsObjectType;
   activationPermlink: string;
+  reservationPermlink: string;
   title: string;
   reviewDate: string;
   reservationDate: string;
