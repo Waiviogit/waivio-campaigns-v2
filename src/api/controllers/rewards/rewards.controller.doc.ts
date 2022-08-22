@@ -1,12 +1,14 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
+  GuideReservationFiltersDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
   RewardsMapOutDto,
   RewardsTabDto,
+  UserHistoryFiltersDto,
 } from '../../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 
@@ -108,6 +110,54 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: ObjectRewardsOutDto,
+      }),
+    );
+  }
+
+  static getGuideReservations(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return guide campaigns reservations',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsByObjectOutDto,
+      }),
+    );
+  }
+
+  static getGuideReservationsFilters(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return guide reservation filters',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: GuideReservationFiltersDto,
+      }),
+    );
+  }
+
+  static getUserHistory(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return users reward history',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsByObjectOutDto,
+      }),
+    );
+  }
+
+  static getUserHistoryFilters(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return users reward history filters',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: UserHistoryFiltersDto,
       }),
     );
   }

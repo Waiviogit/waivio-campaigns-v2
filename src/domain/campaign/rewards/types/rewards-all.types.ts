@@ -36,6 +36,9 @@ export type RewardsByRequiredType = {
   agreementObjects: string[];
   usersLegalNotice: string;
   description: string;
+  campaignName: string;
+  userName: string;
+  reviewStatus: string;
 };
 
 export type RewardsByObjectType = {

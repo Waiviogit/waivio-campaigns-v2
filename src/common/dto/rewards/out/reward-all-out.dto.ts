@@ -29,6 +29,18 @@ export class RewardAllOutDto extends PickType(RewardDto, [
 
   @ApiProperty({ type: String })
   description: string;
+
+  @ApiProperty({ type: String })
+  campaignName: string;
+
+  @ApiProperty({ type: String })
+  userName: string;
+
+  @ApiProperty({ type: String })
+  reviewStatus: string;
+
+  @ApiProperty({ type: Number })
+  commentsCount: number;
 }
 
 export class RewardsByObjectOutDto {
