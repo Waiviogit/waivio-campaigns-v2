@@ -34,7 +34,7 @@ export class RewardsHelper implements RewardsHelperInterface {
         ..._.reduce(
           campaigns,
           (acc, el) => {
-            acc.push(..._.map(el.users, 'objectPermlink'));
+            acc.push(_.get(el.users, 'objectPermlink'));
             return acc;
           },
           [],
