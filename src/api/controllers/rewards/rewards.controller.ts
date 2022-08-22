@@ -3,20 +3,24 @@ import { HostPipe } from '../../pipes/host.pipe';
 import { CustomHeaders } from '../../../common/decorators';
 import { RewardsService } from './rewards.service';
 import {
+  GuideReservationFiltersDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
   RewardsMapOutDto,
   RewardsTabDto,
+  UserHistoryFiltersDto,
 } from '../../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 import {
+  GuideReservationsInDto,
   ObjectRewardsInDto,
   RewardsAllInDto,
   RewardsCanReserveInDto,
   RewardsMapInDto,
+  UserHistoryInDto,
 } from '../../../common/dto/rewards/in';
 import { EligibleSponsorsDto } from '../../../common/dto/rewards/in/eligible-sponsors.dto';
 
@@ -203,6 +207,60 @@ export class RewardsController {
       host,
       authorPermlink,
       ...query,
+    });
+  }
+
+  @Post('reservations/:guideName')
+  @RewardsControllerDoc.getGuideReservations()
+  async getGuideReservations(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('guideName')
+    guideName: string,
+    @Body() body: GuideReservationsInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getGuideReservations({
+      host,
+      guideName,
+      ...body,
+    });
+  }
+
+  @Get('reservations/:guideName/filters')
+  @RewardsControllerDoc.getGuideReservationsFilters()
+  async getGuideReservationsFilters(
+    @Param('guideName')
+    guideName: string,
+  ): Promise<GuideReservationFiltersDto> {
+    return this.rewardsService.getGuideReservationsFilters({
+      guideName,
+    });
+  }
+
+  @Post('history/:userName')
+  @RewardsControllerDoc.getUserHistory()
+  async getUserHistory(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('userName')
+    userName: string,
+    @Body() body: UserHistoryInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getUserHistory({
+      host,
+      userName,
+      ...body,
+    });
+  }
+
+  @Get('history/:userName/filters')
+  @RewardsControllerDoc.getUserHistoryFilters()
+  async getUserHistoryFilters(
+    @Param('userName')
+    userName: string,
+  ): Promise<UserHistoryFiltersDto> {
+    return this.rewardsService.getUserHistoryFilters({
+      userName,
     });
   }
 }

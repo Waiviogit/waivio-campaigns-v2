@@ -110,4 +110,7 @@ export const REWARDS_PROVIDE = Object.freeze({
   ALL: 'RewardsAll',
   MAP: 'RewardsMap',
   OBJECT: 'RewardsObject',
+  HELPER: 'RewardsHelper',
+  GUIDE_RESERVATIONS: 'GuideReservations',
+  USER_HISTORY: 'UserHistoryRewards',
 });

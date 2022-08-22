@@ -8,6 +8,8 @@ import {
 import {
   CanReserveParamType,
   CanReserveType,
+  FilterReservationsType,
+  FilterUserHistoryType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
@@ -19,10 +21,16 @@ import {
 } from '../../../domain/campaign/rewards/types';
 import { RewardsMapType } from '../../../domain/campaign/rewards/types';
 import {
+  GetGuideReservationFiltersInterface,
+  GetHistoryInterface,
   GetMapAllInterface,
   GetMapEligibleInterface,
+  GetReservationsInterface,
+  GetUserHistoryFiltersInterface,
+  GuideReservationsInterface,
   ObjectRewardsInterface,
   RewardsMapInterface,
+  UserHistoryInterface,
 } from '../../../domain/campaign/rewards/interface';
 import { GetObjectRewardsInterface } from '../../../domain/campaign/rewards/interface';
 import { ObjectRewardsType } from '../../../domain/campaign/rewards/types/object-rewards.types';
@@ -36,6 +44,10 @@ export class RewardsService {
     private readonly rewardsMap: RewardsMapInterface,
     @Inject(REWARDS_PROVIDE.OBJECT)
     private readonly objectRewards: ObjectRewardsInterface,
+    @Inject(REWARDS_PROVIDE.GUIDE_RESERVATIONS)
+    private readonly guideReservations: GuideReservationsInterface,
+    @Inject(REWARDS_PROVIDE.USER_HISTORY)
+    private readonly userHistory: UserHistoryInterface,
   ) {}
 
   async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
@@ -102,5 +114,29 @@ export class RewardsService {
     params: GetObjectRewardsInterface,
   ): Promise<ObjectRewardsType> {
     return this.objectRewards.getObjectRewards(params);
+  }
+
+  async getGuideReservations(
+    params: GetReservationsInterface,
+  ): Promise<RewardsByObjectType> {
+    return this.guideReservations.getReservations(params);
+  }
+
+  async getGuideReservationsFilters(
+    params: GetGuideReservationFiltersInterface,
+  ): Promise<FilterReservationsType> {
+    return this.guideReservations.getFilters(params);
+  }
+
+  async getUserHistory(
+    params: GetHistoryInterface,
+  ): Promise<RewardsByObjectType> {
+    return this.userHistory.getHistory(params);
+  }
+
+  async getUserHistoryFilters(
+    params: GetUserHistoryFiltersInterface,
+  ): Promise<FilterUserHistoryType> {
+    return this.userHistory.getFilters(params);
   }
 }
