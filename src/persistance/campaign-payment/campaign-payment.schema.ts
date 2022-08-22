@@ -32,7 +32,7 @@ export class CampaignPayment {
   @Prop({ type: mongoose.Schema.Types.Decimal128, required: true })
   amount: BigNumber;
 
-  @Prop({ type: mongoose.Schema.Types.Decimal128 })
+  @Prop({ type: mongoose.Schema.Types.Decimal128, default: 0 })
   votesAmount?: BigNumber;
 
   @Prop({
