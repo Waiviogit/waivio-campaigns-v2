@@ -9,9 +9,10 @@ import {
   GetWeightToVoteType,
   ParseHiveCustomJsonType,
   ProcessSponsorsBotVoteType,
+  SponsorsBotApiType,
   UpdateDataAfterVoteType,
 } from './type';
-import { SponsorsBotInterface } from './interface';
+import { GetSponsorsBotInterface, SponsorsBotInterface } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
   BOT_UPVOTE_STATUS,
@@ -368,7 +369,35 @@ export class SponsorsBot implements SponsorsBotInterface {
     //   filter: { author, permlink, botName: voter },
     // });
     // if (!upvote) {
-
     // }
+  }
+
+  async getSponsorsBot({
+    botName,
+    symbol,
+    skip,
+    limit,
+  }: GetSponsorsBotInterface): Promise<SponsorsBotApiType> {
+    const bot = await this.sponsorsBotRepository.findOne({
+      filter: { botName, symbol },
+      projection: { sponsors: { $slice: [skip, limit] } },
+    });
+
+    const mappedData =
+      bot &&
+      bot.sponsors.map((sponsor) => ({
+        botName: bot.botName,
+        minVotingPower: bot.minVotingPower,
+        sponsor: sponsor.sponsor,
+        note: sponsor.note,
+        enabled: sponsor.enabled,
+        votingPercent: sponsor.votingPercent,
+        expiredAt: sponsor.expiredAt,
+      }));
+
+    return {
+      results: mappedData || [],
+      minVotingPower: bot.minVotingPower || 0,
+    };
   }
 }
