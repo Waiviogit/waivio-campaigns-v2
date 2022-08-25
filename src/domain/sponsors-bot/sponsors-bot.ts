@@ -397,7 +397,7 @@ export class SponsorsBot implements SponsorsBotInterface {
 
     return {
       results: mappedData || [],
-      minVotingPower: bot.minVotingPower || 0,
+      minVotingPower: _.get(bot, 'minVotingPower', 0),
     };
   }
 }
