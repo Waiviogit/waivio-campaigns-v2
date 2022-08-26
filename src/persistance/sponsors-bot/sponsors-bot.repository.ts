@@ -76,6 +76,7 @@ export class SponsorsBotRepository implements SponsorsBotRepositoryInterface {
         matchBot.sponsors,
         (record) => record.sponsor === sponsor,
       );
+      if (!findSponsor) return false;
 
       if (
         findSponsor.expiredAt &&
