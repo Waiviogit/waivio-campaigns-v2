@@ -70,11 +70,13 @@ export class SponsorsBotRepository implements SponsorsBotRepositoryInterface {
   }: UpdateSponsorBotType): Promise<boolean> {
     if (enabled) {
       const matchBot = await this.model.findOne({ botName }).lean();
+      if (!matchBot) return false;
 
       const findSponsor = _.find(
         matchBot.sponsors,
-        (record) => record.sponsor_name === sponsor,
+        (record) => record.sponsor === sponsor,
       );
+      if (!findSponsor) return false;
 
       if (
         findSponsor.expiredAt &&
