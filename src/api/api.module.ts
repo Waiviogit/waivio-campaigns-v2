@@ -13,6 +13,8 @@ import { BlacklistsController } from './controllers/blacklists/blacklists.contro
 import { BlacklistsService } from './controllers/blacklists/blacklists.service';
 import { PayablesController } from './controllers/payables/payables.controller';
 import { PayablesService } from './controllers/payables/payables.service';
+import { BotsController } from './controllers/bots/bots.controller';
+import { BotsService } from './controllers/bots/bots.service';
 
 @Module({
   imports: [DomainModule, PersistenceModule],
@@ -23,6 +25,7 @@ import { PayablesService } from './controllers/payables/payables.service';
     RewardsController,
     BlacklistsController,
     PayablesController,
+    BotsController,
   ],
   providers: [
     CampaignService,
@@ -31,6 +34,7 @@ import { PayablesService } from './controllers/payables/payables.service';
     RewardsService,
     BlacklistsService,
     PayablesService,
+    BotsService,
   ],
 })
 export class ApiModule {}

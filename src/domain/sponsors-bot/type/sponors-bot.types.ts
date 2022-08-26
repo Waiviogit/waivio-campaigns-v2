@@ -44,3 +44,18 @@ export type ProcessSponsorsBotVoteType = {
   permlink: string;
   voter: string;
 };
+
+export type mappedSponsorType = {
+  botName: string;
+  minVotingPower: number;
+  sponsor: string;
+  note: string;
+  enabled: boolean;
+  votingPercent: number;
+  expiredAt: Date;
+};
+
+export type SponsorsBotApiType = {
+  results: mappedSponsorType[];
+  minVotingPower: number;
+};

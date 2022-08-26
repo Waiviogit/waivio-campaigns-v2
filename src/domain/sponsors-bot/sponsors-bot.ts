@@ -9,12 +9,15 @@ import {
   GetWeightToVoteType,
   ParseHiveCustomJsonType,
   ProcessSponsorsBotVoteType,
+  SponsorsBotApiType,
   UpdateDataAfterVoteType,
 } from './type';
-import { SponsorsBotInterface } from './interface';
+import { GetSponsorsBotInterface, SponsorsBotInterface } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
   BOT_UPVOTE_STATUS,
+  CAMPAIGN_PAYMENT,
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   HIVE_ENGINE_PROVIDE,
   HIVE_PROVIDE,
@@ -37,6 +40,7 @@ import { HiveClientInterface } from '../../services/hive-api/interface';
 import { EngineVoteType } from '../engine-parser/types';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
+import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -55,6 +59,8 @@ export class SponsorsBot implements SponsorsBotInterface {
     private readonly hiveClient: HiveClientInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
+    private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
   ) {}
 
   async parseHiveCustomJson({
@@ -243,10 +249,6 @@ export class SponsorsBot implements SponsorsBotInterface {
     return weight > MAX_VOTING_POWER ? MAX_VOTING_POWER : weight;
   }
 
-  async getVoteAmount() {
-
-  }
-
   async getVotingPowers(upvote: GetUpvoteType): Promise<CalculateManaType> {
     const votingPower = await this.hiveEngineClient.getVotingPower(
       upvote.botName,
@@ -254,7 +256,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     );
     return calculateMana(votingPower);
   }
-
+  //////
   async updateDataAfterVote({
     upvote,
     weight,
@@ -269,6 +271,17 @@ export class SponsorsBot implements SponsorsBotInterface {
     await this.sponsorsBotUpvoteRepository.updateMany({
       filter: { author: upvote.author, permlink: upvote.permlink },
       update: { $inc: { totalVotesWeight: upvote.amountToVote } },
+    });
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        userName: upvote.author,
+        reviewPermlink: upvote.permlink,
+      },
+      update: {
+        votesAmount: upvote.amountToVote,
+      },
     });
   }
 
@@ -352,11 +365,39 @@ export class SponsorsBot implements SponsorsBotInterface {
     permlink,
     voter,
   }: ProcessSponsorsBotVoteType): Promise<void> {
-    const upvote = await this.sponsorsBotUpvoteRepository.findOne({
-      filter: { author, permlink, botName: voter },
+    // const upvote = await this.sponsorsBotUpvoteRepository.findOne({
+    //   filter: { author, permlink, botName: voter },
+    // });
+    // if (!upvote) {
+    // }
+  }
+
+  async getSponsorsBot({
+    botName,
+    symbol,
+    skip,
+    limit,
+  }: GetSponsorsBotInterface): Promise<SponsorsBotApiType> {
+    const bot = await this.sponsorsBotRepository.findOne({
+      filter: { botName, symbol },
+      projection: { sponsors: { $slice: [skip, limit] } },
     });
-    if (!upvote) {
-      //TODO sponsors vote
-    }
+
+    const mappedData =
+      bot &&
+      bot.sponsors.map((sponsor) => ({
+        botName: bot.botName,
+        minVotingPower: bot.minVotingPower,
+        sponsor: sponsor.sponsor,
+        note: sponsor.note,
+        enabled: sponsor.enabled,
+        votingPercent: sponsor.votingPercent,
+        expiredAt: sponsor.expiredAt,
+      }));
+
+    return {
+      results: mappedData || [],
+      minVotingPower: _.get(bot, 'minVotingPower', 0),
+    };
   }
 }
