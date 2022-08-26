@@ -74,7 +74,7 @@ export class SponsorsBotRepository implements SponsorsBotRepositoryInterface {
 
       const findSponsor = _.find(
         matchBot.sponsors,
-        (record) => record.sponsor_name === sponsor,
+        (record) => record.sponsor === sponsor,
       );
 
       if (
