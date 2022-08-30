@@ -225,7 +225,7 @@ export class SponsorsBot implements SponsorsBotInterface {
         symbol: upvote.symbol,
         votingPower: votingPowers.votingPower,
         account: upvote.botName,
-        maxVoteWeight: upvote.votingPercent * 100,
+        maxVoteWeight: upvote.votingPercent * 10000,
       });
 
       const { authorReward, curationReward } = await this.getVoteAmount({
