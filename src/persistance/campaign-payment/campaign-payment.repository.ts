@@ -5,8 +5,10 @@ import { CampaignPayment } from './campaign-payment.schema';
 import {
   CampaignPaymentDocumentType,
   CreateCampaignPaymentType,
+  DeleteResultType,
 } from './types';
 import {
+  CampaignPaymentDeleteManyInterface,
   CampaignPaymentRepositoryInterface,
   CampaignPaymentUpdateInterface,
 } from './interface';
@@ -49,6 +51,17 @@ export class CampaignPaymentRepository
   }: CampaignPaymentUpdateInterface): Promise<UpdateWriteOpResult> {
     try {
       return this.model.updateOne(filter, update, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async deleteMany({
+    filter,
+    options,
+  }: CampaignPaymentDeleteManyInterface): Promise<DeleteResultType> {
+    try {
+      return this.model.deleteMany(filter, options);
     } catch (error) {
       this.logger.error(error.message);
     }

@@ -27,4 +27,9 @@ export interface SponsorsBotUpvoteRepositoryInterface {
     projection,
     options,
   }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType>;
+  find({
+    filter,
+    projection,
+    options,
+  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType[]>;
 }

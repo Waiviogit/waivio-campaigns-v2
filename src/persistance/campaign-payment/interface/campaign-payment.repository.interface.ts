@@ -1,6 +1,7 @@
 import {
   CampaignPaymentDocumentType,
   CreateCampaignPaymentType,
+  DeleteResultType,
 } from '../types';
 import { AggregateType } from '../../campaign/types';
 import {
@@ -20,6 +21,11 @@ export interface CampaignPaymentRepositoryInterface {
   updateOne(
     params: CampaignPaymentUpdateInterface,
   ): Promise<UpdateWriteOpResult>;
+
+  deleteMany({
+    filter,
+    options,
+  }: CampaignPaymentDeleteManyInterface): Promise<DeleteResultType>;
 }
 
 export interface CampaignPaymentUpdateInterface {
@@ -27,5 +33,10 @@ export interface CampaignPaymentUpdateInterface {
   update:
     | UpdateWithAggregationPipeline
     | UpdateQuery<CampaignPaymentDocumentType>;
+  options?: QueryOptions;
+}
+
+export interface CampaignPaymentDeleteManyInterface {
+  filter: FilterQuery<CampaignPaymentDocumentType>;
   options?: QueryOptions;
 }

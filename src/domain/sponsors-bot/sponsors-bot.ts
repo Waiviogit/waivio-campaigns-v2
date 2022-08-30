@@ -17,6 +17,7 @@ import {
   GetSponsorsBotInterface,
   SponsorsBotInterface,
   GetVoteAmountInterface,
+  RemoveVotesOnReviewInterface,
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
@@ -73,6 +74,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     id,
     authorizedUser,
     json,
+    transaction_id,
   }: ParseHiveCustomJsonType): Promise<void> {
     switch (id) {
       case SPONSORS_BOT_COMMAND.SET_RULE:
@@ -90,6 +92,10 @@ export class SponsorsBot implements SponsorsBotInterface {
               : null,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case SPONSORS_BOT_COMMAND.REMOVE_RULE:
         if (json.sponsor) {
@@ -98,6 +104,10 @@ export class SponsorsBot implements SponsorsBotInterface {
             sponsor: json.sponsor,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case SPONSORS_BOT_COMMAND.CHANGE_POWER:
         if (json.votingPower) {
@@ -106,6 +116,10 @@ export class SponsorsBot implements SponsorsBotInterface {
             minVotingPower: json.votingPower,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
     }
   }
@@ -213,6 +227,7 @@ export class SponsorsBot implements SponsorsBotInterface {
         account: upvote.botName,
         maxVoteWeight: upvote.votingPercent * 100,
       });
+
       const { authorReward, curationReward } = await this.getVoteAmount({
         votingPower: votingPowers.votingPower,
         weight,
@@ -462,5 +477,34 @@ export class SponsorsBot implements SponsorsBotInterface {
       results: mappedData || [],
       minVotingPower: _.get(bot, 'minVotingPower', 0),
     };
+  }
+
+  async removeVotesOnReview({
+    reservationPermlink,
+  }: RemoveVotesOnReviewInterface): Promise<void> {
+    const upvotes = await this.sponsorsBotUpvoteRepository.find({
+      filter: { reservationPermlink },
+    });
+    if (_.isEmpty(upvotes)) return;
+
+    for (const upvote of upvotes) {
+      if (upvote.status === BOT_UPVOTE_STATUS.PENDING) continue;
+      const vote = await this.hiveClient.voteOnPost({
+        key: process.env.SPONSORS_BOT_KEY,
+        author: upvote.author,
+        permlink: upvote.permlink,
+        voter: upvote.botName,
+        weight: 0,
+      });
+    }
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { reservationPermlink },
+      update: {
+        status: BOT_UPVOTE_STATUS.REJECTED,
+        totalVotesWeight: 0,
+        currentVote: 0,
+        voteWeight: 0,
+      },
+    });
   }
 }

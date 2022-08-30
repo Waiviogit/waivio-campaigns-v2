@@ -6,6 +6,7 @@ export type ParseHiveCustomJsonType = {
   id: string;
   authorizedUser: string;
   json: SponsorsBotJsonType;
+  transaction_id: string;
 };
 
 export type SponsorsBotJsonType = {
