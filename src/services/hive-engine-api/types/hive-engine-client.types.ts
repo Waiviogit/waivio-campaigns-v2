@@ -91,6 +91,7 @@ export type EngineRewardPoolType = {
   active: boolean;
   intervalPendingClaims: string;
   intervalRewardPool: string;
+  error?: object;
 };
 
 export type EngineRewardPoolConfigType = {
@@ -120,4 +121,5 @@ export type EngineBalanceType = {
   delegationsIn: string;
   delegationsOut: string;
   pendingUndelegations: string;
+  error?: object;
 };
