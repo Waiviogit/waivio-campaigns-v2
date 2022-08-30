@@ -23,6 +23,9 @@ export interface SponsorsBotInterface {
   expireListener(key: string): Promise<void>;
 
   getSponsorsBot(params: GetSponsorsBotInterface): Promise<SponsorsBotApiType>;
+  removeVotesOnReview({
+    reservationPermlink,
+  }: RemoveVotesOnReviewInterface): Promise<void>;
 }
 
 export interface GetSponsorsBotInterface {
@@ -37,4 +40,8 @@ export interface GetVoteAmountInterface {
   weight: number;
   account: string;
   symbol: string;
+}
+
+export interface RemoveVotesOnReviewInterface {
+  reservationPermlink: string;
 }

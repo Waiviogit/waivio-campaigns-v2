@@ -12,3 +12,8 @@ export type CreateCampaignPaymentType = Omit<
   CampaignPayment,
   '_id' | 'createdAt'
 >;
+
+export type DeleteResultType = {
+  acknowledged: boolean;
+  deletedCount: number;
+};
