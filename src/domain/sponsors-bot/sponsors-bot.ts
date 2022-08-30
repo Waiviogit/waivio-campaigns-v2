@@ -74,6 +74,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     id,
     authorizedUser,
     json,
+    transaction_id,
   }: ParseHiveCustomJsonType): Promise<void> {
     switch (id) {
       case SPONSORS_BOT_COMMAND.SET_RULE:
@@ -91,6 +92,10 @@ export class SponsorsBot implements SponsorsBotInterface {
               : null,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case SPONSORS_BOT_COMMAND.REMOVE_RULE:
         if (json.sponsor) {
@@ -99,6 +104,10 @@ export class SponsorsBot implements SponsorsBotInterface {
             sponsor: json.sponsor,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case SPONSORS_BOT_COMMAND.CHANGE_POWER:
         if (json.votingPower) {
@@ -107,6 +116,10 @@ export class SponsorsBot implements SponsorsBotInterface {
             minVotingPower: json.votingPower,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
     }
   }

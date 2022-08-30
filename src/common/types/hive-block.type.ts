@@ -72,6 +72,7 @@ export type HiveCustomJsonType = {
   required_posting_auths: string[];
   id: string;
   json: string;
+  transaction_id: string;
 };
 
 export type HiveAccountUpdateType = {
