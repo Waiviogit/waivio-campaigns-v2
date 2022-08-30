@@ -31,3 +31,10 @@ export interface GetSponsorsBotInterface {
   skip?: number;
   limit?: number;
 }
+
+export interface GetVoteAmountInterface {
+  votingPower: number;
+  weight: number;
+  account: string;
+  symbol: string;
+}
