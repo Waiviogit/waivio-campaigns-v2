@@ -4,7 +4,8 @@ import { RESERVATION_PROVIDE } from '../../../common/constants';
 import { AssignReservation } from './assign-reservation';
 import { RejectReservation } from './reject-reservation';
 import { GuideRejectReservation } from './guide-reject-reservation';
-import {ReservationDetails} from "./reservation-details";
+import { ReservationDetails } from './reservation-details';
+import { ReservationHelper } from './reservation-helper';
 
 export const AssignReservationProvider: Provider = {
   provide: RESERVATION_PROVIDE.ASSIGN,
@@ -24,4 +25,9 @@ export const GuideRejectReservationProvider: Provider = {
 export const ReservationDetailsProvider: Provider = {
   provide: RESERVATION_PROVIDE.DETAILS,
   useClass: ReservationDetails,
+};
+
+export const ReservationHelperProvider: Provider = {
+  provide: RESERVATION_PROVIDE.HELPER,
+  useClass: ReservationHelper,
 };

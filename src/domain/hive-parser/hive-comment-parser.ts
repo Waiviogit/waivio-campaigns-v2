@@ -20,6 +20,7 @@ import {
   AssignReservationInterface,
   GuideRejectReservationInterface,
   RejectReservationInterface,
+  ReservationHelperInterface,
 } from '../campaign/reservation/interface';
 import { CreateReviewInterface } from '../campaign/review/interface';
 import { HiveCommentParserInterface } from './interface';
@@ -41,6 +42,8 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     private readonly createReview: CreateReviewInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(RESERVATION_PROVIDE.HELPER)
+    private readonly reservationHelper: ReservationHelperInterface,
   ) {}
 
   async parse({ comment, options }: HiveCommentParseType): Promise<void> {
@@ -69,6 +72,11 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     await this.campaignHelper.incrReviewComment({
       rootName: comment.parent_author,
       reservationPermlink: comment.parent_permlink,
+    });
+
+    await this.reservationHelper.parseReservationConversation({
+      comment,
+      metadata,
     });
   }
 
