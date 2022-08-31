@@ -84,3 +84,7 @@ export const DOWNVOTE_REGENERATION_DAYS = 5;
 export const REWARD_POOL_ID = Object.freeze({
   WAIV: 13,
 });
+
+export const TOKENS_PRECISION = Object.freeze({
+  WAIV: 8,
+});

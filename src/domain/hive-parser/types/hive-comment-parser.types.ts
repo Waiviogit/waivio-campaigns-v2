@@ -8,4 +8,5 @@ export type Beneficiary = {
 export type HiveCommentParseType = {
   comment: HiveCommentType;
   options: HiveCommentOptionsType;
+  transaction_id: string;
 };

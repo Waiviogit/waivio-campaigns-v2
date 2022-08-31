@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   RESERVATION_STATUS,
+  SPONSORS_BOT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -9,6 +11,8 @@ import * as _ from 'lodash';
 import { CampaignHelperInterface } from '../interface';
 import { GuideRejectReservationType, UpdateCampaignReviewType } from './types';
 import { GuideRejectReservationInterface } from './interface';
+import { SponsorsBotInterface } from '../../sponsors-bot/interface';
+import { CampaignPaymentRepository } from '../../../persistance/campaign-payment/campaign-payment.repository';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -17,6 +21,10 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(SPONSORS_BOT_PROVIDE.BOT)
+    private readonly sponsorsBot: SponsorsBotInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
+    private readonly campaignPayment: CampaignPaymentRepository,
   ) {}
 
   private async updateCampaignReview({
@@ -76,11 +84,14 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         );
         break;
       case RESERVATION_STATUS.COMPLETED:
-        //TODO remove payment histories
         await this.updateCampaignReview({
           _id: campaign._id,
           user,
           rejectionPermlink,
+        });
+        await this.sponsorsBot.removeVotesOnReview({ reservationPermlink });
+        await this.campaignPayment.deleteMany({
+          filter: { reservationPermlink },
         });
         break;
     }

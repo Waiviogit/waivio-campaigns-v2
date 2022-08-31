@@ -1,12 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Aggregate, Model } from 'mongoose';
+import { Aggregate, Model, UpdateWriteOpResult } from 'mongoose';
 import { CampaignPayment } from './campaign-payment.schema';
 import {
   CampaignPaymentDocumentType,
   CreateCampaignPaymentType,
+  DeleteResultType,
 } from './types';
-import { CampaignPaymentRepositoryInterface } from './interface';
+import {
+  CampaignPaymentDeleteManyInterface,
+  CampaignPaymentRepositoryInterface,
+  CampaignPaymentUpdateInterface,
+} from './interface';
 import { AggregateType } from '../campaign/types';
 
 @Injectable()
@@ -34,6 +39,29 @@ export class CampaignPaymentRepository
   }: AggregateType): Promise<Aggregate<Array<never>>> {
     try {
       return this.model.aggregate(pipeline);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async updateOne({
+    filter,
+    update,
+    options,
+  }: CampaignPaymentUpdateInterface): Promise<UpdateWriteOpResult> {
+    try {
+      return this.model.updateOne(filter, update, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async deleteMany({
+    filter,
+    options,
+  }: CampaignPaymentDeleteManyInterface): Promise<DeleteResultType> {
+    try {
+      return this.model.deleteMany(filter, options);
     } catch (error) {
       this.logger.error(error.message);
     }

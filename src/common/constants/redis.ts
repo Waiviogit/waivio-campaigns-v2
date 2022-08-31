@@ -16,6 +16,7 @@ export const REDIS_KEY = Object.freeze({
   PUBLISH_EXPIRE_RELEASE_FALSE: 'expire:release:false',
   PUBLISH_EXPIRE_DEACTIVATION: 'expire:deactivation',
   PUBLISH_EXPIRE_DEACTIVATION_FALSE: 'expire:deactivation:false',
+  PUBLISH_EXPIRE_TRX_ID: 'expire:transactionId',
 });
 
 export const REDIS_EXPIRE = Object.freeze({

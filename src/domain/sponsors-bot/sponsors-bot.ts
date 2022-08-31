@@ -9,12 +9,21 @@ import {
   GetWeightToVoteType,
   ParseHiveCustomJsonType,
   ProcessSponsorsBotVoteType,
+  RewardAmountType,
+  SponsorsBotApiType,
   UpdateDataAfterVoteType,
 } from './type';
-import { SponsorsBotInterface } from './interface';
+import {
+  GetSponsorsBotInterface,
+  SponsorsBotInterface,
+  GetVoteAmountInterface,
+  RemoveVotesOnReviewInterface,
+} from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
   BOT_UPVOTE_STATUS,
+  CAMPAIGN_PAYMENT,
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   HIVE_ENGINE_PROVIDE,
   HIVE_PROVIDE,
@@ -25,18 +34,20 @@ import {
   REDIS_PROVIDE,
   SPONSORS_BOT_PROVIDE,
   SPONSORS_BOT_UPVOTE_PROVIDE,
+  TOKENS_PRECISION,
 } from '../../common/constants';
 import { SponsorsBotRepositoryInterface } from '../../persistance/sponsors-bot/interface';
 import { SponsorsBotUpvoteRepositoryInterface } from '../../persistance/sponsors-bot-upvote/interface';
 import { PostRepositoryInterface } from '../../persistance/post/interface';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
-import { calculateMana, parseJSON } from '../../common/helpers';
+import { calculateMana } from '../../common/helpers';
 import { GetUpvoteType } from '../../persistance/sponsors-bot-upvote/type';
 import { CalculateManaType } from '../../common/helpers/types';
 import { HiveClientInterface } from '../../services/hive-api/interface';
 import { EngineVoteType } from '../engine-parser/types';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
+import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -55,12 +66,15 @@ export class SponsorsBot implements SponsorsBotInterface {
     private readonly hiveClient: HiveClientInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
+    private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
   ) {}
 
   async parseHiveCustomJson({
     id,
     authorizedUser,
     json,
+    transaction_id,
   }: ParseHiveCustomJsonType): Promise<void> {
     switch (id) {
       case SPONSORS_BOT_COMMAND.SET_RULE:
@@ -78,6 +92,10 @@ export class SponsorsBot implements SponsorsBotInterface {
               : null,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case SPONSORS_BOT_COMMAND.REMOVE_RULE:
         if (json.sponsor) {
@@ -86,6 +104,10 @@ export class SponsorsBot implements SponsorsBotInterface {
             sponsor: json.sponsor,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case SPONSORS_BOT_COMMAND.CHANGE_POWER:
         if (json.votingPower) {
@@ -94,6 +116,10 @@ export class SponsorsBot implements SponsorsBotInterface {
             minVotingPower: json.votingPower,
           });
         }
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
     }
   }
@@ -199,7 +225,16 @@ export class SponsorsBot implements SponsorsBotInterface {
         symbol: upvote.symbol,
         votingPower: votingPowers.votingPower,
         account: upvote.botName,
+        maxVoteWeight: upvote.votingPercent * 10000,
       });
+
+      const { authorReward, curationReward } = await this.getVoteAmount({
+        votingPower: votingPowers.votingPower,
+        weight,
+        symbol: upvote.symbol,
+        account: upvote.botName,
+      });
+      if (authorReward.eq(0)) return;
 
       const vote = await this.hiveClient.voteOnPost({
         key: process.env.SPONSORS_BOT_KEY,
@@ -209,7 +244,12 @@ export class SponsorsBot implements SponsorsBotInterface {
         weight,
       });
       if (vote) {
-        await this.updateDataAfterVote({ upvote, weight });
+        await this.updateDataAfterVote({
+          upvote,
+          weight,
+          authorReward,
+          curationReward,
+        });
       }
     }
   }
@@ -219,6 +259,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     symbol,
     votingPower,
     account,
+    maxVoteWeight,
   }: GetWeightToVoteType): Promise<number> {
     const { stake, delegationsIn } =
       await this.hiveEngineClient.getTokenBalance(account, symbol);
@@ -240,11 +281,48 @@ export class SponsorsBot implements SponsorsBotInterface {
       .integerValue()
       .toNumber();
 
-    return weight > MAX_VOTING_POWER ? MAX_VOTING_POWER : weight;
+    return weight > maxVoteWeight ? maxVoteWeight : weight;
   }
 
-  async getVoteAmount() {
+  async getVoteAmount({
+    votingPower,
+    weight,
+    account,
+    symbol,
+  }: GetVoteAmountInterface): Promise<RewardAmountType> {
+    const onError = {
+      curationReward: new BigNumber(0),
+      authorReward: new BigNumber(0),
+    };
+    const rewardsPool = await this.hiveEngineClient.getRewardPool(symbol);
+    const balances = await this.hiveEngineClient.getTokenBalance(
+      account,
+      symbol,
+    );
+    if (rewardsPool?.error) return onError;
+    if (balances?.error) return onError;
+    const { rewardPool, pendingClaims, config } = rewardsPool;
+    const { stake, delegationsIn } = balances;
 
+    const rewards = new BigNumber(rewardPool).div(pendingClaims);
+    const finalRshares = new BigNumber(stake).plus(delegationsIn);
+    const power = new BigNumber(votingPower).times(weight).div(10000);
+    const rshares = power.times(finalRshares).div(10000);
+
+    const totalTokenAmount = rshares.times(rewards);
+
+    const curationReward = new BigNumber(config.curationRewardPercentage)
+      .div(100)
+      .times(totalTokenAmount)
+      .dp(TOKENS_PRECISION[symbol]);
+    const authorReward = totalTokenAmount
+      .minus(curationReward)
+      .dp(TOKENS_PRECISION[symbol]);
+
+    return {
+      curationReward,
+      authorReward,
+    };
   }
 
   async getVotingPowers(upvote: GetUpvoteType): Promise<CalculateManaType> {
@@ -258,17 +336,30 @@ export class SponsorsBot implements SponsorsBotInterface {
   async updateDataAfterVote({
     upvote,
     weight,
+    authorReward,
+    curationReward,
   }: UpdateDataAfterVoteType): Promise<void> {
     await this.sponsorsBotUpvoteRepository.updateStatus({
       _id: upvote._id,
       status: BOT_UPVOTE_STATUS.UPVOTED,
-      currentVote: upvote.amountToVote,
+      currentVote: authorReward.plus(curationReward).toNumber(),
       voteWeight: weight,
     });
 
     await this.sponsorsBotUpvoteRepository.updateMany({
       filter: { author: upvote.author, permlink: upvote.permlink },
-      update: { $inc: { totalVotesWeight: upvote.amountToVote } },
+      update: { $inc: { totalVotesWeight: authorReward.toNumber() } },
+    });
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        userName: upvote.author,
+        reviewPermlink: upvote.permlink,
+      },
+      update: {
+        $inc: { votesAmount: authorReward },
+      },
     });
   }
 
@@ -352,11 +443,68 @@ export class SponsorsBot implements SponsorsBotInterface {
     permlink,
     voter,
   }: ProcessSponsorsBotVoteType): Promise<void> {
-    const upvote = await this.sponsorsBotUpvoteRepository.findOne({
-      filter: { author, permlink, botName: voter },
+    // const upvote = await this.sponsorsBotUpvoteRepository.findOne({
+    //   filter: { author, permlink, botName: voter },
+    // });
+    // if (!upvote) {
+    // }
+  }
+
+  async getSponsorsBot({
+    botName,
+    symbol,
+    skip,
+    limit,
+  }: GetSponsorsBotInterface): Promise<SponsorsBotApiType> {
+    const bot = await this.sponsorsBotRepository.findOne({
+      filter: { botName, symbol },
+      projection: { sponsors: { $slice: [skip, limit] } },
     });
-    if (!upvote) {
-      //TODO sponsors vote
+
+    const mappedData =
+      bot &&
+      bot.sponsors.map((sponsor) => ({
+        botName: bot.botName,
+        minVotingPower: bot.minVotingPower,
+        sponsor: sponsor.sponsor,
+        note: sponsor.note,
+        enabled: sponsor.enabled,
+        votingPercent: sponsor.votingPercent,
+        expiredAt: sponsor.expiredAt,
+      }));
+
+    return {
+      results: mappedData || [],
+      minVotingPower: _.get(bot, 'minVotingPower', 0),
+    };
+  }
+
+  async removeVotesOnReview({
+    reservationPermlink,
+  }: RemoveVotesOnReviewInterface): Promise<void> {
+    const upvotes = await this.sponsorsBotUpvoteRepository.find({
+      filter: { reservationPermlink },
+    });
+    if (_.isEmpty(upvotes)) return;
+
+    for (const upvote of upvotes) {
+      if (upvote.status === BOT_UPVOTE_STATUS.PENDING) continue;
+      const vote = await this.hiveClient.voteOnPost({
+        key: process.env.SPONSORS_BOT_KEY,
+        author: upvote.author,
+        permlink: upvote.permlink,
+        voter: upvote.botName,
+        weight: 0,
+      });
     }
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { reservationPermlink },
+      update: {
+        status: BOT_UPVOTE_STATUS.REJECTED,
+        totalVotesWeight: 0,
+        currentVote: 0,
+        voteWeight: 0,
+      },
+    });
   }
 }

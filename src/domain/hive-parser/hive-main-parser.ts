@@ -54,10 +54,14 @@ export class HiveMainParser implements HiveMainParserInterface {
               comment: operation[1] as HiveCommentType,
               options: transaction
                 .operations[1] as unknown as HiveCommentOptionsType,
+              transaction_id: transaction.transaction_id,
             });
             break;
           case HIVE_OPERATION.CUSTOM_JSON:
-            await this.json.parse(operation[1] as HiveCustomJsonType);
+            await this.json.parse({
+              ...operation[1],
+              transaction_id: transaction.transaction_id,
+            } as HiveCustomJsonType);
             break;
           case HIVE_OPERATION.ACCOUNT_UPDATE:
             await this.accountUpdate.parse(

@@ -1,4 +1,4 @@
-import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
 import { CAMPAIGN_PAYMENT, PAYOUT_TOKEN } from '../../common/constants';
@@ -32,7 +32,7 @@ export class CampaignPayment {
   @Prop({ type: mongoose.Schema.Types.Decimal128, required: true })
   amount: BigNumber;
 
-  @Prop({ type: mongoose.Schema.Types.Decimal128 })
+  @Prop({ type: mongoose.Schema.Types.Decimal128, default: 0 })
   votesAmount?: BigNumber;
 
   @Prop({

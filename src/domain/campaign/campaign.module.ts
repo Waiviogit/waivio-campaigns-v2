@@ -17,7 +17,7 @@ import {
   AssignReservationProvider,
   GuideRejectReservationProvider,
   RejectReservationProvider,
-  ReservationDetailsProvider,
+  ReservationDetailsProvider, ReservationHelperProvider,
 } from './reservation/reservation.providers';
 import {
   CreateReviewProvider,
@@ -65,6 +65,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     RewardsMapProvider,
     ObjectRewardsProvider,
     ReservationDetailsProvider,
+    ReservationHelperProvider,
     RewardsHelperProvider,
     GuideReservationsProvider,
     UserHistoryProvider,
@@ -89,6 +90,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     RewardsMapProvider,
     ObjectRewardsProvider,
     ReservationDetailsProvider,
+    ReservationHelperProvider,
     GuideReservationsProvider,
     UserHistoryProvider,
   ],

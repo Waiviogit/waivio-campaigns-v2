@@ -16,6 +16,17 @@ export const getUserPayablesPipe = ({
       $match: { userName, payoutToken },
     },
     {
+      $addFields: {
+        subtractAmount: {
+          $cond: [
+            { $gte: [{ $subtract: ['$amount', '$votesAmount'] }, 0] },
+            '$votesAmount',
+            '$amount',
+          ],
+        },
+      },
+    },
+    {
       $group: {
         _id: '$guideName',
         reviews: {
@@ -39,7 +50,12 @@ export const getUserPayablesPipe = ({
         payable: {
           $subtract: [
             { $sum: '$reviews.amount' },
-            { $sum: '$transfers.amount' },
+            {
+              $sum: [
+                { $sum: '$transfers.amount' },
+                { $sum: '$reviews.subtractAmount' },
+              ],
+            },
           ],
         },
       },
@@ -124,6 +140,17 @@ export const getUserTotalPayablePipe = ({
       $match: { userName, payoutToken },
     },
     {
+      $addFields: {
+        subtractAmount: {
+          $cond: [
+            { $gte: [{ $subtract: ['$amount', '$votesAmount'] }, 0] },
+            '$votesAmount',
+            '$amount',
+          ],
+        },
+      },
+    },
+    {
       $group: {
         _id: '$guideName',
         reviews: {
@@ -147,7 +174,12 @@ export const getUserTotalPayablePipe = ({
         payable: {
           $subtract: [
             { $sum: '$reviews.amount' },
-            { $sum: '$transfers.amount' },
+            {
+              $sum: [
+                { $sum: '$transfers.amount' },
+                { $sum: '$reviews.subtractAmount' },
+              ],
+            },
           ],
         },
       },

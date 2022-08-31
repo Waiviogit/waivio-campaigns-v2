@@ -165,4 +165,16 @@ export class SponsorsBotUpvoteRepository
       this.logger.error(error.message);
     }
   }
+
+  async find({
+    filter,
+    projection,
+    options,
+  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType[]> {
+    try {
+      return this.model.find(filter, projection, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }

@@ -23,6 +23,7 @@ export class HiveJsonParser implements HiveJsonParserInterface {
     json,
     required_auths,
     required_posting_auths,
+    transaction_id,
   }: HiveCustomJsonType): Promise<void> {
     const parsedJson = parseJSON(json);
     const authorizedUser = _.isEmpty(required_auths)
@@ -34,10 +35,12 @@ export class HiveJsonParser implements HiveJsonParserInterface {
       names: parsedJson.names,
       type: id,
     });
+
     await this.sponsorsBot.parseHiveCustomJson({
       id,
       authorizedUser,
       json: parsedJson,
+      transaction_id,
     });
   }
 }
