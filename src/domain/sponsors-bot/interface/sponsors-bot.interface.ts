@@ -61,4 +61,5 @@ export interface UpdateDownVoteNoActiveInterface {
   botsRshares: number;
   permlink: string;
   author: string;
+  symbol: string;
 }

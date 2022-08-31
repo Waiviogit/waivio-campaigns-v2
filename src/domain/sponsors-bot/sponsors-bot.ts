@@ -464,6 +464,8 @@ export class SponsorsBot implements SponsorsBotInterface {
           permlink: data[2],
         });
         break;
+      case REDIS_KEY.SPONSOR_BOT_CURRENT_VOTE:
+        break;
     }
   }
 
@@ -522,15 +524,17 @@ export class SponsorsBot implements SponsorsBotInterface {
           (s) => s.sponsor === campaign.guideName && s.enabled,
         ),
     );
-    //TODO update current vote on bots
+
     if (_.isEmpty(activeBots)) {
       return this.updateDownVoteNoActive({
         negativeRshares,
         botsRshares,
         permlink,
         author,
+        symbol: campaign.payoutToken,
       });
     }
+    //TODO if active
   }
 
   async updateDownVoteNoActive({
@@ -538,19 +542,28 @@ export class SponsorsBot implements SponsorsBotInterface {
     botsRshares,
     permlink,
     author,
+    symbol,
   }: UpdateDownVoteNoActiveInterface): Promise<void> {
     const rsharesDiff = new BigNumber(botsRshares).plus(negativeRshares);
     if (rsharesDiff.lte(0)) {
-      return this.updateDownvoteZero(author, permlink);
+      return this.updateDownvoteZero(author, permlink, new BigNumber(0));
     }
+    const { authorReward } = await this.getVoteAmountFromRshares({
+      rshares: rsharesDiff.toFixed(),
+      symbol: symbol,
+    });
+    return this.updateDownvoteZero(author, permlink, authorReward);
   }
 
-  async updateDownvoteZero(author: string, permlink: string): Promise<void> {
+  async updateDownvoteZero(
+    author: string,
+    permlink: string,
+    amount: BigNumber,
+  ): Promise<void> {
     await this.sponsorsBotUpvoteRepository.updateMany({
       filter: { author, permlink },
       update: {
-        totalVotesWeight: 0,
-        currentVote: 0,
+        totalVotesWeight: amount.toNumber(),
       },
     });
 
@@ -561,9 +574,14 @@ export class SponsorsBot implements SponsorsBotInterface {
         reviewPermlink: permlink,
       },
       update: {
-        votesAmount: new BigNumber(0),
+        votesAmount: amount,
       },
     });
+    await this.campaignRedisClient.setex(
+      `${REDIS_KEY.SPONSOR_BOT_CURRENT_VOTE}|${author}|${permlink}`,
+      100,
+      '',
+    );
   }
 
   async processVoteWithoutRecord({
