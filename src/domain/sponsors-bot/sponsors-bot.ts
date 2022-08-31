@@ -19,6 +19,8 @@ import {
   GetVoteAmountInterface,
   RemoveVotesOnReviewInterface,
   GetVoteAmountFromRsharesInterface,
+  ProcessDownvoteOnReviewInterface,
+  UpdateDownVoteNoActiveInterface,
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
@@ -50,6 +52,7 @@ import { EngineVoteType } from '../engine-parser/types';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
+import { sumBy } from '../../common/helpers/calc-helper';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -456,8 +459,111 @@ export class SponsorsBot implements SponsorsBotInterface {
         });
         break;
       case REDIS_KEY.REVIEW_DOWNVOTE:
+        await this.processDownvoteOnReview({
+          author: data[1],
+          permlink: data[2],
+        });
         break;
     }
+  }
+
+  async processDownvoteOnReview({
+    author,
+    permlink,
+  }: ProcessDownvoteOnReviewInterface): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        users: {
+          $elemMatch: { reviewPermlink: permlink, rootAuthor: author },
+        },
+      },
+      projection: {
+        'users.$': 1,
+        payoutToken: 1,
+        guideName: 1,
+        requiredObject: 1,
+      },
+    });
+    if (!campaign) return;
+    if (_.get(campaign, 'users[0].status') !== RESERVATION_STATUS.COMPLETED) {
+      return;
+    }
+
+    const votes = await this.hiveEngineClient.getActiveVotes({
+      author,
+      permlink,
+      symbol: campaign.payoutToken,
+    });
+
+    const negativeRshares = sumBy({
+      arr: _.filter(votes, (v) => v.weight < 0),
+      callback: (vote) => _.get(vote, 'rshares', 0),
+      dp: PAYOUT_TOKEN_PRECISION[campaign.payoutToken],
+    });
+    if (negativeRshares === 0) return;
+    const upvotes = await this.sponsorsBotUpvoteRepository.find({
+      filter: { author, permlink },
+    });
+    if (_.isEmpty(upvotes)) return;
+    const botNames = _.map(upvotes, 'botName');
+    const bots = await this.sponsorsBotRepository.find({
+      filter: { botName: { $in: botNames } },
+    });
+    const botsRshares = sumBy({
+      arr: _.filter(votes, (v) => botNames.includes(v.voter)),
+      callback: (vote) => _.get(vote, 'rshares', 0),
+      dp: PAYOUT_TOKEN_PRECISION[campaign.payoutToken],
+    });
+    const activeBots = _.filter(
+      bots,
+      (b) =>
+        !!_.find(
+          b.sponsors,
+          (s) => s.sponsor === campaign.guideName && s.enabled,
+        ),
+    );
+    //TODO update current vote on bots
+    if (_.isEmpty(activeBots)) {
+      return this.updateDownVoteNoActive({
+        negativeRshares,
+        botsRshares,
+        permlink,
+        author,
+      });
+    }
+  }
+
+  async updateDownVoteNoActive({
+    negativeRshares,
+    botsRshares,
+    permlink,
+    author,
+  }: UpdateDownVoteNoActiveInterface): Promise<void> {
+    const rsharesDiff = new BigNumber(botsRshares).plus(negativeRshares);
+    if (rsharesDiff.lte(0)) {
+      return this.updateDownvoteZero(author, permlink);
+    }
+  }
+
+  async updateDownvoteZero(author: string, permlink: string): Promise<void> {
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { author, permlink },
+      update: {
+        totalVotesWeight: 0,
+        currentVote: 0,
+      },
+    });
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        userName: author,
+        reviewPermlink: permlink,
+      },
+      update: {
+        votesAmount: new BigNumber(0),
+      },
+    });
   }
 
   async processVoteWithoutRecord({
