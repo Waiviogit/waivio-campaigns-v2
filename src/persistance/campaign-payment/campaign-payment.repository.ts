@@ -9,6 +9,7 @@ import {
 } from './types';
 import {
   CampaignPaymentDeleteManyInterface,
+  CampaignPaymentFindInterface,
   CampaignPaymentRepositoryInterface,
   CampaignPaymentUpdateInterface,
 } from './interface';
@@ -62,6 +63,18 @@ export class CampaignPaymentRepository
   }: CampaignPaymentDeleteManyInterface): Promise<DeleteResultType> {
     try {
       return this.model.deleteMany(filter, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async findOne({
+    filter,
+    projection,
+    options,
+  }: CampaignPaymentFindInterface): Promise<CampaignPaymentDocumentType> {
+    try {
+      return this.model.findOne(filter, projection, options);
     } catch (error) {
       this.logger.error(error.message);
     }

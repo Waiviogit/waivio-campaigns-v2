@@ -18,6 +18,7 @@ import {
   SponsorsBotInterface,
   GetVoteAmountInterface,
   RemoveVotesOnReviewInterface,
+  GetVoteAmountFromRsharesInterface,
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
@@ -32,6 +33,7 @@ import {
   POST_PROVIDE,
   REDIS_KEY,
   REDIS_PROVIDE,
+  RESERVATION_STATUS,
   SPONSORS_BOT_PROVIDE,
   SPONSORS_BOT_UPVOTE_PROVIDE,
   TOKENS_PRECISION,
@@ -284,6 +286,27 @@ export class SponsorsBot implements SponsorsBotInterface {
     return weight > maxVoteWeight ? maxVoteWeight : weight;
   }
 
+  async getVoteAmountFromRshares({
+    rshares,
+    symbol,
+  }: GetVoteAmountFromRsharesInterface): Promise<RewardAmountType> {
+    const rewardsPool = await this.hiveEngineClient.getRewardPool(symbol);
+    const { rewardPool, pendingClaims, config } = rewardsPool;
+    const rewards = new BigNumber(rewardPool).div(pendingClaims);
+    const totalTokenAmount = rewards.times(rshares);
+    const curationReward = new BigNumber(config.curationRewardPercentage)
+      .div(100)
+      .times(totalTokenAmount)
+      .dp(TOKENS_PRECISION[symbol]);
+    const authorReward = totalTokenAmount
+      .minus(curationReward)
+      .dp(TOKENS_PRECISION[symbol]);
+    return {
+      curationReward,
+      authorReward,
+    };
+  }
+
   async getVoteAmount({
     votingPower,
     weight,
@@ -337,12 +360,11 @@ export class SponsorsBot implements SponsorsBotInterface {
     upvote,
     weight,
     authorReward,
-    curationReward,
   }: UpdateDataAfterVoteType): Promise<void> {
     await this.sponsorsBotUpvoteRepository.updateStatus({
       _id: upvote._id,
       status: BOT_UPVOTE_STATUS.UPVOTED,
-      currentVote: authorReward.plus(curationReward).toNumber(),
+      currentVote: authorReward.toNumber(),
       voteWeight: weight,
     });
 
@@ -438,16 +460,109 @@ export class SponsorsBot implements SponsorsBotInterface {
     }
   }
 
+  async processVoteWithoutRecord({
+    author,
+    permlink,
+    voter,
+  }: ProcessSponsorsBotVoteType): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        users: {
+          $elemMatch: { reviewPermlink: permlink, rootAuthor: author },
+        },
+      },
+      projection: {
+        'users.$': 1,
+        payoutToken: 1,
+        guideName: 1,
+        requiredObject: 1,
+      },
+    });
+    if (!campaign) return;
+    if (_.get(campaign, 'users[0].status') !== RESERVATION_STATUS.COMPLETED) {
+      return;
+    }
+    const payment = await this.campaignPaymentRepository.findOne({
+      filter: {
+        reviewPermlink: permlink,
+        payoutToken: campaign.payoutToken,
+        type: CAMPAIGN_PAYMENT.REVIEW,
+      },
+    });
+    if (!payment) return;
+    //TODO add payment history
+    await this.sponsorsBotUpvoteRepository.create({
+      requiredObject: campaign.requiredObject,
+      symbol: campaign.payoutToken,
+      reservationPermlink: _.get(campaign, 'users[0].reservationPermlink'),
+      botName: voter,
+      author: _.get(campaign, 'users[0].name'),
+      sponsor: campaign.guideName,
+      permlink,
+      amountToVote: new BigNumber(payment.amount).times(2).toNumber(),
+      reward: new BigNumber(payment.amount).times(2).toNumber(),
+    });
+    return;
+  }
+
   async processSponsorsBotVote({
     author,
     permlink,
     voter,
   }: ProcessSponsorsBotVoteType): Promise<void> {
-    // const upvote = await this.sponsorsBotUpvoteRepository.findOne({
-    //   filter: { author, permlink, botName: voter },
-    // });
-    // if (!upvote) {
-    // }
+    const upvote = await this.sponsorsBotUpvoteRepository.findOne({
+      filter: { author, permlink, botName: voter },
+    });
+    if (!upvote) {
+      return this.processVoteWithoutRecord({ author, permlink, voter });
+    }
+    if (upvote.status === BOT_UPVOTE_STATUS.REJECTED) return;
+
+    const vote = await this.hiveEngineClient.getVote({
+      author,
+      permlink,
+      voter,
+      symbol: upvote.symbol,
+    });
+    if (!vote) return;
+
+    if (upvote.voteWeight === vote.weight) return;
+    const { authorReward } = await this.getVoteAmountFromRshares({
+      rshares: vote.rshares,
+      symbol: upvote.symbol,
+    });
+
+    //TODO weight 0
+
+    const amountDiff = new BigNumber(upvote.currentVote)
+      .minus(authorReward)
+      .abs();
+    const incrementAmount = new BigNumber(upvote.currentVote).gt(authorReward)
+      ? amountDiff.negated()
+      : amountDiff;
+
+    await this.sponsorsBotUpvoteRepository.updateStatus({
+      _id: upvote._id,
+      status: BOT_UPVOTE_STATUS.UPVOTED,
+      currentVote: authorReward.toNumber(),
+      voteWeight: vote.weight,
+    });
+
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { author: upvote.author, permlink: upvote.permlink },
+      update: { $inc: { totalVotesWeight: incrementAmount.toNumber() } },
+    });
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        userName: upvote.author,
+        reviewPermlink: upvote.permlink,
+      },
+      update: {
+        $inc: { votesAmount: incrementAmount },
+      },
+    });
   }
 
   async getSponsorsBot({
@@ -489,7 +604,7 @@ export class SponsorsBot implements SponsorsBotInterface {
 
     for (const upvote of upvotes) {
       if (upvote.status === BOT_UPVOTE_STATUS.PENDING) continue;
-      const vote = await this.hiveClient.voteOnPost({
+      await this.hiveClient.voteOnPost({
         key: process.env.SPONSORS_BOT_KEY,
         author: upvote.author,
         permlink: upvote.permlink,

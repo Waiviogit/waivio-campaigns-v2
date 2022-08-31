@@ -26,6 +26,11 @@ export interface CampaignPaymentRepositoryInterface {
     filter,
     options,
   }: CampaignPaymentDeleteManyInterface): Promise<DeleteResultType>;
+  findOne({
+    filter,
+    projection,
+    options,
+  }: CampaignPaymentFindInterface): Promise<CampaignPaymentDocumentType>;
 }
 
 export interface CampaignPaymentUpdateInterface {
@@ -38,5 +43,11 @@ export interface CampaignPaymentUpdateInterface {
 
 export interface CampaignPaymentDeleteManyInterface {
   filter: FilterQuery<CampaignPaymentDocumentType>;
+  options?: QueryOptions;
+}
+
+export interface CampaignPaymentFindInterface {
+  filter: FilterQuery<CampaignPaymentDocumentType>;
+  projection?: object | string | string[];
   options?: QueryOptions;
 }

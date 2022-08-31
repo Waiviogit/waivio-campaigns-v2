@@ -45,3 +45,8 @@ export interface GetVoteAmountInterface {
 export interface RemoveVotesOnReviewInterface {
   reservationPermlink: string;
 }
+
+export interface GetVoteAmountFromRsharesInterface {
+  rshares: string;
+  symbol: string;
+}

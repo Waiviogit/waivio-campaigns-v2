@@ -4,8 +4,8 @@ import axios from 'axios';
 
 import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
-import { HiveClientInterface } from './interface';
-import { HiveContentType, VoteOnPostType } from './type';
+import { GetVoteInterface, HiveClientInterface } from './interface';
+import { ActiveVotesType, HiveContentType, VoteOnPostType } from './type';
 
 @Injectable()
 export class HiveClient implements HiveClientInterface {
@@ -74,5 +74,21 @@ export class HiveClient implements HiveClientInterface {
 
   async getContent(author: string, permlink: string): Promise<HiveContentType> {
     return this.hiveRequest(CONDENSER_API.GET_CONTENT, [author, permlink]);
+  }
+
+  async getActiveVotes(
+    author: string,
+    permlink: string,
+  ): Promise<ActiveVotesType[]> {
+    return this.hiveRequest(CONDENSER_API.GET_ACTIVE_VOTES, [author, permlink]);
+  }
+
+  async getVote({
+    author,
+    voter,
+    permlink,
+  }: GetVoteInterface): Promise<ActiveVotesType> {
+    const activeVotes = await this.getActiveVotes(author, permlink);
+    return activeVotes.find((v) => v.voter === voter);
   }
 }
