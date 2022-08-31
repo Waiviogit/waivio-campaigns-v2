@@ -44,10 +44,7 @@ export class Notifications implements NotificationsInterface {
     }
   }
 
-  private sendNotification = async ({
-    id,
-    data,
-  }: SendNotificationType): Promise<void> => {
+  async sendNotification({ id, data }: SendNotificationType): Promise<void> {
     const reqData = {
       id: id,
       block: process.env.BLOCK_MAIN_NUMBER,
@@ -55,7 +52,7 @@ export class Notifications implements NotificationsInterface {
     };
 
     this.notificationRequest(reqData);
-  };
+  }
 
   private async getUsersSubscribedOnCampaign(
     campaign: Campaign,

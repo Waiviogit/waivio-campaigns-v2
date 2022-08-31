@@ -54,6 +54,7 @@ export class HiveMainParser implements HiveMainParserInterface {
               comment: operation[1] as HiveCommentType,
               options: transaction
                 .operations[1] as unknown as HiveCommentOptionsType,
+              transaction_id: transaction.transaction_id,
             });
             break;
           case HIVE_OPERATION.CUSTOM_JSON:
