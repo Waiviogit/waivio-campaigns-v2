@@ -490,8 +490,21 @@ export class SponsorsBot implements SponsorsBotInterface {
       },
     });
     if (!payment) return;
-    //TODO add payment history
+    const vote = await this.hiveEngineClient.getVote({
+      author,
+      permlink,
+      voter,
+      symbol: campaign.payoutToken,
+    });
+    if (!vote) return;
+    if (vote.weight <= 0) return;
+    const { authorReward } = await this.getVoteAmountFromRshares({
+      rshares: vote.rshares,
+      symbol: campaign.payoutToken,
+    });
+
     await this.sponsorsBotUpvoteRepository.create({
+      status: BOT_UPVOTE_STATUS.UPVOTED,
       requiredObject: campaign.requiredObject,
       symbol: campaign.payoutToken,
       reservationPermlink: _.get(campaign, 'users[0].reservationPermlink'),
@@ -501,8 +514,25 @@ export class SponsorsBot implements SponsorsBotInterface {
       permlink,
       amountToVote: new BigNumber(payment.amount).times(2).toNumber(),
       reward: new BigNumber(payment.amount).times(2).toNumber(),
+      currentVote: authorReward.toNumber(),
+      voteWeight: vote.weight,
     });
-    return;
+
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { author, permlink },
+      update: { $inc: { totalVotesWeight: authorReward.toNumber() } },
+    });
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        userName: author,
+        reviewPermlink: permlink,
+      },
+      update: {
+        $inc: { votesAmount: authorReward },
+      },
+    });
   }
 
   async processSponsorsBotVote({
@@ -531,8 +561,6 @@ export class SponsorsBot implements SponsorsBotInterface {
       rshares: vote.rshares,
       symbol: upvote.symbol,
     });
-
-    //TODO weight 0
 
     const amountDiff = new BigNumber(upvote.currentVote)
       .minus(authorReward)
