@@ -7,6 +7,8 @@ import { HiveCommentParseType, MetadataType } from './types';
 import { parserValidator } from './validators';
 import {
   CAMPAIGN_PROVIDE,
+  REDIS_KEY,
+  REDIS_PROVIDE,
   RESERVATION_PROVIDE,
   REVIEW_PROVIDE,
 } from '../../common/constants';
@@ -24,6 +26,7 @@ import {
 } from '../campaign/reservation/interface';
 import { CreateReviewInterface } from '../campaign/review/interface';
 import { HiveCommentParserInterface } from './interface';
+import { RedisClientInterface } from '../../services/redis/clients/interface';
 
 @Injectable()
 export class HiveCommentParser implements HiveCommentParserInterface {
@@ -44,9 +47,15 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(RESERVATION_PROVIDE.HELPER)
     private readonly reservationHelper: ReservationHelperInterface,
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
 
-  async parse({ comment, options }: HiveCommentParseType): Promise<void> {
+  async parse({
+    comment,
+    options,
+    transaction_id,
+  }: HiveCommentParseType): Promise<void> {
     const extensions = _.get(options, '[1].extensions', null);
 
     const beneficiaries = _.find(
@@ -66,7 +75,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     });
 
     if (metadata?.waivioRewards) {
-      await this.parseActions(comment, metadata, app);
+      await this.parseActions(comment, metadata, app, transaction_id);
     }
 
     await this.campaignHelper.incrReviewComment({
@@ -83,7 +92,8 @@ export class HiveCommentParser implements HiveCommentParserInterface {
   async parseActions(
     comment: HiveCommentType,
     metadata: MetadataType,
-    app: 'string',
+    app: string,
+    transaction_id: string,
   ): Promise<void> {
     const { author, permlink, parent_author, parent_permlink } = comment;
     const { type } = metadata.waivioRewards;
@@ -134,6 +144,10 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           guideName: author,
           rejectionPermlink: permlink,
         });
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case 'restoreReservationByGuide':
         //restore_reservation_by_guide
