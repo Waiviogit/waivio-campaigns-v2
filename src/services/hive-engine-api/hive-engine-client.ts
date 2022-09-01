@@ -15,10 +15,15 @@ import {
   EngineProxyType,
   EngineQueryType,
   EngineRewardPoolType,
+  EngineVoteType,
   EngineVotingPowerType,
   MarketPoolType,
 } from './types';
-import { HiveEngineClientInterface } from './interface';
+import {
+  GetActiveVotesInterface,
+  GetVoteInterface,
+  HiveEngineClientInterface,
+} from './interface';
 
 @Injectable()
 export class HiveEngineClient implements HiveEngineClientInterface {
@@ -142,5 +147,34 @@ export class HiveEngineClient implements HiveEngineClientInterface {
         query: { symbol, account },
       },
     })) as EngineBalanceType;
+  }
+
+  async getActiveVotes({
+    author,
+    permlink,
+    symbol,
+  }: GetActiveVotesInterface): Promise<EngineVoteType[]> {
+    return (await this.engineProxy({
+      method: ENGINE_METHOD.FIND,
+      endpoint: ENGINE_ENDPOINT.CONTRACTS,
+      params: {
+        contract: ENGINE_CONTRACT.COMMENTS.NAME,
+        table: ENGINE_CONTRACT.COMMENTS.TABLE.VOTES,
+        query: {
+          authorperm: `@${author}/${permlink}`,
+          symbol,
+        },
+      },
+    })) as EngineVoteType[];
+  }
+
+  async getVote({
+    author,
+    permlink,
+    symbol,
+    voter,
+  }: GetVoteInterface): Promise<EngineVoteType> {
+    const activeVotes = await this.getActiveVotes({ author, permlink, symbol });
+    return activeVotes.find((v) => v.voter === voter);
   }
 }

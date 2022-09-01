@@ -42,6 +42,7 @@ export const ENGINE_CONTRACT = Object.freeze({
     TABLE: {
       VOTING_POWER: 'votingPower',
       REWARD_POOLS: 'rewardPools',
+      VOTES: 'votes',
     },
     ACTION: {
       VOTE: 'vote',

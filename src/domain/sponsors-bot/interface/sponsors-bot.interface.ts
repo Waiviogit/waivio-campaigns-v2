@@ -35,6 +35,11 @@ export interface GetSponsorsBotInterface {
   limit?: number;
 }
 
+export interface ProcessDownvoteOnReviewInterface {
+  author: string;
+  permlink: string;
+}
+
 export interface GetVoteAmountInterface {
   votingPower: number;
   weight: number;
@@ -44,4 +49,27 @@ export interface GetVoteAmountInterface {
 
 export interface RemoveVotesOnReviewInterface {
   reservationPermlink: string;
+}
+
+export interface GetVoteAmountFromRsharesInterface {
+  rshares: string;
+  symbol: string;
+}
+
+export interface UpdateDownVoteNoActiveInterface {
+  negativeRshares: number;
+  botsRshares: number;
+  permlink: string;
+  author: string;
+  symbol: string;
+}
+
+export interface GetVotingPowersInterface {
+  botName: string;
+  symbol: string;
+}
+
+export interface UpdateSponsorsCurrentVote {
+  author: string;
+  permlink: string;
 }
