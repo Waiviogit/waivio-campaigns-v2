@@ -21,6 +21,7 @@ import {
   GetVoteAmountFromRsharesInterface,
   ProcessDownvoteOnReviewInterface,
   UpdateDownVoteNoActiveInterface,
+  GetVotingPowersInterface,
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
@@ -45,7 +46,6 @@ import { SponsorsBotUpvoteRepositoryInterface } from '../../persistance/sponsors
 import { PostRepositoryInterface } from '../../persistance/post/interface';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
 import { calculateMana } from '../../common/helpers';
-import { GetUpvoteType } from '../../persistance/sponsors-bot-upvote/type';
 import { CalculateManaType } from '../../common/helpers/types';
 import { HiveClientInterface } from '../../services/hive-api/interface';
 import { EngineVoteType } from '../engine-parser/types';
@@ -348,13 +348,17 @@ export class SponsorsBot implements SponsorsBotInterface {
     return {
       curationReward,
       authorReward,
+      rshares,
     };
   }
 
-  async getVotingPowers(upvote: GetUpvoteType): Promise<CalculateManaType> {
+  async getVotingPowers({
+    botName,
+    symbol,
+  }: GetVotingPowersInterface): Promise<CalculateManaType> {
     const votingPower = await this.hiveEngineClient.getVotingPower(
-      upvote.botName,
-      upvote.symbol,
+      botName,
+      symbol,
     );
     return calculateMana(votingPower);
   }
@@ -509,7 +513,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     if (_.isEmpty(upvotes)) return;
     const botNames = _.map(upvotes, 'botName');
     const bots = await this.sponsorsBotRepository.find({
-      filter: { botName: { $in: botNames } },
+      filter: { botName: { $in: botNames }, symbol: campaign.payoutToken },
     });
     const botsRshares = sumBy({
       arr: _.filter(votes, (v) => botNames.includes(v.voter)),
@@ -534,7 +538,88 @@ export class SponsorsBot implements SponsorsBotInterface {
         symbol: campaign.payoutToken,
       });
     }
-    //TODO if active
+    for (const activeBot of activeBots) {
+      const sponsor = _.find(
+        activeBot.sponsors,
+        (s) => s.sponsor === campaign.guideName,
+      );
+      const upvote = _.find(upvotes, (u) => u.botName === activeBot.botName);
+      const botVoteEngine = votes.find((v) => v.voter === activeBot.botName);
+      if (!upvote || !sponsor || !botVoteEngine) continue;
+      activeBot.addRshares = botVoteEngine.rshares;
+      const votingPowers = await this.getVotingPowers({
+        botName: activeBot.botName,
+        symbol: activeBot.symbol,
+      });
+      if (votingPowers.votingPower < activeBot.minVotingPower) continue;
+      const { authorReward: negAuthor, curationReward: negCuration } =
+        await this.getVoteAmountFromRshares({
+          rshares: new BigNumber(negativeRshares).abs().toFixed(),
+          symbol: activeBot.symbol,
+        });
+
+      const weight = await this.getWeightToVote({
+        amount: new BigNumber(upvote.amountToVote)
+          .plus(negAuthor)
+          .plus(negCuration)
+          .toNumber(),
+        symbol: activeBot.symbol,
+        votingPower: votingPowers.votingPower,
+        account: activeBot.botName,
+        maxVoteWeight: sponsor.votingPercent * 10000,
+      });
+      const { rshares } = await this.getVoteAmount({
+        votingPower: votingPowers.votingPower,
+        weight,
+        symbol: upvote.symbol,
+        account: upvote.botName,
+      });
+      if (rshares.lte(activeBot.addRshares)) continue;
+      const diffRshares = rshares.minus(activeBot.addRshares);
+      activeBot.addRshares = diffRshares.plus(activeBot.addRshares).toFixed();
+      activeBot.vote = true;
+      activeBot.weight = weight;
+    }
+    const activeBotNames = _.map(activeBots, 'botName');
+    const notActiveRshares = sumBy({
+      arr: _.filter(votes, (v) => !activeBotNames.includes(v.voter)),
+      callback: (vote) => _.get(vote, 'rshares', 0),
+      dp: PAYOUT_TOKEN_PRECISION[campaign.payoutToken],
+    });
+    const additionalRshares = sumBy({
+      arr: activeBots,
+      callback: (bot) => _.get(bot, 'addRshares', 0),
+      dp: PAYOUT_TOKEN_PRECISION[campaign.payoutToken],
+    });
+    const totalRsharesToUpdate = new BigNumber(additionalRshares).plus(
+      notActiveRshares,
+    );
+    if (totalRsharesToUpdate.lte(negativeRshares)) {
+      for (const botUnVote of activeBotNames) {
+        await this.hiveClient.voteOnPost({
+          key: process.env.SPONSORS_BOT_KEY,
+          author: author,
+          permlink: permlink,
+          voter: botUnVote,
+          weight: 0,
+        });
+      }
+      return this.updateDownvoteZero(author, permlink, new BigNumber(0));
+    }
+    const { authorReward: newReward } = await this.getVoteAmountFromRshares({
+      rshares: new BigNumber(totalRsharesToUpdate).toFixed(),
+      symbol: campaign.payoutToken,
+    });
+    for (const newVoteActive of activeBots) {
+      await this.hiveClient.voteOnPost({
+        key: process.env.SPONSORS_BOT_KEY,
+        author: author,
+        permlink: permlink,
+        voter: newVoteActive.botName,
+        weight: newVoteActive.weight,
+      });
+    }
+    return this.updateDownvoteZero(author, permlink, newReward);
   }
 
   async updateDownVoteNoActive({

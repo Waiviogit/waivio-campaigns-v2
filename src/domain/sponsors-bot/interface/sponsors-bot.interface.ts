@@ -63,3 +63,8 @@ export interface UpdateDownVoteNoActiveInterface {
   author: string;
   symbol: string;
 }
+
+export interface GetVotingPowersInterface {
+  botName: string;
+  symbol: string;
+}
