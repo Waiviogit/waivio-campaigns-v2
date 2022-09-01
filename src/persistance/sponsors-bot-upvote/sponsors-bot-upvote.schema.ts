@@ -51,7 +51,7 @@ export class SponsorsBotUpvote {
     required: true,
     default: BOT_UPVOTE_STATUS.PENDING,
   })
-  status: string;
+  status?: string;
 
   @Prop({ type: Date, required: true })
   startedAt: Date;
