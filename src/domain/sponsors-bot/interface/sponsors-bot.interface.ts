@@ -68,3 +68,8 @@ export interface GetVotingPowersInterface {
   botName: string;
   symbol: string;
 }
+
+export interface UpdateSponsorsCurrentVote {
+  author: string;
+  permlink: string;
+}

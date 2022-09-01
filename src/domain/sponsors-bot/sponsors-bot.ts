@@ -22,6 +22,7 @@ import {
   ProcessDownvoteOnReviewInterface,
   UpdateDownVoteNoActiveInterface,
   GetVotingPowersInterface,
+  UpdateSponsorsCurrentVote,
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
@@ -469,7 +470,56 @@ export class SponsorsBot implements SponsorsBotInterface {
         });
         break;
       case REDIS_KEY.SPONSOR_BOT_CURRENT_VOTE:
+        await this.updateSponsorsCurrentVote({
+          author: data[1],
+          permlink: data[2],
+        });
         break;
+    }
+  }
+
+  async updateSponsorsCurrentVote({
+    author,
+    permlink,
+  }: UpdateSponsorsCurrentVote): Promise<void> {
+    const upvotes = await this.sponsorsBotUpvoteRepository.find({
+      filter: { author, permlink },
+    });
+    if (_.isEmpty(upvotes)) return;
+    const totalWeight = _.get(upvotes, '[0].totalVotesWeight', 0);
+    const symbol = upvotes[0].symbol;
+    if (totalWeight === 0) {
+      await this.sponsorsBotUpvoteRepository.updateMany({
+        filter: { author, permlink },
+        update: { currentVote: 0, voteWeight: 0 },
+      });
+      return;
+    }
+    const votes = await this.hiveEngineClient.getActiveVotes({
+      author,
+      permlink,
+      symbol,
+    });
+    const botNames = _.map(upvotes, 'botName');
+    const botsRshares = sumBy({
+      arr: _.filter(votes, (v) => botNames.includes(v.voter)),
+      callback: (vote) => _.get(vote, 'rshares', 0),
+      dp: PAYOUT_TOKEN_PRECISION[symbol],
+    });
+    for (const upvote of upvotes) {
+      const vote = votes.find((v) => v.voter === upvote.botName);
+      if (!vote) continue;
+      const currentVote = new BigNumber(vote.rshares)
+        .times(totalWeight)
+        .div(botsRshares)
+        .dp(PAYOUT_TOKEN_PRECISION[symbol])
+        .toNumber();
+      await this.sponsorsBotUpvoteRepository.updateStatus({
+        _id: upvote._id,
+        status: BOT_UPVOTE_STATUS.UPVOTED,
+        currentVote,
+        voteWeight: vote.weight,
+      });
     }
   }
 
