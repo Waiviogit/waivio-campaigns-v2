@@ -11,6 +11,7 @@ import {
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { NotificationsInterface } from '../../notifications/interface';
+import { CampaignHelperInterface } from '../interface';
 const CAMPAIGNS_META = [
   'waivio_activate_campaign',
   'waivio_stop_campaign',
@@ -25,6 +26,8 @@ export class ReservationHelper implements ReservationHelperInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(NOTIFICATIONS_PROVIDE.SERVICE)
     private readonly notifications: NotificationsInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
   async parseReservationConversation({
@@ -36,7 +39,11 @@ export class ReservationHelper implements ReservationHelperInterface {
       filter: {
         users: { $elemMatch: { reservationPermlink: comment.parent_permlink } },
       },
-      projection: { 'users.$': 1 },
+      projection: {
+        'users.$': 1,
+        guideName: 1,
+        name: 1,
+      },
     });
     if (!campaign) return;
     const guestAuthor = _.get(metadata, 'comment.userId');
@@ -50,6 +57,12 @@ export class ReservationHelper implements ReservationHelperInterface {
         campaignName: campaign.name,
         reservedUser: _.get(campaign, 'users[0].name,'),
       },
+    });
+
+    await this.campaignHelper.incrReviewComment({
+      rootName: comment.parent_author,
+      reservationPermlink: comment.parent_permlink,
+      isOpen: comment.author !== campaign.guideName,
     });
   }
 }

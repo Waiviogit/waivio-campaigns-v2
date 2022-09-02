@@ -1,7 +1,9 @@
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import {
   CAMPAIGN_PROVIDE,
+  CONVERSATION_STATUS,
   RESERVATION_STATUS,
   REWARDS_PROVIDE,
 } from '../../../common/constants';
@@ -9,7 +11,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
   GetGuideReservationFiltersInterface,
+  GetReservationMessagesInterface,
   GetReservationsInterface,
+  GetReviewFraudsInterface,
   GuideReservationsInterface,
   RewardsHelperInterface,
 } from './interface';
@@ -27,6 +31,91 @@ export class GuideReservations implements GuideReservationsInterface {
     @Inject(REWARDS_PROVIDE.HELPER)
     private readonly rewardsHelper: RewardsHelperInterface,
   ) {}
+
+  async getReservationMessages({
+    guideName,
+    caseStatus,
+    statuses,
+    host,
+    sort,
+    skip,
+    limit,
+  }: GetReservationMessagesInterface): Promise<RewardsByObjectType> {
+    const campaigns: CampaignDocumentType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              guideName,
+            },
+          },
+          { $unwind: { path: '$users' } },
+          {
+            $match: {
+              ...(statuses && { 'users.status': { $in: statuses } }),
+              ...(caseStatus !== CONVERSATION_STATUS.ALL && {
+                'users.openConversation':
+                  caseStatus !== CONVERSATION_STATUS.CLOSE,
+              }),
+              'users.commentsCount': { $gt: 0 },
+            },
+          },
+        ],
+      });
+
+    const rewards = await this.rewardsHelper.fillUserReservations({
+      campaigns,
+      sort,
+      host,
+      showFraud: true,
+    });
+
+    return {
+      rewards: rewards.slice(skip, skip + limit),
+      hasMore: rewards.slice(skip).length > limit,
+    };
+  }
+
+  async getReviewFrauds({
+    guideName,
+    host,
+    sort,
+    skip,
+    limit,
+  }: GetReviewFraudsInterface): Promise<RewardsByObjectType> {
+    const campaigns: CampaignDocumentType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              guideName,
+            },
+          },
+          { $unwind: { path: '$users' } },
+          {
+            $match: {
+              'users.status': RESERVATION_STATUS.COMPLETED,
+              'users.fraudSuspicion': true,
+              'users.completedAt': {
+                $gte: moment().subtract(30, 'day').toDate(),
+              },
+            },
+          },
+        ],
+      });
+
+    const rewards = await this.rewardsHelper.fillUserReservations({
+      campaigns,
+      sort,
+      host,
+      showFraud: true,
+    });
+
+    return {
+      rewards: rewards.slice(skip, skip + limit),
+      hasMore: rewards.slice(skip).length > limit,
+    };
+  }
 
   async getReservations({
     guideName,
@@ -59,6 +148,7 @@ export class GuideReservations implements GuideReservationsInterface {
       campaigns,
       sort,
       host,
+      showFraud: true,
     });
 
     return {

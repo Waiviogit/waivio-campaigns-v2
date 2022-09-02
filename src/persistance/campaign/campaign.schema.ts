@@ -71,6 +71,9 @@ export class CampaignUser {
   @Prop({ type: Boolean })
   fraudSuspicion: boolean;
 
+  @Prop({ type: Boolean, default: true })
+  openConversation: boolean;
+
   @Prop({ type: [Number] })
   fraudCodes: number[];
 

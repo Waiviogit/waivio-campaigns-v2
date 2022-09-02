@@ -45,4 +45,5 @@ export interface CampaignHelperInterface {
 export interface IncrReviewCommentInterface {
   rootName: string;
   reservationPermlink: string;
+  isOpen?: boolean;
 }
