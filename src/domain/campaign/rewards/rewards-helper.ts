@@ -25,6 +25,7 @@ export class RewardsHelper implements RewardsHelperInterface {
     host,
     area,
     sort,
+    showFraud,
   }: FillUserReservationsInterface): Promise<RewardsByRequiredType[]> {
     const rewards = [];
 
@@ -72,6 +73,8 @@ export class RewardsHelper implements RewardsHelperInterface {
         activationPermlink: campaign.activationPermlink,
         reservationPermlink: user.reservationPermlink,
         commentsCount: user.commentsCount || 0,
+        reservationCreatedAt: user.createdAt,
+        reservationUpdatedAt: user.updatedAt,
         distance:
           area && coordinates.length === 2
             ? this.getDistance(area, coordinates)
@@ -84,6 +87,7 @@ export class RewardsHelper implements RewardsHelperInterface {
           'defaultShowLink',
           'author_permlink',
         ]),
+        ...(showFraud && { fraudCodes: user.fraudCodes }),
       });
     }
     return this.getSortedRewardsReserved({ sort, rewards });
@@ -102,6 +106,11 @@ export class RewardsHelper implements RewardsHelperInterface {
         return _.orderBy(rewards, ['reward', 'createdAt'], ['desc']);
       case CAMPAIGN_SORTS.PAYOUT:
         return _.orderBy(rewards, ['payout'], ['desc']);
+      case CAMPAIGN_SORTS.RESERVATION:
+        return _.orderBy(rewards, ['users.reservationCreatedAt'], ['desc']);
+      case CAMPAIGN_SORTS.LAST_ACTION:
+        return _.orderBy(rewards, ['users.reservationUpdatedAt'], ['desc']);
+
       case CAMPAIGN_SORTS.DEFAULT:
       default:
         return _.orderBy(

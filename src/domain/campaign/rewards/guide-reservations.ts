@@ -1,5 +1,6 @@
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import {
   CAMPAIGN_PROVIDE,
   RESERVATION_STATUS,
@@ -10,6 +11,7 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import {
   GetGuideReservationFiltersInterface,
   GetReservationsInterface,
+  GetReviewFraudsInterface,
   GuideReservationsInterface,
   RewardsHelperInterface,
 } from './interface';
@@ -27,6 +29,47 @@ export class GuideReservations implements GuideReservationsInterface {
     @Inject(REWARDS_PROVIDE.HELPER)
     private readonly rewardsHelper: RewardsHelperInterface,
   ) {}
+
+  async getReviewFrauds({
+    guideName,
+    host,
+    sort,
+    skip,
+    limit,
+  }: GetReviewFraudsInterface): Promise<RewardsByObjectType> {
+    const campaigns: CampaignDocumentType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              guideName,
+            },
+          },
+          { $unwind: { path: '$users' } },
+          {
+            $match: {
+              'users.status': RESERVATION_STATUS.COMPLETED,
+              'users.fraudSuspicion': true,
+              'users.completedAt': {
+                $gte: moment().subtract(30, 'day').toDate(),
+              },
+            },
+          },
+        ],
+      });
+
+    const rewards = await this.rewardsHelper.fillUserReservations({
+      campaigns,
+      sort,
+      host,
+      showFraud: true,
+    });
+
+    return {
+      rewards: rewards.slice(skip, skip + limit),
+      hasMore: rewards.slice(skip).length > limit,
+    };
+  }
 
   async getReservations({
     guideName,
@@ -59,6 +102,7 @@ export class GuideReservations implements GuideReservationsInterface {
       campaigns,
       sort,
       host,
+      showFraud: true,
     });
 
     return {

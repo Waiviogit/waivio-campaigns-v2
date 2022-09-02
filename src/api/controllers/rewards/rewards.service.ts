@@ -26,6 +26,7 @@ import {
   GetMapAllInterface,
   GetMapEligibleInterface,
   GetReservationsInterface,
+  GetReviewFraudsInterface,
   GetUserHistoryFiltersInterface,
   GuideReservationsInterface,
   ObjectRewardsInterface,
@@ -138,5 +139,11 @@ export class RewardsService {
     params: GetUserHistoryFiltersInterface,
   ): Promise<FilterUserHistoryType> {
     return this.userHistory.getFilters(params);
+  }
+
+  async getGuideReservationsFrauds(
+    params: GetReviewFraudsInterface,
+  ): Promise<RewardsByObjectType> {
+    return this.guideReservations.getReviewFrauds(params);
   }
 }

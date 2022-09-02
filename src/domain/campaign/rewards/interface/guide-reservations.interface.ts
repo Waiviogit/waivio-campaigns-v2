@@ -8,6 +8,10 @@ export interface GuideReservationsInterface {
   getFilters(
     params: GetGuideReservationFiltersInterface,
   ): Promise<FilterReservationsType>;
+
+  getReviewFrauds(
+    params: GetReviewFraudsInterface,
+  ): Promise<RewardsByObjectType>;
 }
 
 export interface GetReservationsInterface {
@@ -22,4 +26,12 @@ export interface GetReservationsInterface {
 
 export interface GetGuideReservationFiltersInterface {
   guideName: string;
+}
+
+export interface GetReviewFraudsInterface {
+  guideName: string;
+  host: string;
+  sort?: string;
+  skip?: number;
+  limit?: number;
 }

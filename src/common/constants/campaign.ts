@@ -27,6 +27,8 @@ export const CAMPAIGN_SORTS = Object.freeze({
   PROXIMITY: 'proximity',
   PAYOUT: 'payout',
   DEFAULT: 'default',
+  RESERVATION: 'reservation',
+  LAST_ACTION: 'lastAction',
 });
 
 export const ACTIVE_CAMPAIGN_STATUSES = [

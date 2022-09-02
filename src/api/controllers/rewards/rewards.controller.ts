@@ -263,4 +263,20 @@ export class RewardsController {
       userName,
     });
   }
+
+  @Post('frauds/:guideName')
+  @RewardsControllerDoc.getGuideReservations()
+  async getGuideReservationsFrauds(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('guideName')
+    guideName: string,
+    @Body() body: GuideReservationsInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getGuideReservationsFrauds({
+      host,
+      guideName,
+      ...body,
+    });
+  }
 }
