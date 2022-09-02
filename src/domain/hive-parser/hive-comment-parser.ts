@@ -78,11 +78,6 @@ export class HiveCommentParser implements HiveCommentParserInterface {
       await this.parseActions(comment, metadata, app, transaction_id);
     }
 
-    await this.campaignHelper.incrReviewComment({
-      rootName: comment.parent_author,
-      reservationPermlink: comment.parent_permlink,
-    });
-
     await this.reservationHelper.parseReservationConversation({
       comment,
       metadata,

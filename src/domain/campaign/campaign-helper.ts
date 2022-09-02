@@ -240,6 +240,7 @@ export class CampaignHelper implements CampaignHelperInterface {
   async incrReviewComment({
     reservationPermlink,
     rootName,
+    isOpen,
   }: IncrReviewCommentInterface): Promise<void> {
     await this.campaignRepository.updateOne({
       filter: {
@@ -250,7 +251,10 @@ export class CampaignHelper implements CampaignHelperInterface {
           },
         },
       },
-      update: { $inc: { 'users.$.commentsCount': 1 } },
+      update: {
+        $inc: { 'users.$.commentsCount': 1 },
+        'users.$.openConversation': isOpen,
+      },
     });
   }
 }

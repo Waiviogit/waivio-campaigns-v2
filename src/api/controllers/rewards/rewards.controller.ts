@@ -3,6 +3,7 @@ import { HostPipe } from '../../pipes/host.pipe';
 import { CustomHeaders } from '../../../common/decorators';
 import { RewardsService } from './rewards.service';
 import {
+  GuideMessagesFiltersDto,
   GuideReservationFiltersDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
@@ -15,6 +16,7 @@ import {
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 import {
+  GuideMessagesInDto,
   GuideReservationsInDto,
   ObjectRewardsInDto,
   RewardsAllInDto,
@@ -23,6 +25,11 @@ import {
   UserHistoryInDto,
 } from '../../../common/dto/rewards/in';
 import { EligibleSponsorsDto } from '../../../common/dto/rewards/in/eligible-sponsors.dto';
+import { GuideFraudsInDto } from '../../../common/dto/rewards/in/guide-frauds-in.dto';
+import {
+  CONVERSATION_STATUS,
+  RESERVATION_STATUS,
+} from '../../../common/constants';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -265,18 +272,43 @@ export class RewardsController {
   }
 
   @Post('frauds/:guideName')
-  @RewardsControllerDoc.getGuideReservations()
+  @RewardsControllerDoc.getGuideReservationsFrauds()
   async getGuideReservationsFrauds(
     @CustomHeaders(new HostPipe())
     host: string,
     @Param('guideName')
     guideName: string,
-    @Body() body: GuideReservationsInDto,
+    @Body() body: GuideFraudsInDto,
   ): Promise<RewardsByObjectOutDto> {
     return this.rewardsService.getGuideReservationsFrauds({
       host,
       guideName,
       ...body,
     });
+  }
+
+  @Post('messages/guide/:guideName')
+  @RewardsControllerDoc.getReservationMessages()
+  async getReservationMessages(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('guideName')
+    guideName: string,
+    @Body() body: GuideMessagesInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getReservationMessages({
+      host,
+      guideName,
+      ...body,
+    });
+  }
+
+  @Get('messages/filters')
+  @RewardsControllerDoc.getMessagesFilter()
+  async getMessagesFilter(): Promise<GuideMessagesFiltersDto> {
+    return {
+      statuses: Object.values(RESERVATION_STATUS),
+      conversations: Object.values(CONVERSATION_STATUS),
+    };
   }
 }

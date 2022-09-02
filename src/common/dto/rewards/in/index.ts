@@ -6,3 +6,4 @@ export * from './rewards-map-in.dto';
 export * from './object-rewards-in.dto';
 export * from './guide-reservations-in.dto';
 export * from './user-history-in.dto';
+export * from './guide-messages-in.dto';
