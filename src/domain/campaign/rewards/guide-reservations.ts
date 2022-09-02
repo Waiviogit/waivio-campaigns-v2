@@ -171,14 +171,9 @@ export class GuideReservations implements GuideReservationsInterface {
           },
           { $sort: { createdAt: -1 } },
           {
-            $group: {
-              _id: null,
-              campaignNames: { $addToSet: '$name' },
-            },
-          },
-          {
             $project: {
               _id: 0,
+              name: 1,
             },
           },
         ],
@@ -189,7 +184,7 @@ export class GuideReservations implements GuideReservationsInterface {
 
     return {
       statuses: Object.values(RESERVATION_STATUS),
-      campaignNames: names[0].campaignNames,
+      campaignNames: _.map(names, 'name'),
     };
   }
 }
