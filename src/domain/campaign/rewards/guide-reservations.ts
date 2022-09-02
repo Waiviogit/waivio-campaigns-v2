@@ -169,6 +169,7 @@ export class GuideReservations implements GuideReservationsInterface {
               users: { $ne: [] },
             },
           },
+          { $sort: { createdAt: -1 } },
           {
             $group: {
               _id: null,
