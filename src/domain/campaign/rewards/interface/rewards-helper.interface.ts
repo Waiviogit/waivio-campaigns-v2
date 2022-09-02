@@ -15,4 +15,5 @@ export interface FillUserReservationsInterface {
   host: string;
   area?: number[];
   sort?: string;
+  showFraud?: boolean;
 }

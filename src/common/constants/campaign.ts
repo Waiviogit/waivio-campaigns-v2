@@ -27,6 +27,10 @@ export const CAMPAIGN_SORTS = Object.freeze({
   PROXIMITY: 'proximity',
   PAYOUT: 'payout',
   DEFAULT: 'default',
+  RESERVATION: 'reservation',
+  LAST_ACTION: 'lastAction',
+  LATEST: 'latest',
+  INQUIRY_DATE: 'inquiryDate',
 });
 
 export const ACTIVE_CAMPAIGN_STATUSES = [
@@ -51,6 +55,12 @@ export const RESERVATION_STATUS = Object.freeze({
   COMPLETED: 'completed',
   REJECTED: 'rejected',
   EXPIRED: 'expired',
+});
+
+export const CONVERSATION_STATUS = Object.freeze({
+  ALL: 'all',
+  CLOSE: 'close',
+  OPEN: 'open',
 });
 
 export const CAMPAIGN_TYPE = Object.freeze({
