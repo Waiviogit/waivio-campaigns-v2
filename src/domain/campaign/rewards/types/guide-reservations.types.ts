@@ -1,5 +1,5 @@
 export type FilterReservationsAggType = {
-  campaignNames: string[];
+  name: string;
 };
 
 export type FilterReservationsType = {
