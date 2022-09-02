@@ -166,6 +166,7 @@ export class GuideReservations implements GuideReservationsInterface {
           {
             $match: {
               guideName,
+              users: { $ne: [] },
             },
           },
           {
