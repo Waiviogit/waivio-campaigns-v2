@@ -53,6 +53,7 @@ export type ProcessSponsorsBotVoteType = {
 export type RewardAmountType = {
   curationReward: BigNumber;
   authorReward: BigNumber;
+  rshares?: BigNumber;
 };
 
 export type mappedSponsorType = {

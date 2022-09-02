@@ -8,6 +8,7 @@ export const REDIS_KEY = Object.freeze({
   ASSIGN: 'assign:',
   REVIEW_DOWNVOTE: 'expire:reviewDownvote',
   SPONSOR_BOT_VOTE: 'expire:sponsorBotVote',
+  SPONSOR_BOT_CURRENT_VOTE: 'expire:sponsorBotCurrentVote',
   REWARD_FUND: 'reward_fund',
   MEDIAN_HISTORY: 'current_median_history_price',
   PUBLISH_EXPIRE_ASSIGN: 'expire:assign',

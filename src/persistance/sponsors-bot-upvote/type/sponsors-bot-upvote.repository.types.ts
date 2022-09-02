@@ -10,7 +10,7 @@ import { SponsorsBotUpvoteDocumentType } from './sponsors-bot-upvote.types';
 
 export type CreateUpvoteType = Omit<
   SponsorsBotUpvote,
-  'startedAt' | 'expiredAt' | 'status'
+  'startedAt' | 'expiredAt'
 >;
 
 export type GetUpvoteType = {

@@ -123,3 +123,14 @@ export type EngineBalanceType = {
   pendingUndelegations: string;
   error?: object;
 };
+
+export type EngineVoteType = {
+  rewardPoolId: number;
+  symbol: string;
+  authorperm: string;
+  weight: number;
+  rshares: string;
+  curationWeight: string;
+  timestamp: number;
+  voter: string;
+};
