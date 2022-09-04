@@ -42,7 +42,10 @@ export class HiveEngineClient implements HiveEngineClientInterface {
         method,
         params,
         id,
-      });
+      },
+          {
+            timeout: 5000
+          });
       return _.get(resp, 'data.result');
     } catch (error) {
       this.logger.error(error.message);
