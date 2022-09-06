@@ -15,6 +15,7 @@ export interface GetSingleReportInterface {
 
 export interface GetGlobalReportInterface {
   guideName: string;
+  payoutToken: string;
   host: string;
   processingFees?: boolean;
   payable?: number;
@@ -24,4 +25,10 @@ export interface GetGlobalReportInterface {
   skip?: number;
   limit?: number;
   currency: string;
+}
+
+export interface GetGlobalReportApiInterface
+  extends Omit<GetGlobalReportInterface, 'startDate' | 'endDate'> {
+  startDate?: number;
+  endDate?: number;
 }

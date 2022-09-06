@@ -7,9 +7,10 @@ import {
 } from './campain-payment.provider';
 import { PersistenceModule } from '../../persistance/persistence.module';
 import { WobjectModule } from '../wobject/wobject.module';
+import { CurrencyRatesModule } from '../currency-rates/currency-rates.module';
 
 @Module({
-  imports: [PersistenceModule, WobjectModule],
+  imports: [PersistenceModule, WobjectModule, CurrencyRatesModule],
   providers: [
     GuidePaymentQProvider,
     UserPaymentQProvider,

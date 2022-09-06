@@ -27,6 +27,12 @@ export type SingleReportType = {
 };
 
 export type GlobalReportType = {
-  histories: CampaignPaymentUserType[];
+  histories: GlobalPaymentType[];
   hasMore: boolean;
+};
+
+export type GlobalPaymentType = Omit<CampaignPaymentDocumentType, 'amount'> & {
+  amount: number;
+  payableInDollars: number;
+  balance: number;
 };

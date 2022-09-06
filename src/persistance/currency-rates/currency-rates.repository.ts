@@ -5,9 +5,12 @@ import { Model } from 'mongoose';
 import { CurrencyRatesDocumentType, CurrencyRatesFindType } from './types';
 
 import { CurrencyRates } from './currency-rates.schema';
+import { CurrencyRatesRepositoryInterface } from './interface';
 
 @Injectable()
-export class CurrencyRatesRepository {
+export class CurrencyRatesRepository
+  implements CurrencyRatesRepositoryInterface
+{
   private readonly logger = new Logger(CurrencyRatesRepository.name);
   constructor(
     @InjectModel(CurrencyRates.name)
@@ -21,6 +24,18 @@ export class CurrencyRatesRepository {
   }: CurrencyRatesFindType): Promise<CurrencyRatesDocumentType> {
     try {
       return this.model.findOne(filter, projection, options).lean();
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async find({
+    filter,
+    projection,
+    options,
+  }: CurrencyRatesFindType): Promise<CurrencyRatesDocumentType[]> {
+    try {
+      return this.model.find(filter, projection, options).lean();
     } catch (error) {
       this.logger.error(error.message);
     }

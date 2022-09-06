@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CAMPAIGN_PAYMENT_PROVIDE } from '../../../common/constants';
 import {
+  GetGlobalReportApiInterface,
   GetSingleReportInterface,
   GuidePaymentsQueryInterface,
   PaymentReportInterface,
@@ -9,7 +10,8 @@ import {
   GetPayableOutType,
   GetPayablesOutType,
   GetPayablesType,
-  GetPayableType, GlobalReportType,
+  GetPayableType,
+  GlobalReportType,
   ReceivablesOutType,
   SingleReportType,
 } from '../../../domain/campaign-payment/types';
@@ -60,7 +62,9 @@ export class PayablesService {
     return report;
   }
 
-  async getGlobalReport(params): Promise<GlobalReportType> {
+  async getGlobalReport(
+    params: GetGlobalReportApiInterface,
+  ): Promise<GlobalReportType> {
     const formattedDateStart = params.startDate
       ? moment.unix(params.startDate).toDate()
       : moment('1-1-1970').toDate();

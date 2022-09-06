@@ -10,7 +10,7 @@ export class BeneficiariesDto {
   weight: number;
 }
 
-class PayablesUserDto {
+export class PayablesUserDto {
   @ApiProperty({ type: String })
   userName: string;
 

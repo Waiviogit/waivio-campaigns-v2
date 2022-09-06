@@ -5,6 +5,7 @@ import { getGlobalReportPipeInterface } from '../interface';
 
 export const getGlobalReportPipe = ({
   guideName,
+  payoutToken,
   processingFees,
   objects,
   startDate,
@@ -14,6 +15,7 @@ export const getGlobalReportPipe = ({
     {
       $match: {
         guideName,
+        payoutToken,
         type: processingFees
           ? {
               $in: [
@@ -67,8 +69,14 @@ export const getGlobalReportPipe = ({
     {
       $addFields: {
         payableInDollars: {
-          $multiply: ['$amount', '$payoutTokenRateUSD'],
+          $convert: {
+            input: {
+              $multiply: ['$amount', '$payoutTokenRateUSD'],
+            },
+            to: 'double',
+          },
         },
+        amount: { $convert: { $input: '$amount', to: 'double' } },
       },
     },
   ];
