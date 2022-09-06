@@ -34,3 +34,11 @@ export interface GetUserTotalPayablePipeInterface {
   userName: string;
   payoutToken: string;
 }
+
+export interface getGlobalReportPipeInterface {
+  guideName: string;
+  processingFees?: boolean;
+  startDate?: Date;
+  endDate?: Date;
+  objects?: string[];
+}

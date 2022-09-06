@@ -188,6 +188,7 @@ export class CreateReview implements CreateReviewInterface {
         app,
         reviewPermlink,
         mainObject: campaign.requiredObject,
+        payoutTokenRateUSD: campaign.payoutTokenRateUSD,
         reviewObject: campaign.userReservationObject,
         reservationPermlink: campaign.userReservationPermlink,
         isDemoAccount: !!botName,

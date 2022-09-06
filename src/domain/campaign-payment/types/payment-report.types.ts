@@ -1,5 +1,6 @@
 import { CampaignPaymentDocumentType } from '../../../persistance/campaign-payment/types';
 import { ReservationDetailsObjectType } from '../../campaign/reservation/types/reservation-details.types';
+import { CampaignPaymentUserType } from './guide-payements.query.types';
 
 export type UserReportType = {
   name: string;
@@ -23,4 +24,9 @@ export type SingleReportType = {
   reservationDate: string;
   createCampaignDate: string;
   matchBots: string[];
+};
+
+export type GlobalReportType = {
+  histories: CampaignPaymentUserType[];
+  hasMore: boolean;
 };

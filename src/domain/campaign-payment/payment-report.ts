@@ -1,7 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
-import { GetSingleReportInterface, PaymentReportInterface } from './interface';
 import {
+  GetGlobalReportInterface,
+  GetSingleReportInterface,
+  PaymentReportInterface,
+} from './interface';
+import {
+  CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   PAYOUT_TOKEN_PRECISION,
@@ -16,7 +21,8 @@ import { WobjectHelperInterface } from '../wobject/interface';
 import { sumBy } from '../../common/helpers/calc-helper';
 import BigNumber from 'bignumber.js';
 import { CampaignPaymentDocumentType } from '../../persistance/campaign-payment/types';
-import { SingleReportType } from './types';
+import { GlobalReportType, SingleReportType } from './types';
+import { getGlobalReportPipe } from './pipes';
 
 @Injectable()
 export class PaymentReport implements PaymentReportInterface {
@@ -30,6 +36,44 @@ export class PaymentReport implements PaymentReportInterface {
     @Inject(WOBJECT_PROVIDE.HELPER)
     private readonly wobjectHelper: WobjectHelperInterface,
   ) {}
+
+  async getGlobalReport({
+    guideName,
+    host,
+    startDate,
+    endDate,
+    payable,
+    limit,
+    skip,
+    objects,
+    processingFees,
+    currency,
+  }: GetGlobalReportInterface): Promise<GlobalReportType> {
+    const histories: CampaignPaymentDocumentType[] =
+      await this.campaignPaymentRepository.aggregate({
+        pipeline: getGlobalReportPipe({
+          guideName,
+          objects,
+          processingFees,
+          startDate,
+          endDate,
+        }),
+      });
+
+    const links = [
+      ..._.map(histories, 'reviewObject'),
+      ..._.map(histories, 'mainObject'),
+    ];
+    const processedObjects = await this.wobjectHelper.getWobjectsForCampaigns({
+      links,
+      host,
+    });
+
+    return {
+      histories: [],
+      hasMore: true,
+    };
+  }
 
   async getSingleReport({
     userName,
