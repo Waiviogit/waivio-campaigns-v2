@@ -25,9 +25,10 @@ export class GlobalReportInDto extends SkipLimitDto {
   @IsString()
   payoutToken: string = PAYOUT_TOKEN.WAIV;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   @IsString()
-  currency: string;
+  @IsOptional()
+  currency: string = PAYOUT_TOKEN.WAIV;
 
   @ApiProperty({ type: [String], required: false })
   @IsOptional()

@@ -76,7 +76,7 @@ export const getGlobalReportPipe = ({
             to: 'double',
           },
         },
-        amount: { $convert: { $input: '$amount', to: 'double' } },
+        amount: { $convert: { input: '$amount', to: 'double' } },
       },
     },
   ];
