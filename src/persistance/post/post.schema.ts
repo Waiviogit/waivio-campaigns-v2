@@ -125,7 +125,7 @@ export class Post {
       },
     ]),
   )
-  beneficiaries: BeneficiariesType;
+  beneficiaries: BeneficiariesType[];
 
   @Prop({ type: String })
   url: string;

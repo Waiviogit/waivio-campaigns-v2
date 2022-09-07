@@ -27,7 +27,7 @@ export type ReviewCampaignType = Pick<
   userReservationObject: string;
   userStatus: string;
   referralServer: string;
-  rewardRaisedBy: string;
+  rewardRaisedBy: number;
   userName: string;
   userId: ObjectId;
 };

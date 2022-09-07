@@ -145,13 +145,15 @@ export class HiveCommentParser implements HiveCommentParserInterface {
         );
         break;
       case 'restoreReservationByGuide':
-        //restore_reservation_by_guide
-        const restoreReview = {
+        await this.createReview.restoreReview({
           user: parent_author,
           parentPermlink: parent_permlink,
           guideName: author,
-          permlink: permlink,
-        };
+        });
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       //later
       case 'raiseReviewReward':
