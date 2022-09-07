@@ -8,6 +8,8 @@ export interface CreateReviewInterface {
     app,
   }: ParseReviewType): Promise<void>;
   restoreReview(params: RestoreReviewInterface): Promise<void>;
+  raiseReward(params: RaiseRewardInterface): Promise<void>;
+  reduceReward(params: ReduceRewardInterface): Promise<void>;
 }
 
 export interface RestoreReviewInterface {
@@ -15,4 +17,21 @@ export interface RestoreReviewInterface {
   //reservation
   parentPermlink: string;
   guideName: string;
+}
+
+export interface RaiseRewardInterface {
+  activationPermlink: string;
+  guideName: string;
+  user: string;
+  parentPermlink: string;
+  permlink: string;
+  riseAmount: number;
+}
+
+export interface ReduceRewardInterface {
+  activationPermlink: string;
+  user: string;
+  parentPermlink: string;
+  permlink: string;
+  reduceAmount: number;
 }

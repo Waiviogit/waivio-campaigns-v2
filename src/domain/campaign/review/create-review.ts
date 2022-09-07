@@ -45,6 +45,8 @@ import { UserDocumentType } from '../../../persistance/user/types';
 import {
   CreateReviewInterface,
   FraudDetectionInterface,
+  RaiseRewardInterface,
+  ReduceRewardInterface,
   RestoreReviewInterface,
 } from './interface';
 import { ObjectId } from 'mongoose';
@@ -76,6 +78,105 @@ export class CreateReview implements CreateReviewInterface {
     @Inject(SPONSORS_BOT_PROVIDE.BOT)
     private readonly sponsorsBot: SponsorsBotInterface,
   ) {}
+
+  async raiseReward({
+    activationPermlink,
+    guideName,
+    user,
+    parentPermlink,
+    permlink,
+    riseAmount,
+  }: RaiseRewardInterface): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { activationPermlink },
+    });
+    if (!campaign || campaign.guideName !== guideName) return;
+    await this.campaignRepository.updateOne({
+      filter: {
+        activationPermlink,
+        users: {
+          $elemMatch: {
+            name: user,
+            reservationPermlink: parentPermlink,
+          },
+        },
+      },
+      update: {
+        'users.$.rewardRaisedBy': riseAmount,
+        'users.$.riseRewardPermlink': permlink,
+      },
+    });
+    const campaignUser = campaign.users.find(
+      (u) => u.reservationPermlink === parentPermlink,
+    );
+    if (!campaignUser || campaignUser.status !== RESERVATION_STATUS.COMPLETED) {
+      return;
+    }
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: parentPermlink,
+      },
+      update: {
+        $inc: { amount: new BigNumber(riseAmount) },
+      },
+    });
+  }
+
+  async reduceReward({
+    activationPermlink,
+    user,
+    parentPermlink,
+    permlink,
+    reduceAmount,
+  }: ReduceRewardInterface): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { activationPermlink },
+    });
+    if (!campaign) return;
+    const campaignUser = _.find(campaign.users, {
+      name: user,
+      reservationPermlink: parentPermlink,
+    });
+    if (
+      !campaignUser ||
+      !_.includes(['assigned', 'completed'], campaignUser.status)
+    ) {
+      return;
+    }
+    await this.campaignRepository.updateOne({
+      filter: {
+        _id: campaign._id,
+        users: {
+          $elemMatch: { _id: campaignUser._id },
+        },
+      },
+      update: {
+        'users.$.rewardReducedBy': reduceAmount,
+        'users.$.reduceRewardPermlink': permlink,
+      },
+    });
+    if (campaignUser.status !== RESERVATION_STATUS.COMPLETED) return;
+    const payment = await this.campaignPaymentRepository.findOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: parentPermlink,
+      },
+    });
+    const amountToUpdate = new BigNumber(payment.amount).gt(reduceAmount)
+      ? new BigNumber(reduceAmount).negated()
+      : new BigNumber(payment.amount).negated();
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: parentPermlink,
+      },
+      update: {
+        $inc: { amount: amountToUpdate },
+      },
+    });
+  }
 
   async parseReview({
     metadata,
