@@ -40,6 +40,7 @@ export const SPONSORS_BOT_UPVOTE_PROVIDE = Object.freeze({
 
 export const CURRENCY_RATES_PROVIDE = Object.freeze({
   REPOSITORY: 'CurrencyRatesRepository',
+  HELPER: 'CurrencyRatesHelper',
 });
 
 export const REDIS_PROVIDE = Object.freeze({

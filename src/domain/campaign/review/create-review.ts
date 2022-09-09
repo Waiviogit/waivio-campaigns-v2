@@ -7,6 +7,7 @@ import {
   CAMPAIGN_STATUS,
   GUEST_BNF_ACC,
   PAYOUT_TOKEN_PRECISION,
+  POST_PROVIDE,
   REDIS_DAYS_TO_SUSPEND,
   REDIS_EXPIRE,
   REFERRAL_TYPES,
@@ -41,18 +42,27 @@ import {
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { UserDocumentType } from '../../../persistance/user/types';
-import { CreateReviewInterface, FraudDetectionInterface } from './interface';
+import {
+  CreateReviewInterface,
+  FraudDetectionInterface,
+  RaiseRewardInterface,
+  ReduceRewardInterface,
+  RestoreReviewInterface,
+} from './interface';
 import { ObjectId } from 'mongoose';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
-import { getBodyLinksArray } from '../../../common/helpers';
+import { getBodyLinksArray, parseJSON } from '../../../common/helpers';
+import { PostRepositoryInterface } from '../../../persistance/post/interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
   constructor(
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(POST_PROVIDE.REPOSITORY)
+    private readonly postRepository: PostRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(USER_PROVIDE.REPOSITORY)
@@ -68,6 +78,105 @@ export class CreateReview implements CreateReviewInterface {
     @Inject(SPONSORS_BOT_PROVIDE.BOT)
     private readonly sponsorsBot: SponsorsBotInterface,
   ) {}
+
+  async raiseReward({
+    activationPermlink,
+    guideName,
+    user,
+    parentPermlink,
+    permlink,
+    riseAmount,
+  }: RaiseRewardInterface): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { activationPermlink },
+    });
+    if (!campaign || campaign.guideName !== guideName) return;
+    await this.campaignRepository.updateOne({
+      filter: {
+        activationPermlink,
+        users: {
+          $elemMatch: {
+            name: user,
+            reservationPermlink: parentPermlink,
+          },
+        },
+      },
+      update: {
+        'users.$.rewardRaisedBy': riseAmount,
+        'users.$.riseRewardPermlink': permlink,
+      },
+    });
+    const campaignUser = campaign.users.find(
+      (u) => u.reservationPermlink === parentPermlink,
+    );
+    if (!campaignUser || campaignUser.status !== RESERVATION_STATUS.COMPLETED) {
+      return;
+    }
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: parentPermlink,
+      },
+      update: {
+        $inc: { amount: new BigNumber(riseAmount) },
+      },
+    });
+  }
+
+  async reduceReward({
+    activationPermlink,
+    user,
+    parentPermlink,
+    permlink,
+    reduceAmount,
+  }: ReduceRewardInterface): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { activationPermlink },
+    });
+    if (!campaign) return;
+    const campaignUser = _.find(campaign.users, {
+      name: user,
+      reservationPermlink: parentPermlink,
+    });
+    if (
+      !campaignUser ||
+      !_.includes(['assigned', 'completed'], campaignUser.status)
+    ) {
+      return;
+    }
+    await this.campaignRepository.updateOne({
+      filter: {
+        _id: campaign._id,
+        users: {
+          $elemMatch: { _id: campaignUser._id },
+        },
+      },
+      update: {
+        'users.$.rewardReducedBy': reduceAmount,
+        'users.$.reduceRewardPermlink': permlink,
+      },
+    });
+    if (campaignUser.status !== RESERVATION_STATUS.COMPLETED) return;
+    const payment = await this.campaignPaymentRepository.findOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: parentPermlink,
+      },
+    });
+    const amountToUpdate = new BigNumber(payment.amount).gt(reduceAmount)
+      ? new BigNumber(reduceAmount).negated()
+      : new BigNumber(payment.amount).negated();
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: parentPermlink,
+      },
+      update: {
+        $inc: { amount: amountToUpdate },
+      },
+    });
+  }
 
   async parseReview({
     metadata,
@@ -120,6 +229,93 @@ export class CreateReview implements CreateReviewInterface {
         botName,
       });
     }
+  }
+
+  async restoreReview({
+    user,
+    parentPermlink,
+    guideName,
+  }: RestoreReviewInterface): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        guideName,
+        users: {
+          $elemMatch: { rootName: user, reservationPermlink: parentPermlink },
+        },
+      },
+    });
+    if (!campaign) return;
+    const rejectedUser = campaign.users.find(
+      (u) =>
+        u.status === RESERVATION_STATUS.REJECTED &&
+        u.reservationPermlink === parentPermlink,
+    );
+    if (!rejectedUser) return;
+    const havePost = !!rejectedUser.reviewPermlink;
+    if (havePost) {
+      const post = await this.postRepository.findOne({
+        filter: {
+          author: rejectedUser.name,
+          permlink: rejectedUser.reviewPermlink,
+        },
+      });
+      const reviewCampaign: ReviewCampaignType = {
+        userId: rejectedUser._id,
+        userName: rejectedUser.name,
+        rewardRaisedBy: rejectedUser.rewardRaisedBy,
+        referralServer: rejectedUser.referralServer,
+        userStatus: rejectedUser.status,
+        userReservationObject: rejectedUser.objectPermlink,
+        userReservationPermlink: rejectedUser.reservationPermlink,
+        reservedAt: rejectedUser.createdAt.toString(),
+        payoutTokenRateUSD: rejectedUser.payoutTokenRateUSD,
+        campaignId: campaign._id,
+        campaignServer: campaign.app,
+        requiredObject: campaign.requiredObject,
+        userRequirements: campaign.userRequirements,
+        activationPermlink: campaign.activationPermlink,
+        rewardInUSD: campaign.rewardInUSD,
+        requirements: campaign.requirements,
+        payoutToken: campaign.payoutToken,
+        currency: campaign.currency,
+        reward: campaign.reward,
+        guideName: campaign.guideName,
+        commissionAgreement: campaign.commissionAgreement,
+        matchBots: campaign.matchBots,
+        type: campaign.type,
+      };
+      await this.createReview({
+        campaign: reviewCampaign,
+        beneficiaries: post.beneficiaries,
+        objects: [rejectedUser.objectPermlink],
+        title: post.title,
+        app: campaign.campaignServer,
+        host: _.get(parseJSON(post.json_metadata), 'host', null),
+        reviewPermlink: post.permlink,
+        images: _.get(parseJSON(post.json_metadata), 'image', []),
+      });
+    }
+
+    //remove rejection permlink
+    await this.campaignRepository.updateOne({
+      filter: {
+        _id: campaign._id,
+        users: {
+          $elemMatch: {
+            name: rejectedUser.name,
+            reservationPermlink: rejectedUser.reservationPermlink,
+          },
+        },
+      },
+      update: {
+        $set: {
+          'users.$.status': havePost
+            ? RESERVATION_STATUS.COMPLETED
+            : RESERVATION_STATUS.ASSIGNED,
+          'users.$.rejectionPermlink': '',
+        },
+      },
+    });
   }
 
   async createReview({
@@ -188,6 +384,7 @@ export class CreateReview implements CreateReviewInterface {
         app,
         reviewPermlink,
         mainObject: campaign.requiredObject,
+        payoutTokenRateUSD: campaign.payoutTokenRateUSD,
         reviewObject: campaign.userReservationObject,
         reservationPermlink: campaign.userReservationPermlink,
         isDemoAccount: !!botName,
