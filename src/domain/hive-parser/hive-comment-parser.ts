@@ -145,37 +145,43 @@ export class HiveCommentParser implements HiveCommentParserInterface {
         );
         break;
       case 'restoreReservationByGuide':
-        //restore_reservation_by_guide
-        const restoreReview = {
+        await this.createReview.restoreReview({
           user: parent_author,
           parentPermlink: parent_permlink,
           guideName: author,
-          permlink: permlink,
-        };
+        });
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
-      //later
       case 'raiseReviewReward':
-        //'waivio_raise_review_reward':
-        const raiseReward = {
+        await this.createReview.raiseReward({
           user: parent_author,
           parentPermlink: parent_permlink,
           activationPermlink: metadata.waivioRewards.activationPermlink,
           guideName: author,
           riseAmount: metadata.waivioRewards.riseAmount,
           permlink: permlink,
-        };
+        });
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
       case 'reduceReviewReward':
-        //'waivio_reduce_review_reward':
-        //TODO why only here?
         if (parent_author !== author) return;
-        const reduceReward = {
+        await this.createReview.reduceReward({
           parentPermlink: parent_permlink,
           activationPermlink: metadata.waivioRewards.activationPermlink,
-          userName: author,
+          user: author,
           reduceAmount: metadata.waivioRewards.reduceAmount,
           permlink: permlink,
-        };
+        });
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+          transaction_id,
+        );
         break;
     }
   }

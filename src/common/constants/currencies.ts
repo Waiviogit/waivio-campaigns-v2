@@ -10,3 +10,12 @@ export const SUPPORTED_CURRENCIES = Object.freeze({
   RUB: 'RUB',
   UAH: 'UAH',
 });
+
+export const SUPPORTED_CRYPTO_CURRENCIES = Object.freeze({
+  WAIV: 'WAIV',
+});
+
+export const DONT_GET_RATES = [
+  SUPPORTED_CRYPTO_CURRENCIES.WAIV,
+  SUPPORTED_CURRENCIES.USD,
+];

@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CAMPAIGN_PAYMENT_PROVIDE } from '../../../common/constants';
 import {
+  GetGlobalReportApiInterface,
   GetSingleReportInterface,
   GuidePaymentsQueryInterface,
   PaymentReportInterface,
@@ -10,6 +11,7 @@ import {
   GetPayablesOutType,
   GetPayablesType,
   GetPayableType,
+  GlobalReportType,
   ReceivablesOutType,
   SingleReportType,
 } from '../../../domain/campaign-payment/types';
@@ -18,6 +20,7 @@ import {
   UserPaymentsQueryInterface,
 } from '../../../domain/campaign-payment/interface/user-payments.query.interface';
 import { CampaignCustomException } from '../../../common/exeptions';
+import * as moment from 'moment';
 
 @Injectable()
 export class PayablesService {
@@ -50,6 +53,29 @@ export class PayablesService {
     params: GetSingleReportInterface,
   ): Promise<SingleReportType> {
     const report = await this.paymentReport.getSingleReport(params);
+    if (!report) {
+      throw new CampaignCustomException(
+        'report not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return report;
+  }
+
+  async getGlobalReport(
+    params: GetGlobalReportApiInterface,
+  ): Promise<GlobalReportType> {
+    const formattedDateStart = params.startDate
+      ? moment.unix(params.startDate).toDate()
+      : moment('1-1-1970').toDate();
+    const formattedDateEnd = params.endDate
+      ? moment.unix(params.endDate).toDate()
+      : moment().toDate();
+    const report = await this.paymentReport.getGlobalReport({
+      ...params,
+      startDate: formattedDateStart,
+      endDate: formattedDateEnd,
+    });
     if (!report) {
       throw new CampaignCustomException(
         'report not found',

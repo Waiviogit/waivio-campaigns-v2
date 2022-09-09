@@ -82,6 +82,8 @@ export class CampaignUser {
 
   @Prop({ type: Number, default: 0 })
   commentsCount: number;
+
+  createdAt: Date;
 }
 
 export const CampaignUserSchema = SchemaFactory.createForClass(CampaignUser);
