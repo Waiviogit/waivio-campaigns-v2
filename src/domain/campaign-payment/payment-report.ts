@@ -120,7 +120,7 @@ export class PaymentReport implements PaymentReportInterface {
 
     return {
       histories: histories.slice(skip, limit + skip),
-      hasMore: histories.slice(skip, limit + skip).length < histories.length,
+      hasMore: histories.slice(skip).length > limit,
     };
   }
 
@@ -133,7 +133,12 @@ export class PaymentReport implements PaymentReportInterface {
     const filtered = [];
     _.reverse(histories);
     while (currentAmount <= amount) {
-      if (currentAmount + histories[counter].amount > amount) break;
+      if (
+        currentAmount + histories[counter].amount > amount &&
+        filtered.length
+      ) {
+        break;
+      }
       currentAmount += histories[counter].amount;
       histories[counter].balance = currentAmount;
       filtered.unshift(histories[counter]);
