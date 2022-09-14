@@ -1,5 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
+  GlobalReportOutDto,
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
   SingleReportOutDto,
@@ -7,6 +8,7 @@ import {
 } from '../../../common/dto/payables/out';
 import { PayablesService } from './payables.service';
 import {
+  GlobalReportInDto,
   GuidePayablesAllInDto,
   PayablesInDto,
   SingleReportInDto,
@@ -67,5 +69,18 @@ export class PayablesController {
     @Query() query: SingleReportInDto,
   ): Promise<SingleReportOutDto> {
     return this.payablesService.getSingleReport({ host, ...query });
+  }
+
+  @Post('report/global')
+  @PayablesControllerDoc.getSingleReport()
+  async getGlobalReport(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Body() body: GlobalReportInDto,
+  ): Promise<GlobalReportOutDto> {
+    return this.payablesService.getGlobalReport({
+      host,
+      ...body,
+    });
   }
 }

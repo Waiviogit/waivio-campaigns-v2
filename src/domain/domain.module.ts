@@ -8,6 +8,7 @@ import { CampaignPaymentModule } from './campaign-payment/campaign-payment.modul
 import { JobsModule } from './jobs/jobs.module';
 import { SponsorsBotModule } from './sponsors-bot/sponsors-bot.module';
 import { BlacklistModule } from './blacklist/blacklist.module';
+import { CurrencyRatesModule } from './currency-rates/currency-rates.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BlacklistModule } from './blacklist/blacklist.module';
     CampaignPaymentModule,
     JobsModule,
     SponsorsBotModule,
+    CurrencyRatesModule,
   ],
   exports: [
     BlacklistModule,
@@ -27,6 +29,7 @@ import { BlacklistModule } from './blacklist/blacklist.module';
     WobjectModule,
     CampaignPaymentModule,
     SponsorsBotModule,
+    CurrencyRatesModule,
   ],
 })
 export class DomainModule {}

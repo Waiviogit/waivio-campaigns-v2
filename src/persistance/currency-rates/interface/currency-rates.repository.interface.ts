@@ -6,4 +6,10 @@ export interface CurrencyRatesRepositoryInterface {
     projection,
     options,
   }: CurrencyRatesFindType): Promise<CurrencyRatesDocumentType>;
+
+  find({
+    filter,
+    projection,
+    options,
+  }: CurrencyRatesFindType): Promise<CurrencyRatesDocumentType[]>;
 }

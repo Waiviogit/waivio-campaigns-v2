@@ -89,6 +89,9 @@ export class CampaignPayment {
   mainObject?: string;
 
   createdAt: Date;
+  //For all types except transfers
+  @Prop({ type: Number })
+  payoutTokenRateUSD?: number;
 }
 
 export const CampaignPaymentSchema =
