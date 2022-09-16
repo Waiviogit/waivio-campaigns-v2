@@ -257,4 +257,35 @@ export class CampaignHelper implements CampaignHelperInterface {
       },
     });
   }
+
+  async reCalcCampaignsRewardInUsd(): Promise<void> {
+    const campaigns = await this.campaignRepository.find({
+      filter: {
+        currency: { $ne: SUPPORTED_CURRENCY.USD },
+        status: { $in: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.PENDING] },
+      },
+      projection: {
+        currency: 1,
+        reward: 1,
+      },
+    });
+    if (_.isEmpty(campaigns)) return;
+    const rate = await this.currencyRatesRepository.findOne({
+      filter: { base: SUPPORTED_CURRENCY.USD },
+      options: { sort: { dateString: -1 } },
+    });
+
+    const { rates } = rate;
+
+    for (const campaign of campaigns) {
+      const currentRate = rates[campaign.currency];
+      const rewardInUSD = new BigNumber(campaign.reward)
+        .div(currentRate)
+        .toNumber();
+      await this.campaignRepository.updateOne({
+        filter: { _id: campaign._id },
+        update: { $set: { rewardInUSD } },
+      });
+    }
+  }
 }
