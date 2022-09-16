@@ -40,6 +40,7 @@ export interface CampaignHelperInterface {
     reservationPermlink,
     rootName,
   }: IncrReviewCommentInterface): Promise<void>;
+  reCalcCampaignsRewardInUsd(): Promise<void>;
 }
 
 export interface IncrReviewCommentInterface {
