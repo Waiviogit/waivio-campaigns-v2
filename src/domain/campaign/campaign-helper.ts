@@ -10,6 +10,7 @@ import {
   CURRENCY_RATES_PROVIDE,
   ENGINE_MARKETPOOLS,
   HIVE_ENGINE_PROVIDE,
+  HIVE_PROVIDE,
   PAYOUT_TOKEN,
   REDIS_EXPIRE,
   REDIS_KEY,
@@ -34,6 +35,7 @@ import axios from 'axios';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 import { configService } from '../../common/config';
+import { HiveClientInterface } from '../../services/hive-api/interface';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -48,6 +50,8 @@ export class CampaignHelper implements CampaignHelperInterface {
     private readonly hiveEngineClient: HiveEngineClientInterface,
     @Inject(CURRENCY_RATES_PROVIDE.REPOSITORY)
     private readonly currencyRatesRepository: CurrencyRatesRepositoryInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
 
   async setExpireTTLCampaign(expiredAt: Date, _id: ObjectId): Promise<void> {
@@ -242,6 +246,15 @@ export class CampaignHelper implements CampaignHelperInterface {
     rootName,
     isOpen,
   }: IncrReviewCommentInterface): Promise<void> {
+    const content = await this.hiveClient.getContent(
+      rootName,
+      reservationPermlink,
+    );
+
+    const commentsCount = content
+      ? { 'users.$.commentsCount': content.children }
+      : { $inc: { 'users.$.commentsCount': 1 } };
+
     await this.campaignRepository.updateOne({
       filter: {
         users: {
@@ -252,7 +265,7 @@ export class CampaignHelper implements CampaignHelperInterface {
         },
       },
       update: {
-        $inc: { 'users.$.commentsCount': 1 },
+        ...commentsCount,
         'users.$.openConversation': isOpen,
       },
     });
