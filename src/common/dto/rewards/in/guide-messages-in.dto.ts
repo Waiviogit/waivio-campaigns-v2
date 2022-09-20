@@ -14,5 +14,5 @@ export class GuideMessagesInDto extends OmitType(GuideReservationsInDto, [
     required: false,
     enum: Object.values(CONVERSATION_STATUS),
   })
-  caseStatus?: string;
+  caseStatus?: string = CONVERSATION_STATUS.ALL;
 }
