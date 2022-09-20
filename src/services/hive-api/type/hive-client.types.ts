@@ -76,3 +76,11 @@ export type ReblogToType = {
   author: string;
   permlink: string;
 };
+
+export type CommentStateType = {
+  feed_price: object;
+  props: object;
+  tags: object;
+  accounts: object;
+  content: object;
+};

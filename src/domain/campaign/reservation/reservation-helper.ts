@@ -60,6 +60,8 @@ export class ReservationHelper implements ReservationHelperInterface {
     });
 
     await this.campaignHelper.incrReviewComment({
+      author: comment.author,
+      permlink: comment.permlink,
       rootName: comment.parent_author,
       reservationPermlink: comment.parent_permlink,
       isOpen: comment.author !== campaign.guideName,
