@@ -36,14 +36,13 @@ export interface CampaignHelperInterface {
     campaignId,
   }: SetExpireSuspendWarningType): Promise<void>;
 
-  incrReviewComment({
-    reservationPermlink,
-    rootName,
-  }: IncrReviewCommentInterface): Promise<void>;
+  incrReviewComment(params: IncrReviewCommentInterface): Promise<void>;
   reCalcCampaignsRewardInUsd(): Promise<void>;
 }
 
 export interface IncrReviewCommentInterface {
+  author: string;
+  permlink: string;
   rootName: string;
   reservationPermlink: string;
   isOpen?: boolean;

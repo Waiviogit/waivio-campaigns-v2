@@ -245,15 +245,24 @@ export class CampaignHelper implements CampaignHelperInterface {
     reservationPermlink,
     rootName,
     isOpen,
+    author,
+    permlink,
   }: IncrReviewCommentInterface): Promise<void> {
-    const content = await this.hiveClient.getContent(
-      rootName,
-      reservationPermlink,
+    const state = await this.hiveClient.getState(rootName, reservationPermlink);
+
+    const comments = _.filter(
+      Object.values(_.get(state, 'content', {})),
+      (el) => el.permlink !== reservationPermlink,
     );
 
-    const commentsCount = content
-      ? { 'users.$.commentsCount': content.children }
-      : { $inc: { 'users.$.commentsCount': 1 } };
+    const currentComment = _.find(
+      comments,
+      (el) => el.author === author && el.permlink === permlink,
+    );
+
+    const commentsCount = currentComment
+      ? comments.length
+      : comments.length + 1;
 
     await this.campaignRepository.updateOne({
       filter: {
@@ -265,7 +274,7 @@ export class CampaignHelper implements CampaignHelperInterface {
         },
       },
       update: {
-        ...commentsCount,
+        'users.$.commentsCount': commentsCount,
         'users.$.openConversation': isOpen,
       },
     });
