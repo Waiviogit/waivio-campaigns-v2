@@ -15,7 +15,7 @@ import {
   WOBJECT_PROVIDE,
 } from '../../common/constants';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import { GuideAggType } from './types';
+import { GuideAggType, PayableWarningType } from './types';
 import { GuidePaymentsQueryInterface } from '../campaign-payment/interface';
 import { CampaignHelperInterface, CampaignSuspendInterface } from './interface';
 import { PayablesAllType } from '../campaign-payment/types';
@@ -171,6 +171,9 @@ export class CampaignSuspend implements CampaignSuspendInterface {
         [campaign.requiredObject, ...campaign.objects],
       );
     }
+    await this.campaignRedisClient.deleteKey(
+      `${REDIS_KEY.CAMPAIGN_SUSPEND_WARNING}${guideName}`,
+    );
   }
 
   getStatusAfterSuspend(campaign: CampaignDocumentType): string {
@@ -187,5 +190,14 @@ export class CampaignSuspend implements CampaignSuspendInterface {
         : CAMPAIGN_STATUS.REACHED_LIMIT;
     }
     return CAMPAIGN_STATUS.PENDING;
+  }
+
+  async payableWarning(guideName: string): Promise<PayableWarningType> {
+    const warning = await this.campaignRedisClient.get(
+      `${REDIS_KEY.CAMPAIGN_SUSPEND_WARNING}${guideName}`,
+    );
+    return {
+      warning: !!warning,
+    };
   }
 }

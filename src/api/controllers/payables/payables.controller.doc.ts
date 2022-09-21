@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
+  PayableWarningDto,
   SingleReportOutDto,
   UserReceivablesOutDto,
 } from '../../../common/dto/payables/out';
@@ -70,6 +71,18 @@ export class PayablesControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: SingleReportOutDto,
+      }),
+    );
+  }
+
+  static getPayableWarning(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get warning',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: PayableWarningDto,
       }),
     );
   }
