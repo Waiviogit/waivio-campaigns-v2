@@ -3,6 +3,7 @@ import {
   GlobalReportOutDto,
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
+  PayableWarningDto,
   SingleReportOutDto,
   UserReceivablesOutDto,
 } from '../../../common/dto/payables/out';
@@ -82,5 +83,14 @@ export class PayablesController {
       host,
       ...body,
     });
+  }
+
+  @Get('warning/:guideName')
+  @PayablesControllerDoc.getPayableWarning()
+  async getPayableWarning(
+    @Param('guideName')
+    guideName: string,
+  ): Promise<PayableWarningDto> {
+    return this.payablesService.payableWarning(guideName);
   }
 }
