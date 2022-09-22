@@ -5,7 +5,12 @@ import axios from 'axios';
 import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
 import { GetVoteInterface, HiveClientInterface } from './interface';
-import { ActiveVotesType, HiveContentType, VoteOnPostType } from './type';
+import {
+  ActiveVotesType,
+  CommentStateType,
+  HiveContentType,
+  VoteOnPostType,
+} from './type';
 
 @Injectable()
 export class HiveClient implements HiveClientInterface {
@@ -74,6 +79,12 @@ export class HiveClient implements HiveClientInterface {
 
   async getContent(author: string, permlink: string): Promise<HiveContentType> {
     return this.hiveRequest(CONDENSER_API.GET_CONTENT, [author, permlink]);
+  }
+
+  async getState(author: string, permlink: string): Promise<CommentStateType> {
+    return this.hiveRequest(CONDENSER_API.GET_STATE, [
+      `waivio/@${author}/${permlink}`,
+    ]);
   }
 
   async getActiveVotes(

@@ -1,5 +1,8 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { CAMPAIGN_PAYMENT_PROVIDE } from '../../../common/constants';
+import {
+  CAMPAIGN_PAYMENT_PROVIDE,
+  CAMPAIGN_PROVIDE,
+} from '../../../common/constants';
 import {
   GetGlobalReportApiInterface,
   GetSingleReportInterface,
@@ -21,6 +24,8 @@ import {
 } from '../../../domain/campaign-payment/interface/user-payments.query.interface';
 import { CampaignCustomException } from '../../../common/exeptions';
 import * as moment from 'moment';
+import { CampaignSuspendInterface } from '../../../domain/campaign/interface';
+import { PayableWarningType } from '../../../domain/campaign/types';
 
 @Injectable()
 export class PayablesService {
@@ -31,6 +36,8 @@ export class PayablesService {
     private readonly userPaymentsQuery: UserPaymentsQueryInterface,
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.PAYMENT_REPORT)
     private readonly paymentReport: PaymentReportInterface,
+    @Inject(CAMPAIGN_PROVIDE.SUSPEND)
+    private readonly campaignSuspend: CampaignSuspendInterface,
   ) {}
 
   async getGuidePayments(params: GetPayablesType): Promise<GetPayablesOutType> {
@@ -83,5 +90,9 @@ export class PayablesService {
       );
     }
     return report;
+  }
+
+  async payableWarning(guideName: string): Promise<PayableWarningType> {
+    return this.campaignSuspend.payableWarning(guideName);
   }
 }

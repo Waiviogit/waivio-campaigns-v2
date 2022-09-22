@@ -72,6 +72,10 @@ export class RewardsHelper implements RewardsHelperInterface {
         createdAt: campaign.createdAt,
         activationPermlink: campaign.activationPermlink,
         reservationPermlink: user.reservationPermlink,
+        reviewPermlink: user.reviewPermlink,
+        ...(user.rejectionPermlink && {
+          rejectionPermlink: user.rejectionPermlink,
+        }),
         commentsCount: user.commentsCount || 0,
         reservationCreatedAt: user.createdAt,
         reservationUpdatedAt: user.updatedAt,

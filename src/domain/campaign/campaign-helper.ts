@@ -10,6 +10,7 @@ import {
   CURRENCY_RATES_PROVIDE,
   ENGINE_MARKETPOOLS,
   HIVE_ENGINE_PROVIDE,
+  HIVE_PROVIDE,
   PAYOUT_TOKEN,
   REDIS_EXPIRE,
   REDIS_KEY,
@@ -34,6 +35,7 @@ import axios from 'axios';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 import { configService } from '../../common/config';
+import { HiveClientInterface } from '../../services/hive-api/interface';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -48,6 +50,8 @@ export class CampaignHelper implements CampaignHelperInterface {
     private readonly hiveEngineClient: HiveEngineClientInterface,
     @Inject(CURRENCY_RATES_PROVIDE.REPOSITORY)
     private readonly currencyRatesRepository: CurrencyRatesRepositoryInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
 
   async setExpireTTLCampaign(expiredAt: Date, _id: ObjectId): Promise<void> {
@@ -241,7 +245,25 @@ export class CampaignHelper implements CampaignHelperInterface {
     reservationPermlink,
     rootName,
     isOpen,
+    author,
+    permlink,
   }: IncrReviewCommentInterface): Promise<void> {
+    const state = await this.hiveClient.getState(rootName, reservationPermlink);
+
+    const comments = _.filter(
+      Object.values(_.get(state, 'content', {})),
+      (el) => el.permlink !== reservationPermlink,
+    );
+
+    const currentComment = _.find(
+      comments,
+      (el) => el.author === author && el.permlink === permlink,
+    );
+
+    const commentsCount = currentComment
+      ? comments.length
+      : comments.length + 1;
+
     await this.campaignRepository.updateOne({
       filter: {
         users: {
@@ -252,7 +274,7 @@ export class CampaignHelper implements CampaignHelperInterface {
         },
       },
       update: {
-        $inc: { 'users.$.commentsCount': 1 },
+        'users.$.commentsCount': commentsCount,
         'users.$.openConversation': isOpen,
       },
     });
