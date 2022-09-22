@@ -5,6 +5,7 @@ import { RewardsService } from './rewards.service';
 import {
   GuideMessagesFiltersDto,
   GuideReservationFiltersDto,
+  InBlacklistOutDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
@@ -325,5 +326,16 @@ export class RewardsController {
       user,
       ...body,
     });
+  }
+
+  @Get('blacklist/:guideName/:userName')
+  @RewardsControllerDoc.checkUserInBlacklist()
+  async checkUserInBlacklist(
+    @Param('userName')
+    userName: string,
+    @Param('guideName')
+    guideName: string,
+  ): Promise<InBlacklistOutDto> {
+    return this.rewardsService.checkUserInBlacklist({ userName, guideName });
   }
 }

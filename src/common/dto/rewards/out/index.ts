@@ -9,3 +9,4 @@ export * from './guide-reservation-filters.dto';
 export * from './user-history-filters.dto';
 export * from './guide-messages-filters.dto';
 export * from './user-followings-out.dto';
+export * from './in-blacklist-out.dto';

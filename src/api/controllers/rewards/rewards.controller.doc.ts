@@ -2,7 +2,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
   GuideMessagesFiltersDto,
-  GuideReservationFiltersDto,
+  GuideReservationFiltersDto, InBlacklistOutDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
@@ -206,6 +206,17 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: UserFollowingsOutDto,
+      }),
+    );
+  }
+  static checkUserInBlacklist(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return either user in blacklist',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: InBlacklistOutDto,
       }),
     );
   }

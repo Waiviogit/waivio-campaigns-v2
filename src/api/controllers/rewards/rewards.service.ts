@@ -15,6 +15,7 @@ import {
   GetRewardsEligibleType,
   GetRewardsMainType,
   GetSponsorsType,
+  InBlacklistType,
   RewardsAllType,
   RewardsByObjectType,
   RewardsTabType,
@@ -38,6 +39,7 @@ import {
 } from '../../../domain/campaign/rewards/interface';
 import { GetObjectRewardsInterface } from '../../../domain/campaign/rewards/interface';
 import { ObjectRewardsType } from '../../../domain/campaign/rewards/types/object-rewards.types';
+import { CheckUserInBlacklistInterface } from '../../../domain/blacklist/interface';
 
 @Injectable()
 export class RewardsService {
@@ -160,5 +162,11 @@ export class RewardsService {
     params: CheckUserFollowingsInterface,
   ): Promise<UserAndObjectFollowing> {
     return this.userHistory.checkUserFollowings(params);
+  }
+
+  async checkUserInBlacklist(
+    params: CheckUserInBlacklistInterface,
+  ): Promise<InBlacklistType> {
+    return this.guideReservations.checkUserInBlacklist(params);
   }
 }
