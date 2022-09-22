@@ -1,10 +1,17 @@
-import { FilterUserHistoryType, RewardsByObjectType } from '../types';
+import {
+  FilterUserHistoryType,
+  RewardsByObjectType,
+  UserAndObjectFollowing,
+} from '../types';
 
 export interface UserHistoryInterface {
   getHistory(params: GetHistoryInterface): Promise<RewardsByObjectType>;
   getFilters(
     params: GetUserHistoryFiltersInterface,
   ): Promise<FilterUserHistoryType>;
+  checkUserFollowings(
+    params: CheckUserFollowingsInterface,
+  ): Promise<UserAndObjectFollowing>;
 }
 
 export interface GetHistoryInterface {
@@ -19,4 +26,20 @@ export interface GetHistoryInterface {
 
 export interface GetUserHistoryFiltersInterface {
   userName: string;
+}
+
+export interface CheckUserFollowingsInterface {
+  users: string[];
+  objects: string[];
+  user: string;
+}
+
+export interface CheckUsersFollowingInterface {
+  users: string[];
+  user: string;
+}
+
+export interface CheckObjectsFollowingInterface {
+  objects: string[];
+  user: string;
 }

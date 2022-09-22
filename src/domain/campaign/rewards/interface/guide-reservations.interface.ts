@@ -1,4 +1,9 @@
-import { FilterReservationsType, RewardsByObjectType } from '../types';
+import {
+  FilterReservationsType,
+  InBlacklistType,
+  RewardsByObjectType,
+} from '../types';
+import { CheckUserInBlacklistInterface } from '../../../blacklist/interface';
 
 export interface GuideReservationsInterface {
   getReservations(
@@ -16,6 +21,10 @@ export interface GuideReservationsInterface {
   getReservationMessages(
     params: GetReservationMessagesInterface,
   ): Promise<RewardsByObjectType>;
+
+  checkUserInBlacklist(
+    params: CheckUserInBlacklistInterface,
+  ): Promise<InBlacklistType>;
 }
 
 export interface GetReservationsInterface {

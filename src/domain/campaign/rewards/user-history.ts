@@ -4,9 +4,14 @@ import {
   CAMPAIGN_PROVIDE,
   RESERVATION_STATUS,
   REWARDS_PROVIDE,
+  USER_SUBSCRIPTION_PROVIDE,
+  WOBJECT_SUBSCRIPTION_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
+  CheckObjectsFollowingInterface,
+  CheckUserFollowingsInterface,
+  CheckUsersFollowingInterface,
   GetHistoryInterface,
   GetUserHistoryFiltersInterface,
   RewardsHelperInterface,
@@ -16,8 +21,13 @@ import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import {
   FilterUserHistoryAggType,
   FilterUserHistoryType,
+  ObjectsFollowingType,
   RewardsByObjectType,
+  UserAndObjectFollowing,
+  UserFollowingType,
 } from './types';
+import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
+import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
 
 @Injectable()
 export class UserHistory implements UserHistoryInterface {
@@ -26,6 +36,10 @@ export class UserHistory implements UserHistoryInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(REWARDS_PROVIDE.HELPER)
     private readonly rewardsHelper: RewardsHelperInterface,
+    @Inject(USER_SUBSCRIPTION_PROVIDE.REPOSITORY)
+    private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
+    @Inject(WOBJECT_SUBSCRIPTION_PROVIDE.REPOSITORY)
+    private readonly wobjectSubscriptionsRepository: WobjectSubscriptionsRepositoryInterface,
   ) {}
 
   async getHistory({
@@ -100,5 +114,44 @@ export class UserHistory implements UserHistoryInterface {
       statuses: Object.values(RESERVATION_STATUS),
       guideNames: names[0].guideNames,
     };
+  }
+
+  async checkUserFollowings({
+    users,
+    objects,
+    user,
+  }: CheckUserFollowingsInterface): Promise<UserAndObjectFollowing> {
+    const usersSubs = await this.checkUsersFollowing({ user, users });
+    const wobjectSubs = await this.checkObjectsFollowing({ user, objects });
+
+    return {
+      users: usersSubs,
+      objects: wobjectSubs,
+    };
+  }
+
+  async checkUsersFollowing({
+    user,
+    users,
+  }: CheckUsersFollowingInterface): Promise<UserFollowingType[]> {
+    const usersSubs = await this.userSubscriptionRepository.find({
+      filter: { follower: user, following: { $in: users } },
+    });
+    const usersList = _.map(usersSubs, 'following');
+    return users.map((u) => ({ name: u, follow: usersList.includes(u) }));
+  }
+
+  async checkObjectsFollowing({
+    user,
+    objects,
+  }: CheckObjectsFollowingInterface): Promise<ObjectsFollowingType[]> {
+    const wobjectSubs = await this.wobjectSubscriptionsRepository.find({
+      filter: { follower: user, following: { $in: objects } },
+    });
+    const objectsList = _.map(wobjectSubs, 'following');
+    return objects.map((o) => ({
+      authorPermlink: o,
+      follow: objectsList.includes(o),
+    }));
   }
 }
