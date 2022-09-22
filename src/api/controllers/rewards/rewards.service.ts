@@ -18,9 +18,11 @@ import {
   RewardsAllType,
   RewardsByObjectType,
   RewardsTabType,
+  UserAndObjectFollowing,
 } from '../../../domain/campaign/rewards/types';
 import { RewardsMapType } from '../../../domain/campaign/rewards/types';
 import {
+  CheckUserFollowingsInterface,
   GetGuideReservationFiltersInterface,
   GetHistoryInterface,
   GetMapAllInterface,
@@ -152,5 +154,11 @@ export class RewardsService {
     params: GetReservationMessagesInterface,
   ): Promise<RewardsByObjectType> {
     return this.guideReservations.getReservationMessages(params);
+  }
+
+  async checkUserFollowings(
+    params: CheckUserFollowingsInterface,
+  ): Promise<UserAndObjectFollowing> {
+    return this.userHistory.checkUserFollowings(params);
   }
 }

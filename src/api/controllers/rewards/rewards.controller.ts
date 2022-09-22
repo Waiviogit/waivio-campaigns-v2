@@ -11,6 +11,7 @@ import {
   RewardsCanReserveOutDto,
   RewardsMapOutDto,
   RewardsTabDto,
+  UserFollowingsOutDto,
   UserHistoryFiltersDto,
 } from '../../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
@@ -30,6 +31,7 @@ import {
   CONVERSATION_STATUS,
   RESERVATION_STATUS,
 } from '../../../common/constants';
+import { UserFollowingsInDto } from '../../../common/dto/rewards/in/user-followings-in.dto';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -310,5 +312,18 @@ export class RewardsController {
       statuses: Object.values(RESERVATION_STATUS),
       conversations: Object.values(CONVERSATION_STATUS),
     };
+  }
+
+  @Post('following/:userName')
+  @RewardsControllerDoc.checkUserFollowings()
+  async checkUserFollowings(
+    @Param('userName')
+    user: string,
+    @Body() body: UserFollowingsInDto,
+  ): Promise<UserFollowingsOutDto> {
+    return this.rewardsService.checkUserFollowings({
+      user,
+      ...body,
+    });
   }
 }

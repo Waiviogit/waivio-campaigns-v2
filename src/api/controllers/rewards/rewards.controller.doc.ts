@@ -8,7 +8,7 @@ import {
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
   RewardsMapOutDto,
-  RewardsTabDto,
+  RewardsTabDto, UserFollowingsOutDto,
   UserHistoryFiltersDto,
 } from '../../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
@@ -194,6 +194,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: GuideMessagesFiltersDto,
+      }),
+    );
+  }
+
+  static checkUserFollowings(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return users and objects followed',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: UserFollowingsOutDto,
       }),
     );
   }
