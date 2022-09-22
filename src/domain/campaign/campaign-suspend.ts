@@ -106,7 +106,7 @@ export class CampaignSuspend implements CampaignSuspendInterface {
     }
     return this.campaignRedisClient.set(
       `${REDIS_KEY.CAMPAIGN_SUSPEND_WARNING}${guideName}`,
-      '',
+      guideName,
     );
   }
 
