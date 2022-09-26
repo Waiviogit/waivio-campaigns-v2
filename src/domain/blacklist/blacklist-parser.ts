@@ -35,7 +35,7 @@ export class BlacklistParser implements BlacklistParserInterface {
     names,
     type,
   }: BlacklistParseHiveCustomJson): Promise<void> {
-    if (!names) return;
+    if (!Array.isArray(names)) return;
 
     switch (type) {
       case BLACKLIST_COMMAND.REMOVE_USERS_FROM_BLACK_LIST:
