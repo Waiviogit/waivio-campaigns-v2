@@ -2,6 +2,7 @@ import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 import {
+  BLACKLIST_PROVIDE,
   CAMPAIGN_PROVIDE,
   CONVERSATION_STATUS,
   RESERVATION_STATUS,
@@ -20,8 +21,13 @@ import {
 import {
   FilterReservationsAggType,
   FilterReservationsType,
+  InBlacklistType,
   RewardsByObjectType,
 } from './types';
+import {
+  BlacklistHelperInterface,
+  CheckUserInBlacklistInterface,
+} from '../../blacklist/interface';
 
 @Injectable()
 export class GuideReservations implements GuideReservationsInterface {
@@ -30,6 +36,8 @@ export class GuideReservations implements GuideReservationsInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(REWARDS_PROVIDE.HELPER)
     private readonly rewardsHelper: RewardsHelperInterface,
+    @Inject(BLACKLIST_PROVIDE.HELPER)
+    private readonly blacklistHelper: BlacklistHelperInterface,
   ) {}
 
   async getReservationMessages({
@@ -186,5 +194,13 @@ export class GuideReservations implements GuideReservationsInterface {
       statuses: Object.values(RESERVATION_STATUS),
       campaignNames: _.map(names, 'name'),
     };
+  }
+
+  async checkUserInBlacklist({
+    guideName,
+    userName,
+  }: CheckUserInBlacklistInterface): Promise<InBlacklistType> {
+    const { blacklist } = await this.blacklistHelper.getBlacklist(guideName);
+    return { inBlacklist: blacklist.includes(userName) };
   }
 }

@@ -68,7 +68,7 @@ export class BlacklistHelper implements BlacklistHelperInterface {
       filter: { name: { $in: userNames } },
       projection: { name: 1, json_metadata: 1, wobjects_weight: 1 },
     });
-    console.log();
+
     return {
       blackList: _.compact(
         blackList.blackList.map((name) => {

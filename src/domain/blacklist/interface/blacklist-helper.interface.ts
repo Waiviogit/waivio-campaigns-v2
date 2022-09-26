@@ -7,3 +7,8 @@ export interface BlacklistHelperInterface {
 
   getApiBlacklist(user: string): Promise<GetApiBlacklistType>;
 }
+
+export interface CheckUserInBlacklistInterface {
+  guideName: string;
+  userName: string;
+}
