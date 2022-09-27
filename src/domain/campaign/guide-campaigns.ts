@@ -187,6 +187,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
     guideName: string,
   ): Promise<GuideManageCampaignType[]> {
     const limitDate = moment.utc().startOf('month').toDate();
+
     const campaigns: GuideManageCampaignType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
@@ -194,7 +195,12 @@ export class GuideCampaigns implements GuideCampaignsInterface {
             $match: {
               guideName: guideName,
               status: {
-                $in: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.PENDING],
+                $in: [
+                  CAMPAIGN_STATUS.ACTIVE,
+                  CAMPAIGN_STATUS.PENDING,
+                  CAMPAIGN_STATUS.ON_HOLD,
+                  CAMPAIGN_STATUS.REACHED_LIMIT,
+                ],
               },
             },
           },
