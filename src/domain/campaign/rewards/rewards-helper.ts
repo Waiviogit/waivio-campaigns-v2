@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 import {
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_SORTS,
+  PAYOUT_TOKEN,
   RESERVATION_STATUS,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
@@ -12,12 +14,15 @@ import {
   FillUserReservationsInterface,
   RewardsHelperInterface,
 } from './interface';
+import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
 
 @Injectable()
 export class RewardsHelper implements RewardsHelperInterface {
   constructor(
     @Inject(WOBJECT_PROVIDE.HELPER)
     private readonly wobjectHelper: WobjectHelperInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.GUIDE_PAYMENTS_Q)
+    private readonly guidePaymentsQuery: GuidePaymentsQueryInterface,
   ) {}
 
   async fillUserReservations({
@@ -28,6 +33,12 @@ export class RewardsHelper implements RewardsHelperInterface {
     showFraud,
   }: FillUserReservationsInterface): Promise<RewardsByRequiredType[]> {
     const rewards = [];
+
+    const totalGuidePayments =
+      await this.guidePaymentsQuery.getGuidesTotalPayed({
+        guideNames: _.map(campaigns, 'guideName'),
+        payoutToken: _.get(campaigns, '[0].payoutToken', PAYOUT_TOKEN.WAIV),
+      });
 
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
       links: _.uniq([
@@ -55,9 +66,15 @@ export class RewardsHelper implements RewardsHelperInterface {
       const requiredObject = objects.find(
         (o) => o.author_permlink === campaign.requiredObject,
       );
+      const payment = _.find(
+        totalGuidePayments,
+        (el) => (el.guideName = campaign.guideName),
+      );
+
       rewards.push({
         _id: campaign._id,
         payout,
+        totalPayed: _.get(payment, 'payed', 0),
         campaignName: campaign.name,
         payoutToken: campaign.payoutToken,
         countReservationDays: campaign.countReservationDays,
