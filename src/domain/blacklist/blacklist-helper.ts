@@ -29,8 +29,14 @@ export class BlacklistHelper implements BlacklistHelperInterface {
     for (const item of data.followLists) {
       blacklist.push(...item.blackList);
     }
+
+    const filteredBlacklist = _.filter(
+      blacklist,
+      (el) => !_.some(data.whiteList, (w) => w === el),
+    );
+
     return {
-      blacklist: _.uniq(blacklist),
+      blacklist: _.uniq(filteredBlacklist),
       whitelist: data.whiteList,
     };
   }
