@@ -77,8 +77,8 @@ export class CampaignSuspend implements CampaignSuspendInterface {
         payoutToken,
       });
 
-      if (_.isEmpty(payments.histories)) continue;
       await this.checkPayableWarning(guide.guideName, payments.histories);
+      if (_.isEmpty(payments.histories)) continue;
       const notPayedOverDeadline = _.filter(
         payments.histories,
         (el) => el.notPayedPeriod > PAYABLE_DEADLINE,
