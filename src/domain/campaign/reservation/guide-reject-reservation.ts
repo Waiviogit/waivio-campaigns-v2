@@ -8,7 +8,10 @@ import {
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
 
-import { CampaignHelperInterface } from '../interface';
+import {
+  CampaignHelperInterface,
+  CampaignSuspendInterface,
+} from '../interface';
 import { GuideRejectReservationType, UpdateCampaignReviewType } from './types';
 import { GuideRejectReservationInterface } from './interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
@@ -25,6 +28,8 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly sponsorsBot: SponsorsBotInterface,
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
     private readonly campaignPayment: CampaignPaymentRepository,
+    @Inject(CAMPAIGN_PROVIDE.SUSPEND)
+    private readonly campaignSuspend: CampaignSuspendInterface,
   ) {}
 
   private async updateCampaignReview({
@@ -95,5 +100,9 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         });
         break;
     }
+    await this.campaignSuspend.getGuideDebt({
+      guideName,
+      tokens: [campaign.payoutToken],
+    });
   }
 }
