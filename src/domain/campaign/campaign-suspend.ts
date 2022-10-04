@@ -7,6 +7,8 @@ import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  NOTIFICATION_ID,
+  NOTIFICATIONS_PROVIDE,
   PAYABLE_DEADLINE,
   PAYABLE_DEBT_MAX_USD,
   PAYABLE_WARNING,
@@ -23,6 +25,7 @@ import { WobjectHelperInterface } from '../wobject/interface';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
 import { CampaignDocumentType } from '../../persistance/campaign/types';
+import { NotificationsInterface } from '../notifications/interface';
 
 @Injectable()
 export class CampaignSuspend implements CampaignSuspendInterface {
@@ -39,6 +42,8 @@ export class CampaignSuspend implements CampaignSuspendInterface {
     private readonly wobjectHelper: WobjectHelperInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(NOTIFICATIONS_PROVIDE.SERVICE)
+    private readonly notifications: NotificationsInterface,
   ) {}
 
   async startJob(): Promise<void> {
@@ -103,6 +108,19 @@ export class CampaignSuspend implements CampaignSuspendInterface {
       return this.campaignRedisClient.deleteKey(
         `${REDIS_KEY.CAMPAIGN_SUSPEND_WARNING}${guideName}`,
       );
+    }
+    const paymentForNotification = _.maxBy(notPayedWarning, 'notPayedPeriod');
+    const days = PAYABLE_DEADLINE - paymentForNotification.notPayedPeriod;
+    if (days > 0) {
+      await this.notifications.sendNotification({
+        id: NOTIFICATION_ID.CAMPAIGN_MESSAGE,
+        data: {
+          sponsor: guideName,
+          reviewAuthor: paymentForNotification.userName,
+          reviewPermlink: paymentForNotification.notPayedPermlink,
+          days,
+        },
+      });
     }
     return this.campaignRedisClient.set(
       `${REDIS_KEY.CAMPAIGN_SUSPEND_WARNING}${guideName}`,

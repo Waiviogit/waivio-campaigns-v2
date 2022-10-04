@@ -7,6 +7,7 @@ export type PayablesAllType = {
   alias: string;
   notPayedDate: string;
   notPayedPeriod?: number;
+  notPayedPermlink?: string;
 };
 
 export type GetPayablesOutType = {

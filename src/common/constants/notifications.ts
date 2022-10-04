@@ -3,4 +3,5 @@ export const NOTIFICATION_ID = Object.freeze({
   DEACTIVATION_CAMPAIGN: 'deactivationCampaign',
   BELL_WOBJ_REWARDS: 'bellWobjectRewards',
   CAMPAIGN_MESSAGE: 'campaignMessage',
+  SUSPENDED_STATUS: 'suspendedStatus',
 });
