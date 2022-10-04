@@ -28,6 +28,7 @@ export type ReviewCampaignType = Pick<
   userStatus: string;
   referralServer: string;
   rewardRaisedBy: number;
+  rewardReducedBy: number;
   userName: string;
   userId: ObjectId;
 };
@@ -99,6 +100,7 @@ export type GetCampaignPaymentsType = Pick<
   'campaign' | 'beneficiaries' | 'host'
 > & {
   isGuest: boolean;
+  rewardInToken: BigNumber;
 };
 
 export type UpdateUserStatusType = {

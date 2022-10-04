@@ -163,13 +163,9 @@ export class SponsorsBot implements SponsorsBotInterface {
     campaign,
     botName,
     permlink,
+    rewardInToken,
   }: CreateUpvoteRecordsType): Promise<void> {
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
-
-    const rewardInToken = new BigNumber(campaign.rewardInUSD)
-      .dividedBy(campaign.payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision);
-
     for (const matchBot of campaign.matchBots) {
       const bot = await this.sponsorsBotRepository.findOne({
         filter: {
