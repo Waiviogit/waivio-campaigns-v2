@@ -82,7 +82,11 @@ export class CampaignSuspend implements CampaignSuspendInterface {
         payoutToken,
       });
 
-      await this.checkPayableWarning(guide.guideName, payments.histories);
+      await this.checkPayableWarning(
+        guide.guideName,
+        payments.histories,
+        tokenRate,
+      );
       if (_.isEmpty(payments.histories)) continue;
       const notPayedOverDeadline = _.filter(
         payments.histories,
@@ -99,6 +103,7 @@ export class CampaignSuspend implements CampaignSuspendInterface {
   async checkPayableWarning(
     guideName: string,
     histories: PayablesAllType[],
+    tokenRate: number,
   ): Promise<string> {
     const notPayedWarning = _.filter(
       histories,
@@ -110,8 +115,11 @@ export class CampaignSuspend implements CampaignSuspendInterface {
       );
     }
     const paymentForNotification = _.maxBy(notPayedWarning, 'notPayedPeriod');
+
     const days = PAYABLE_DEADLINE - paymentForNotification.notPayedPeriod;
-    if (days > 0) {
+    const debt = this.calcDebtAmount(tokenRate, notPayedWarning);
+
+    if (days > 0 && debt.gt(PAYABLE_DEBT_MAX_USD)) {
       await this.notifications.sendNotification({
         id: NOTIFICATION_ID.CAMPAIGN_MESSAGE,
         data: {
