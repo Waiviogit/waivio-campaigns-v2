@@ -497,6 +497,16 @@ export class RewardsAll implements RewardsAllInterface {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
               reserved: { $gt: ['$assignedUser', []] },
+              reservationCreatedAt: {
+                $let: {
+                  vars: {
+                    firstMember: {
+                      $arrayElemAt: ['$assignedUser', 0],
+                    },
+                  },
+                  in: '$$firstMember.createdAt',
+                },
+              },
               frequencyAssign: 1,
               matchBots: 1,
               agreementObjects: 1,
