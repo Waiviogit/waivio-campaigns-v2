@@ -144,6 +144,13 @@ export class AssignReservation {
         message: 'User is blacklisted',
       };
     }
+
+    if (name === campaign.guideName) {
+      return {
+        isValid: false,
+        message: 'User try to reserve his own campaign',
+      };
+    }
     const user = await this.userRepository.findOne({ filter: { name } });
     const todaySpendTime =
       new Date().getUTCHours() * 3600 +
