@@ -98,6 +98,7 @@ export class RewardsAll implements RewardsAllInterface {
       notAssigned: false,
       frequency: false,
       notBlacklisted: false,
+      notGuide: false,
     };
     if (!userName) return errResponse;
 
@@ -127,6 +128,7 @@ export class RewardsAll implements RewardsAllInterface {
             notAssigned: 1,
             frequency: 1,
             notBlacklisted: { $not: { $in: [userName, '$blacklist'] } },
+            notGuide: { $not: { $eq: [userName, '$guideName'] } },
           },
         },
       ],
