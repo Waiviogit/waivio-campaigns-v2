@@ -48,6 +48,7 @@ export class GuideReservations implements GuideReservationsInterface {
     sort,
     skip,
     limit,
+    reservationPermlink,
   }: GetReservationMessagesInterface): Promise<RewardsByObjectType> {
     const campaigns: CampaignDocumentType[] =
       await this.campaignRepository.aggregate({
@@ -64,6 +65,9 @@ export class GuideReservations implements GuideReservationsInterface {
               ...(caseStatus !== CONVERSATION_STATUS.ALL && {
                 'users.openConversation':
                   caseStatus !== CONVERSATION_STATUS.CLOSE,
+              }),
+              ...(reservationPermlink && {
+                'users.reservationPermlink': reservationPermlink,
               }),
               'users.commentsCount': { $gt: 0 },
             },
