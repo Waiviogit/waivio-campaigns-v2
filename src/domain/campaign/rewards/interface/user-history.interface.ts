@@ -22,6 +22,7 @@ export interface GetHistoryInterface {
   sort?: string;
   skip?: number;
   limit?: number;
+  reservationPermlink?: string;
 }
 
 export interface GetUserHistoryFiltersInterface {

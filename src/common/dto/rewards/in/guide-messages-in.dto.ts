@@ -15,4 +15,9 @@ export class GuideMessagesInDto extends OmitType(GuideReservationsInDto, [
     enum: Object.values(CONVERSATION_STATUS),
   })
   caseStatus?: string = CONVERSATION_STATUS.ALL;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ type: String, required: false })
+  reservationPermlink?: string;
 }

@@ -57,4 +57,5 @@ export interface GetReservationMessagesInterface {
   sort?: string;
   skip?: number;
   limit?: number;
+  reservationPermlink?: string;
 }

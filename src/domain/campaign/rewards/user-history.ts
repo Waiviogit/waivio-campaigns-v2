@@ -50,13 +50,19 @@ export class UserHistory implements UserHistoryInterface {
     skip,
     guideNames,
     statuses,
+    reservationPermlink,
   }: GetHistoryInterface): Promise<RewardsByObjectType> {
     const campaigns: CampaignDocumentType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
           {
             $match: {
-              'users.name': userName,
+              users: {
+                $elemMatch: {
+                  name: userName,
+                  ...(reservationPermlink && { reservationPermlink }),
+                },
+              },
               ...(guideNames && { guideName: { $in: guideNames } }),
             },
           },
