@@ -108,6 +108,13 @@ export const getPayablesPipe = ({
             new Date(),
           ],
         },
+        notPayedPermlink: {
+          $cond: [
+            { $gt: ['$payable', 0] },
+            { $arrayElemAt: ['$notPayed.notPayedReviews.reviewPermlink', -1] },
+            '',
+          ],
+        },
         notPayedPeriod: {
           $cond: [
             { $gt: ['$payable', 0] },

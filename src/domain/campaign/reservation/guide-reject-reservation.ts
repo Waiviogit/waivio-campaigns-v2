@@ -100,9 +100,6 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         });
         break;
     }
-    await this.campaignSuspend.getGuideDebt({
-      guideName,
-      tokens: [campaign.payoutToken],
-    });
+    await this.campaignSuspend.checkGuideForUnblock(guideName);
   }
 }

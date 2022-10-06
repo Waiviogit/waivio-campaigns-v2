@@ -98,6 +98,7 @@ export class RewardsAll implements RewardsAllInterface {
       notAssigned: false,
       frequency: false,
       notBlacklisted: false,
+      notGuide: false,
     };
     if (!userName) return errResponse;
 
@@ -127,6 +128,7 @@ export class RewardsAll implements RewardsAllInterface {
             notAssigned: 1,
             frequency: 1,
             notBlacklisted: { $not: { $in: [userName, '$blacklist'] } },
+            notGuide: { $not: { $eq: [userName, '$guideName'] } },
           },
         },
       ],
@@ -497,6 +499,16 @@ export class RewardsAll implements RewardsAllInterface {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
               reserved: { $gt: ['$assignedUser', []] },
+              reservationCreatedAt: {
+                $let: {
+                  vars: {
+                    firstMember: {
+                      $arrayElemAt: ['$assignedUser', 0],
+                    },
+                  },
+                  in: '$$firstMember.createdAt',
+                },
+              },
               frequencyAssign: 1,
               matchBots: 1,
               agreementObjects: 1,

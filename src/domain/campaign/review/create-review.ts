@@ -263,6 +263,7 @@ export class CreateReview implements CreateReviewInterface {
         userId: rejectedUser._id,
         userName: rejectedUser.name,
         rewardRaisedBy: rejectedUser.rewardRaisedBy,
+        rewardReducedBy: rejectedUser.rewardReducedBy,
         referralServer: rejectedUser.referralServer,
         userStatus: rejectedUser.status,
         userReservationObject: rejectedUser.objectPermlink,
@@ -318,6 +319,17 @@ export class CreateReview implements CreateReviewInterface {
     });
   }
 
+  getAdditionalReward(campaign: ReviewCampaignType): BigNumber {
+    if (campaign.rewardRaisedBy) {
+      return new BigNumber(campaign.rewardRaisedBy);
+    }
+    if (campaign.rewardReducedBy) {
+      return new BigNumber(campaign.rewardReducedBy).negated();
+    }
+
+    return new BigNumber(0);
+  }
+
   async createReview({
     campaign,
     botName,
@@ -335,10 +347,20 @@ export class CreateReview implements CreateReviewInterface {
     );
     if (_.isEmpty(objectPermlink)) return;
     await this.updateReviewStatuses({ campaign, images, reviewPermlink });
+
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+
+    const additionalReward = this.getAdditionalReward(campaign);
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(campaign.payoutTokenRateUSD)
+      .plus(additionalReward)
+      .decimalPlaces(tokenPrecision);
+
     await this.sponsorsBot.createUpvoteRecords({
       campaign,
       botName,
       permlink: reviewPermlink,
+      rewardInToken,
     });
 
     const payments = await this.getCampaignPayments({
@@ -346,6 +368,7 @@ export class CreateReview implements CreateReviewInterface {
       campaign,
       host,
       isGuest: !!botName,
+      rewardInToken,
     });
 
     await this.createCampaignPayments({
@@ -483,13 +506,9 @@ export class CreateReview implements CreateReviewInterface {
     isGuest,
     beneficiaries,
     host,
+    rewardInToken,
   }: GetCampaignPaymentsType): Promise<CampaignPaymentType[]> {
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
-
-    const rewardInToken = new BigNumber(campaign.rewardInUSD)
-      .dividedBy(campaign.payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision);
-
     const user = await this.userRepository.findOne({
       filter: { name: campaign.userName },
     });
@@ -742,6 +761,7 @@ export class CreateReview implements CreateReviewInterface {
             userId: '$users._id',
             userName: '$users.name',
             rewardRaisedBy: '$users.rewardRaisedBy',
+            rewardReducedBy: '$users.rewardReducedBy',
             referralServer: '$users.referralServer',
             userStatus: '$users.status',
             userReservationObject: '$users.objectPermlink',

@@ -116,6 +116,7 @@ export type CanReserveType = {
   notAssigned: boolean;
   frequency: boolean;
   notBlacklisted: boolean;
+  notGuide: boolean;
 };
 
 export type GetEligiblePipeType = {

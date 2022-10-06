@@ -129,10 +129,10 @@ export class RewardsHelper implements RewardsHelperInterface {
         return _.orderBy(rewards, ['payout'], ['desc']);
       case CAMPAIGN_SORTS.RESERVATION:
       case CAMPAIGN_SORTS.INQUIRY_DATE:
-        return _.orderBy(rewards, ['users.reservationCreatedAt'], ['desc']);
+        return _.orderBy(rewards, ['reservationCreatedAt'], ['desc']);
       case CAMPAIGN_SORTS.LAST_ACTION:
       case CAMPAIGN_SORTS.LATEST:
-        return _.orderBy(rewards, ['users.reservationUpdatedAt'], ['desc']);
+        return _.orderBy(rewards, ['reservationUpdatedAt'], ['desc']);
 
       case CAMPAIGN_SORTS.DEFAULT:
       default:

@@ -25,4 +25,9 @@ export class UserHistoryInDto extends SkipLimitDto {
   @IsString({ each: true })
   @ApiProperty({ type: [String], required: false })
   statuses?: string[];
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ type: String, required: false })
+  reservationPermlink?: string;
 }

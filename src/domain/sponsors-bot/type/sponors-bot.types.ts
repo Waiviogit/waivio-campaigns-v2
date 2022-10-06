@@ -27,6 +27,7 @@ export type CreateUpvoteRecordsType = {
   campaign: ReviewCampaignType;
   permlink: string;
   botName?: string;
+  rewardInToken: BigNumber;
 };
 
 export type GetWeightToVoteType = {

@@ -55,7 +55,8 @@ export class ReservationHelper implements ReservationHelperInterface {
         author,
         guideName: campaign.guideName,
         campaignName: campaign.name,
-        reservedUser: _.get(campaign, 'users[0].name,'),
+        reservedUser: _.get(campaign, 'users[0].name'),
+        newCampaigns: true,
       },
     });
 
