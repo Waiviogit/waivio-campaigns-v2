@@ -60,7 +60,6 @@ export class UserHistory implements UserHistoryInterface {
               users: {
                 $elemMatch: {
                   name: userName,
-                  ...(reservationPermlink && { reservationPermlink }),
                 },
               },
               ...(guideNames && { guideName: { $in: guideNames } }),
@@ -71,6 +70,9 @@ export class UserHistory implements UserHistoryInterface {
             $match: {
               'users.name': userName,
               ...(statuses && { 'users.status': { $in: statuses } }),
+              ...(reservationPermlink && {
+                'users.reservationPermlink': reservationPermlink,
+              }),
             },
           },
         ],
