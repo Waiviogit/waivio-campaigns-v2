@@ -261,6 +261,7 @@ export class RewardsAll implements RewardsAllInterface {
     area,
     userName,
     activationPermlink,
+    radius,
   }: GetRewardsEligibleType): Promise<RewardsAllType> {
     const user = await this.userRepository.findOne({
       filter: { name: userName },
@@ -291,6 +292,7 @@ export class RewardsAll implements RewardsAllInterface {
       sort,
       area,
       campaigns,
+      radius,
     });
   }
 
@@ -374,6 +376,7 @@ export class RewardsAll implements RewardsAllInterface {
     sort,
     area,
     requiredObjects,
+    radius,
   }: GetRewardsMainType): Promise<RewardsAllType> {
     const campaigns = await this.campaignRepository.find({
       filter: {
@@ -391,6 +394,7 @@ export class RewardsAll implements RewardsAllInterface {
       sort,
       area,
       campaigns,
+      radius,
     });
   }
 
@@ -401,6 +405,7 @@ export class RewardsAll implements RewardsAllInterface {
     sort,
     area,
     campaigns,
+    radius,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
@@ -423,6 +428,14 @@ export class RewardsAll implements RewardsAllInterface {
       const payout = this.rewardsHelper.getPayedForMain(groupedCampaigns[key]);
       const coordinates =
         _.compact(this.rewardsHelper.parseCoordinates(object?.map)) || [];
+
+      const distance =
+        area && coordinates.length === 2
+          ? this.rewardsHelper.getDistance(area, coordinates)
+          : null;
+      if (radius) {
+        if (distance > radius) continue;
+      }
       rewards.push({
         lastCreated: _.maxBy(
           groupedCampaigns[key],
@@ -436,10 +449,7 @@ export class RewardsAll implements RewardsAllInterface {
           groupedCampaigns[key],
           (campaign) => campaign.rewardInUSD,
         ).rewardInUSD,
-        distance:
-          area && coordinates.length === 2
-            ? this.rewardsHelper.getDistance(area, coordinates)
-            : null,
+        distance,
         object,
         payout,
       });
