@@ -17,6 +17,7 @@ import {
   REDIS_PROVIDE,
   REDIS_KEY,
   REWARDS_PROVIDE,
+  WOBJECT_STATUS,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -410,6 +411,15 @@ export class RewardsAll implements RewardsAllInterface {
     const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
     for (const key in groupedCampaigns) {
       const object = objects.find((o) => o.author_permlink === key);
+      if (!object) continue;
+      if (
+        _.includes(
+          [WOBJECT_STATUS.RELISTED, WOBJECT_STATUS.UNAVAILABLE],
+          _.get(object, 'status.title'),
+        )
+      ) {
+        continue;
+      }
       const payout = this.rewardsHelper.getPayedForMain(groupedCampaigns[key]);
       const coordinates =
         _.compact(this.rewardsHelper.parseCoordinates(object?.map)) || [];

@@ -51,8 +51,8 @@ export const CAMPAIGN_STATUSES_FOR_ON_HOLD = [
 
 export const RESERVATION_STATUS = Object.freeze({
   ASSIGNED: 'assigned',
-  UNASSIGNED: 'unassigned',
   COMPLETED: 'completed',
+  UNASSIGNED: 'unassigned',
   REJECTED: 'rejected',
   EXPIRED: 'expired',
 });

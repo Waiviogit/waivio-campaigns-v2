@@ -112,6 +112,7 @@ export class Notifications implements NotificationsInterface {
         users,
         author_permlink: campaign.requiredObject,
         object_name,
+        newCampaigns: true,
       },
     });
     await this.sendBellNotification({
