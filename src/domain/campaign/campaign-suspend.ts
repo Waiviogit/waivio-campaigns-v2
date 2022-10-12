@@ -139,7 +139,7 @@ export class CampaignSuspend implements CampaignSuspendInterface {
   calcDebtAmount(tokenRate: number, histories: PayablesAllType[]): BigNumber {
     return _.reduce(
       histories,
-      (acc, el) => acc.plus(el.payable),
+      (acc, el) => acc.plus(new BigNumber(el.payable).times(tokenRate)),
       new BigNumber(0),
     );
   }
