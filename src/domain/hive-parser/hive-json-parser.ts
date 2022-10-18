@@ -26,10 +26,10 @@ export class HiveJsonParser implements HiveJsonParserInterface {
     transaction_id,
   }: HiveCustomJsonType): Promise<void> {
     const parsedJson = parseJSON(json);
+    if (!parsedJson) return;
     const authorizedUser = _.isEmpty(required_auths)
       ? required_posting_auths[0]
       : required_auths[0];
-
     await this.blacklistParser.parseHiveCustomJson({
       user: authorizedUser,
       names: parsedJson.names,
