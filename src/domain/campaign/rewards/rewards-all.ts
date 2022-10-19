@@ -324,8 +324,6 @@ export class RewardsAll implements RewardsAllInterface {
           ...(await this.getEligiblePipe({ userName, user })),
           { $sort: { rewardInUsd: -1 } },
           { $unwind: { path: '$objects' } },
-          { $skip: skip },
-          { $limit: limit + 1 },
           {
             $lookup: {
               from: COLLECTION.WOBJECTS,
@@ -353,6 +351,15 @@ export class RewardsAll implements RewardsAllInterface {
               activationPermlink: 1,
             },
           },
+          {
+            $match: {
+              'object.status.title': {
+                $nin: [WOBJECT_STATUS.UNAVAILABLE, WOBJECT_STATUS.RELISTED],
+              },
+            },
+          },
+          { $skip: skip },
+          { $limit: limit + 1 },
         ],
       });
 
@@ -486,8 +493,6 @@ export class RewardsAll implements RewardsAllInterface {
           },
           { $sort: { rewardInUsd: -1 } },
           { $unwind: { path: '$objects' } },
-          { $skip: skip },
-          { $limit: limit + 1 },
           {
             $lookup: {
               from: COLLECTION.WOBJECTS,
@@ -546,6 +551,15 @@ export class RewardsAll implements RewardsAllInterface {
               activationPermlink: 1,
             },
           },
+          {
+            $match: {
+              'object.status.title': {
+                $nin: [WOBJECT_STATUS.UNAVAILABLE, WOBJECT_STATUS.RELISTED],
+              },
+            },
+          },
+          { $skip: skip },
+          { $limit: limit + 1 },
         ],
       });
 
