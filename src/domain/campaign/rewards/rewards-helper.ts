@@ -107,6 +107,7 @@ export class RewardsHelper implements RewardsHelperInterface {
           'default_name',
           'defaultShowLink',
           'author_permlink',
+          'map',
         ]),
         ...(showFraud && { fraudCodes: user.fraudCodes }),
       });
