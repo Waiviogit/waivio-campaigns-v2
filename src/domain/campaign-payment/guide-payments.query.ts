@@ -131,7 +131,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     for (const history of histories) {
       if (
         _.includes(
-          ['transfer', 'demo_debt', 'overpayment_refund'],
+          ['transfer', 'demo_debt', 'overpayment_refund', 'transferToGuest'],
           history.type,
         )
       ) {
