@@ -69,4 +69,37 @@ export abstract class RedisClient
       this.logger.error(error.message);
     }
   }
+
+  async zadd(key: string, score: number, member: string): Promise<string> {
+    try {
+      return this.client.sendCommand(['ZADD', key, String(score), member]);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async zremrangebyscore(
+    key: string,
+    min: number,
+    max: number,
+  ): Promise<string> {
+    try {
+      return this.client.sendCommand([
+        'ZREMRANGEBYSCORE',
+        key,
+        String(min),
+        String(max),
+      ]);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async zrem(key: string, member: string): Promise<string> {
+    try {
+      return this.client.sendCommand(['ZREM', key, member]);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }

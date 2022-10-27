@@ -6,6 +6,10 @@ export const WOBJECT_SUBSCRIPTION_PROVIDE = Object.freeze({
   REPOSITORY: 'WobjectSubscriptionsRepository',
 });
 
+export const CAMPAIGN_POSTS_PROVIDE = Object.freeze({
+  REPOSITORY: 'CampaignPostsRepository',
+});
+
 export const WOBJECT_PROVIDE = Object.freeze({
   REPOSITORY: 'WobjectRepository',
   HELPER: 'WobjectHelper',

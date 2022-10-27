@@ -5,4 +5,7 @@ export interface RedisClientInterface {
   deleteKey(key: string): Promise<string>;
   hGetAll(key: string): Promise<object>;
   publish(key: string, data: string): Promise<string>;
+  zadd(key: string, score: number, member: string): Promise<string>;
+  zremrangebyscore(key: string, min: number, max: number): Promise<string>;
+  zrem(key: string, member: string): Promise<string>;
 }
