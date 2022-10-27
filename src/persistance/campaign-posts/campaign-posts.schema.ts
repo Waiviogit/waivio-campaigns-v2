@@ -13,6 +13,9 @@ export class CampaignPost {
 
   @Prop({ type: String })
   symbol: string;
+
+  @Prop({ type: String })
+  guideName: string;
 }
 
 export const CampaignPostsSchema = SchemaFactory.createForClass(CampaignPost);

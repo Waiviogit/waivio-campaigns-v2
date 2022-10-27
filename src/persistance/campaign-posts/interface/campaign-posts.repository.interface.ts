@@ -15,6 +15,7 @@ export interface CampaignPostCreateInterface {
   permlink: string;
   rewardInToken: number;
   symbol: string;
+  guideName: string;
 }
 
 export interface CampaignPostDeleteInterface {

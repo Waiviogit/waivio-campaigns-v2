@@ -392,6 +392,7 @@ export class CreateReview implements CreateReviewInterface {
       permlink: reviewPermlink,
       rewardInToken: rewardInToken.toNumber(),
       symbol: campaign.payoutToken,
+      guideName: campaign.guideName,
     });
   }
 
