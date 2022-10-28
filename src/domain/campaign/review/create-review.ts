@@ -10,6 +10,7 @@ import {
   POST_PROVIDE,
   REDIS_DAYS_TO_SUSPEND,
   REDIS_EXPIRE,
+  CAMPAIGN_POSTS_PROVIDE,
   REFERRAL_TYPES,
   REGEX_WOBJECT_REF,
   RESERVATION_STATUS,
@@ -55,6 +56,7 @@ import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaig
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 import { getBodyLinksArray, parseJSON } from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
+import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-posts/interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -77,6 +79,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
     @Inject(SPONSORS_BOT_PROVIDE.BOT)
     private readonly sponsorsBot: SponsorsBotInterface,
+    @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
+    private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
   ) {}
 
   async raiseReward({
@@ -227,6 +231,7 @@ export class CreateReview implements CreateReviewInterface {
         images: _.get(metadata, 'image', []),
         host: _.get(metadata, 'host', ''),
         botName,
+        postAuthor,
       });
     }
   }
@@ -294,6 +299,7 @@ export class CreateReview implements CreateReviewInterface {
         host: _.get(parseJSON(post.json_metadata), 'host', null),
         reviewPermlink: post.permlink,
         images: _.get(parseJSON(post.json_metadata), 'image', []),
+        postAuthor: rejectedUser.name,
       });
     }
 
@@ -340,6 +346,7 @@ export class CreateReview implements CreateReviewInterface {
     host,
     images,
     reviewPermlink,
+    postAuthor,
   }: CreateReviewType): Promise<void> {
     const objectPermlink = _.find(
       objects,
@@ -378,6 +385,14 @@ export class CreateReview implements CreateReviewInterface {
       botName,
       reviewPermlink,
       title,
+    });
+
+    await this.campaignPostsRepository.create({
+      author: postAuthor,
+      permlink: reviewPermlink,
+      rewardInToken: rewardInToken.toNumber(),
+      symbol: campaign.payoutToken,
+      guideName: campaign.guideName,
     });
   }
 
