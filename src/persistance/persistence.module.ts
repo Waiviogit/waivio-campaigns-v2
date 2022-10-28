@@ -12,6 +12,7 @@ import { CampaignPaymentPersistenceModule } from './campaign-payment/campaign-pa
 import { SponsorsBotPersistenceModule } from './sponsors-bot/sponsors-bot.persistence.module';
 import { SponsorsBotUpvotePersistenceModule } from './sponsors-bot-upvote/sponsors-bot-upvote.persistence.module';
 import { BlacklistPersistenceModule } from './blacklist/blacklist.persistence.module';
+import { CampaignPostsPersistenceModule } from './campaign-posts/campaign-posts.persistence.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { BlacklistPersistenceModule } from './blacklist/blacklist.persistence.mo
     CampaignPaymentPersistenceModule,
     SponsorsBotPersistenceModule,
     SponsorsBotUpvotePersistenceModule,
+    CampaignPostsPersistenceModule,
   ],
   exports: [
     BlacklistPersistenceModule,
@@ -41,6 +43,7 @@ import { BlacklistPersistenceModule } from './blacklist/blacklist.persistence.mo
     CampaignPaymentPersistenceModule,
     SponsorsBotPersistenceModule,
     SponsorsBotUpvotePersistenceModule,
+    CampaignPostsPersistenceModule,
   ],
 })
 export class PersistenceModule {}

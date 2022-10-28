@@ -49,6 +49,7 @@ export type CreateReviewType = {
   host: string;
   images: string[];
   reviewPermlink: string;
+  postAuthor: string;
 };
 
 export type ParseReviewType = {
