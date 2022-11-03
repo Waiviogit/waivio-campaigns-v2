@@ -99,6 +99,12 @@ export class ObjectRewards implements ObjectRewardsInterface {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
               reserved: { $gt: ['$assignedUser', []] },
+              commentsCount: {
+                $arrayElemAt: ['$assignedUser.commentsCount', 0],
+              },
+              reservationPermlink: {
+                $arrayElemAt: ['$assignedUser.reservationPermlink', 0],
+              },
               reservationCreatedAt: {
                 $let: {
                   vars: {

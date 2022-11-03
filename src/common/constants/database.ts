@@ -6,6 +6,7 @@ export const CONNECTION_MONGO = Object.freeze({
 export const COLLECTION = Object.freeze({
   CAMPAIGNS: 'campaignsV2',
   CAMPAIGN_PAYMENT: 'campaign_payments',
+  CAMPAIGN_POSTS: 'campaign_posts',
   USERS: 'users',
   WOBJECTS: 'wobjects',
   USER_SUBSCRIPTIONS: 'subscriptions',

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   CAMPAIGN_PAYMENT_PROVIDE,
+  CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
   RESERVATION_STATUS,
   SPONSORS_BOT_PROVIDE,
@@ -16,6 +17,7 @@ import { GuideRejectReservationType, UpdateCampaignReviewType } from './types';
 import { GuideRejectReservationInterface } from './interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 import { CampaignPaymentRepository } from '../../../persistance/campaign-payment/campaign-payment.repository';
+import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-posts/interface';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -30,6 +32,8 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly campaignPayment: CampaignPaymentRepository,
     @Inject(CAMPAIGN_PROVIDE.SUSPEND)
     private readonly campaignSuspend: CampaignSuspendInterface,
+    @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
+    private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
   ) {}
 
   private async updateCampaignReview({
@@ -101,5 +105,8 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         break;
     }
     await this.campaignSuspend.checkGuideForUnblock(guideName);
+    await this.campaignPostsRepository.delete({
+      filter: { author: user.name, permlink: user.reviewPermlink },
+    });
   }
 }
