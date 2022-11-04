@@ -527,8 +527,15 @@ export class CreateReview implements CreateReviewInterface {
     const user = await this.userRepository.findOne({
       filter: { name: campaign.userName },
     });
+
+    let userForReward = campaign.userName;
     if (isGuest) {
-      if (!_.get(user, 'user_metadata.settings.hiveBeneficiaryAccount')) {
+      const hiveBeneficiaryAccount = _.get(
+        user,
+        'user_metadata.settings.hiveBeneficiaryAccount',
+      );
+      if (hiveBeneficiaryAccount) userForReward = hiveBeneficiaryAccount;
+      if (!hiveBeneficiaryAccount) {
         beneficiaries = _.filter(
           beneficiaries,
           (el) => el.account !== GUEST_BNF_ACC,
@@ -543,7 +550,7 @@ export class CreateReview implements CreateReviewInterface {
     });
 
     const reviewPayment = this.getReviewPayment({
-      userName: campaign.userName,
+      userName: userForReward,
       beneficiariesPayments,
       rewardInToken,
     });
