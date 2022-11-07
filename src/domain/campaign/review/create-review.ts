@@ -528,13 +528,11 @@ export class CreateReview implements CreateReviewInterface {
       filter: { name: campaign.userName },
     });
 
-    let userForReward = campaign.userName;
     if (isGuest) {
       const hiveBeneficiaryAccount = _.get(
         user,
         'user_metadata.settings.hiveBeneficiaryAccount',
       );
-      if (hiveBeneficiaryAccount) userForReward = hiveBeneficiaryAccount;
       if (!hiveBeneficiaryAccount) {
         beneficiaries = _.filter(
           beneficiaries,
@@ -550,7 +548,7 @@ export class CreateReview implements CreateReviewInterface {
     });
 
     const reviewPayment = this.getReviewPayment({
-      userName: userForReward,
+      userName: campaign.userName,
       beneficiariesPayments,
       rewardInToken,
     });
