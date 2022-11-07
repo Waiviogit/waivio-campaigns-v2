@@ -57,11 +57,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     transaction_id,
   }: HiveCommentParseType): Promise<void> {
     const extensions = _.get(options, '[1].extensions', null);
-
-    const beneficiaries = _.find(
-      extensions,
-      (ex) => _.get(ex, 'type') === 'comment_payout_beneficiaries',
-    );
+    const beneficiaries = _.get(extensions, '[0][1].beneficiaries', []);
 
     const metadata = parseJSON(comment.json_metadata, {});
     const app = metadata?.app;
@@ -71,7 +67,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
       comment,
       metadata,
       app,
-      beneficiaries: _.get(beneficiaries, 'value.beneficiaries', []),
+      beneficiaries,
     });
 
     if (metadata?.waivioRewards) {
