@@ -527,8 +527,13 @@ export class CreateReview implements CreateReviewInterface {
     const user = await this.userRepository.findOne({
       filter: { name: campaign.userName },
     });
+
     if (isGuest) {
-      if (!_.get(user, 'user_metadata.settings.hiveBeneficiaryAccount')) {
+      const hiveBeneficiaryAccount = _.get(
+        user,
+        'user_metadata.settings.hiveBeneficiaryAccount',
+      );
+      if (!hiveBeneficiaryAccount) {
         beneficiaries = _.filter(
           beneficiaries,
           (el) => el.account !== GUEST_BNF_ACC,
