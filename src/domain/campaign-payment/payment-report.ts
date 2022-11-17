@@ -192,7 +192,7 @@ export class PaymentReport implements PaymentReportInterface {
     if (!users.length || !campaign || !histories.length) return;
 
     const rewards = _.filter(histories, (history) =>
-      _.includes(['beneficiary_fee', 'review'], history.type),
+      _.includes(['beneficiaryFee', 'review'], history.type),
     );
 
     let rewardTokenAmount = sumBy({
