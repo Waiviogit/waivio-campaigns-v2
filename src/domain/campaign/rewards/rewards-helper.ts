@@ -83,6 +83,7 @@ export class RewardsHelper implements RewardsHelperInterface {
         rewardInUSD: campaign.rewardInUSD,
         guideName: campaign.guideName,
         userName: user.name,
+        rootName: user.rootName,
         reviewStatus: user.status,
         requirements: campaign.requirements,
         userRequirements: campaign.userRequirements,
