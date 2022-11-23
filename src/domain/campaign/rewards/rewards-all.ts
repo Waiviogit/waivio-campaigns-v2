@@ -544,6 +544,16 @@ export class RewardsAll implements RewardsAllInterface {
                   in: '$$firstMember.reservationPermlink',
                 },
               },
+              rootName: {
+                $let: {
+                  vars: {
+                    firstMember: {
+                      $arrayElemAt: ['$assignedUser', 0],
+                    },
+                  },
+                  in: '$$firstMember.rootName',
+                },
+              },
               frequencyAssign: 1,
               matchBots: 1,
               agreementObjects: 1,
