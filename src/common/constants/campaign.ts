@@ -78,6 +78,7 @@ export const SUPPORTED_CURRENCY = Object.freeze({
   CNY: 'CNY',
   RUB: 'RUB',
   UAH: 'UAH',
+  CHF: 'CHF',
 });
 
 export const PAYOUT_TOKEN = Object.freeze({

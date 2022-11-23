@@ -9,6 +9,7 @@ export const SUPPORTED_CURRENCIES = Object.freeze({
   CNY: 'CNY',
   RUB: 'RUB',
   UAH: 'UAH',
+  CHF: 'CHF',
 });
 
 export const SUPPORTED_CRYPTO_CURRENCIES = Object.freeze({
