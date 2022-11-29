@@ -52,7 +52,10 @@ export class HiveJsonParser implements HiveJsonParserInterface {
   }
 
   async publishToChannel(transaction_id: string, id: string): Promise<void> {
-    const operationsToPublish = ['confirm_referral_license'];
+    const operationsToPublish = [
+      'confirm_referral_license',
+      'reject_referral_license',
+    ];
 
     if (!operationsToPublish.includes(id)) return;
 
