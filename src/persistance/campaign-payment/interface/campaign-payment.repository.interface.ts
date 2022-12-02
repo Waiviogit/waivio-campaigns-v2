@@ -31,6 +31,11 @@ export interface CampaignPaymentRepositoryInterface {
     projection,
     options,
   }: CampaignPaymentFindInterface): Promise<CampaignPaymentDocumentType>;
+  find({
+    filter,
+    projection,
+    options,
+  }: CampaignPaymentFindInterface): Promise<CampaignPaymentDocumentType[]>;
 }
 
 export interface CampaignPaymentUpdateInterface {

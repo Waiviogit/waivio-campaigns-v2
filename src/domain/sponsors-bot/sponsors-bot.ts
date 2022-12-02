@@ -365,6 +365,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     weight,
     authorReward,
   }: UpdateDataAfterVoteType): Promise<void> {
+    let ratioReview = new BigNumber(1);
     await this.sponsorsBotUpvoteRepository.updateStatus({
       _id: upvote._id,
       status: BOT_UPVOTE_STATUS.UPVOTED,
@@ -377,6 +378,31 @@ export class SponsorsBot implements SponsorsBotInterface {
       update: { $inc: { totalVotesWeight: authorReward.toNumber() } },
     });
 
+    const payments = await this.campaignPaymentRepository.find({
+      filter: {
+        reviewPermlink: upvote.permlink,
+        type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE,
+      },
+    });
+
+    for (const payment of payments) {
+      const beneficiary = _.find(
+        payment.beneficiaries,
+        (b) => b.account === payment.userName,
+      );
+      if (!beneficiary) continue;
+      const beneficiaryShare = new BigNumber(beneficiary.weight).div(10000);
+      await this.campaignPaymentRepository.updateOne({
+        filter: {
+          _id: payment._id,
+        },
+        update: {
+          $inc: { votesAmount: authorReward.times(beneficiaryShare).dp(8) },
+        },
+      });
+      ratioReview = new BigNumber(ratioReview).minus(beneficiaryShare);
+    }
+
     await this.campaignPaymentRepository.updateOne({
       filter: {
         type: CAMPAIGN_PAYMENT.REVIEW,
@@ -384,7 +410,7 @@ export class SponsorsBot implements SponsorsBotInterface {
         reviewPermlink: upvote.permlink,
       },
       update: {
-        $inc: { votesAmount: authorReward },
+        $inc: { votesAmount: authorReward.times(ratioReview).dp(8) },
       },
     });
   }
