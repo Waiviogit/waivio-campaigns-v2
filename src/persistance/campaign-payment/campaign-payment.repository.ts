@@ -79,4 +79,16 @@ export class CampaignPaymentRepository
       this.logger.error(error.message);
     }
   }
+
+  async find({
+    filter,
+    projection,
+    options,
+  }: CampaignPaymentFindInterface): Promise<CampaignPaymentDocumentType[]> {
+    try {
+      return this.model.find(filter, projection, options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }
