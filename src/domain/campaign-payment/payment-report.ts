@@ -183,7 +183,12 @@ export class PaymentReport implements PaymentReportInterface {
                   to: 'double',
                 },
               },
-              amount: { $convert: { input: '$amount', to: 'double' } },
+              amount: {
+                $convert: {
+                  input: { $subtract: ['$amount', '$votesAmount'] },
+                  to: 'double',
+                },
+              },
               commission: { $convert: { input: '$commission', to: 'double' } },
               votesAmount: {
                 $convert: { input: '$votesAmount', to: 'double' },
