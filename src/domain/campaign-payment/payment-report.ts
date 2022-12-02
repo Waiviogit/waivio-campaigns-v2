@@ -175,10 +175,7 @@ export class PaymentReport implements PaymentReportInterface {
               payableInUSD: {
                 $convert: {
                   input: {
-                    $multiply: [
-                      { $sum: ['$amount', '$votesAmount'] },
-                      reservation.payoutTokenRateUSD,
-                    ],
+                    $multiply: ['$amount', reservation.payoutTokenRateUSD],
                   },
                   to: 'double',
                 },
