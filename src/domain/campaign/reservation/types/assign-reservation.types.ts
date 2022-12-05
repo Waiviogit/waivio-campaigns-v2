@@ -15,6 +15,7 @@ export type AssignReservationType = {
   reservationPermlink: string;
   rootName: string;
   referralServer: string;
+  payoutTokenRateUSD?: number;
 };
 
 export type ValidateAssignType = Omit<
