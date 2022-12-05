@@ -119,6 +119,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           rootName: author,
           requiredObject: metadata.waivioRewards.requiredObject,
           referralServer: app,
+          payoutTokenRateUSD: metadata.waivioRewards.payoutTokenRateUSD,
         });
         break;
       case 'rejectReservation':

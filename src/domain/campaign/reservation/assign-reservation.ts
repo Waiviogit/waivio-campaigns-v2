@@ -46,6 +46,7 @@ export class AssignReservation {
     requiredObject,
     rootName,
     referralServer,
+    payoutTokenRateUSD,
   }: AssignReservationType): Promise<void> {
     const { isValid, reservationTime } = await this.validateAssign({
       activationPermlink,
@@ -69,16 +70,17 @@ export class AssignReservation {
       projection: { payoutToken: 1 },
     });
 
-    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
-      campaign.payoutToken,
-    );
-
     if (!payoutTokenRateUSD) {
-      await this.campaignRedisClient.publish(
-        REDIS_KEY.PUBLISH_EXPIRE_ASSIGN_FALSE,
-        reservationPermlink,
+      payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+        campaign.payoutToken,
       );
-      return;
+      if (!payoutTokenRateUSD) {
+        await this.campaignRedisClient.publish(
+          REDIS_KEY.PUBLISH_EXPIRE_ASSIGN_FALSE,
+          reservationPermlink,
+        );
+        return;
+      }
     }
 
     await this.campaignRepository.updateOne({
