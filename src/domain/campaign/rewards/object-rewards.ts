@@ -115,6 +115,26 @@ export class ObjectRewards implements ObjectRewardsInterface {
                   in: '$$firstMember.createdAt',
                 },
               },
+              rootName: {
+                $let: {
+                  vars: {
+                    firstMember: {
+                      $arrayElemAt: ['$assignedUser', 0],
+                    },
+                  },
+                  in: '$$firstMember.rootName',
+                },
+              },
+              payoutTokenRateUSD: {
+                $let: {
+                  vars: {
+                    firstMember: {
+                      $arrayElemAt: ['$assignedUser', 0],
+                    },
+                  },
+                  in: '$$firstMember.payoutTokenRateUSD',
+                },
+              },
               frequencyAssign: 1,
               matchBots: 1,
               agreementObjects: 1,
