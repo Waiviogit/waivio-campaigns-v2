@@ -97,6 +97,7 @@ export class RewardsHelper implements RewardsHelperInterface {
         commentsCount: user.commentsCount || 0,
         reservationCreatedAt: user.createdAt,
         reservationUpdatedAt: user.updatedAt,
+        payoutTokenRateUSD: user.payoutTokenRateUSD,
         distance:
           area && coordinates.length === 2
             ? this.getDistance(area, coordinates)

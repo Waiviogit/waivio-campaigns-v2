@@ -554,6 +554,16 @@ export class RewardsAll implements RewardsAllInterface {
                   in: '$$firstMember.commentsCount',
                 },
               },
+              payoutTokenRateUSD: {
+                $let: {
+                  vars: {
+                    firstMember: {
+                      $arrayElemAt: ['$assignedUser', 0],
+                    },
+                  },
+                  in: '$$firstMember.payoutTokenRateUSD',
+                },
+              },
               rootName: {
                 $let: {
                   vars: {
