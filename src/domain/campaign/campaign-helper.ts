@@ -189,7 +189,7 @@ export class CampaignHelper implements CampaignHelperInterface {
       case PAYOUT_TOKEN.HIVE:
         return this.getHiveRateUSD();
       case PAYOUT_TOKEN.WAIV:
-        return this.getWaivRateUSD();
+        return this.getEngineRateUSD();
     }
   }
 
@@ -199,6 +199,17 @@ export class CampaignHelper implements CampaignHelperInterface {
         `https://${configService.getAppHost()}/currencies-api/marketInfo?ids=hive&currencies=usd`,
       );
       return _.get(result, 'data.current.hive.usd');
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async getEngineRateUSD(symbol = 'WAIV'): Promise<number> {
+    try {
+      const result = await axios.get(
+        `https://${configService.getAppHost()}/currencies-api/engine-rates?base=${symbol}`,
+      );
+      return _.get(result, 'data.current.rates.USD');
     } catch (error) {
       this.logger.error(error.message);
     }
