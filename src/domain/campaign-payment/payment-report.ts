@@ -216,15 +216,15 @@ export class PaymentReport implements PaymentReportInterface {
       (history) => history.type === 'review',
     );
 
-    if (rewardRecord.voteAmount) {
+    if (rewardRecord.votesAmount) {
       rewardTokenAmount = new BigNumber(rewardTokenAmount)
         .plus(
           sumBy({
             arr: rewards,
             callback: (reward) => _.get(reward, 'votesAmount', 0),
+            dp: PAYOUT_TOKEN_PRECISION[payoutToken],
           }),
         )
-        .dp(PAYOUT_TOKEN_PRECISION[payoutToken])
         .toNumber();
     }
 
