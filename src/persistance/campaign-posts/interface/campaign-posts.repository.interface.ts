@@ -14,6 +14,7 @@ export interface CampaignPostCreateInterface {
   author: string;
   permlink: string;
   rewardInToken: number;
+  payoutTokenRateUSD: number;
   symbol: string;
   guideName: string;
 }

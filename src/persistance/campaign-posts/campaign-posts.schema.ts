@@ -11,6 +11,9 @@ export class CampaignPost {
   @Prop({ type: Number })
   rewardInToken: number;
 
+  @Prop({ type: Number })
+  payoutTokenRateUSD: number;
+
   @Prop({ type: String })
   symbol: string;
 
