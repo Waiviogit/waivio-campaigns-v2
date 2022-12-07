@@ -18,6 +18,8 @@ import {
   REDIS_KEY,
   REWARDS_PROVIDE,
   WOBJECT_STATUS,
+  WOBJECT_SUBSCRIPTION_PROVIDE,
+  USER_SUBSCRIPTION_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -53,6 +55,8 @@ import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
 import { AddDataOnRewardsByObjectType } from '../../campaign-payment/types';
 import { PipelineStage } from 'mongoose';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
+import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
+import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -71,6 +75,10 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly redisBlockClient: RedisClientInterface,
     @Inject(REWARDS_PROVIDE.HELPER)
     private readonly rewardsHelper: RewardsHelperInterface,
+    @Inject(WOBJECT_SUBSCRIPTION_PROVIDE.REPOSITORY)
+    private readonly wobjectSubscriptionsRepository: WobjectSubscriptionsRepositoryInterface,
+    @Inject(USER_SUBSCRIPTION_PROVIDE.REPOSITORY)
+    private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
   ) {}
 
   async findAssignedMainObjects(userName: string): Promise<string[]> {
@@ -285,6 +293,60 @@ export class RewardsAll implements RewardsAllInterface {
           })),
         ],
       });
+    return this.getPrimaryObjectRewards({
+      skip,
+      limit,
+      host,
+      sort,
+      area,
+      campaigns,
+      radius,
+    });
+  }
+
+  async getUserRewards({
+    skip,
+    limit,
+    host,
+    sort,
+    area,
+    userName,
+    radius,
+  }: GetRewardsEligibleType): Promise<RewardsAllType> {
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+    if (!user) return { rewards: [], hasMore: false };
+    const wobjectSubs = await this.wobjectSubscriptionsRepository.find({
+      filter: { follower: userName },
+    });
+    const usersSubs = await this.userSubscriptionRepository.find({
+      filter: { follower: userName },
+    });
+
+    const usersList = _.map(usersSubs, 'following');
+    const objectsList = _.map(wobjectSubs, 'following');
+
+    const campaigns: CampaignDocumentType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              $or: [
+                { guideName: { $in: usersList } },
+                { requiredObject: { $in: objectsList } },
+              ],
+            },
+          },
+          ...(await this.getEligiblePipe({
+            userName,
+            user,
+          })),
+        ],
+      });
+
     return this.getPrimaryObjectRewards({
       skip,
       limit,
