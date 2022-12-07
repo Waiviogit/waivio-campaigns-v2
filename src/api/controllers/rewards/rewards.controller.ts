@@ -48,6 +48,19 @@ export class RewardsController {
     return this.rewardsService.getTabType(userName);
   }
 
+  @Get('user')
+  @RewardsControllerDoc.getAllRewards()
+  async getUserRewards(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Query() rewardsAllInDto: RewardsAllInDto,
+  ): Promise<RewardsAllMainOutDto> {
+    return this.rewardsService.getUserRewards({
+      ...rewardsAllInDto,
+      host,
+    });
+  }
+
   @Get('all')
   @RewardsControllerDoc.getAllRewards()
   async getAllRewards(

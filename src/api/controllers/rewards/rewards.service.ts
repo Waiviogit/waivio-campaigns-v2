@@ -60,6 +60,12 @@ export class RewardsService {
     return this.rewardsAll.getRewardsMain(params);
   }
 
+  async getUserRewards(
+    params: GetRewardsEligibleType,
+  ): Promise<RewardsAllType> {
+    return this.rewardsAll.getUserRewards(params);
+  }
+
   async getAllEligible(
     params: GetRewardsEligibleType,
   ): Promise<RewardsAllType> {
