@@ -45,12 +45,7 @@ export const getGlobalReportPipe = ({
     {
       $group: {
         _id: '$reservationPermlink',
-        amount: {
-          $sum: {
-            //votesAmount?
-            $sum: ['$amount', '$votesAmount'],
-          },
-        },
+        amount: { $sum: '$amount' },
         type: { $last: '$type' },
         createdAt: { $last: '$createdAt' },
         userName: { $last: '$userName' },
