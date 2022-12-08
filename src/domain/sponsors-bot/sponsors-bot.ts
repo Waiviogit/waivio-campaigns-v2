@@ -367,6 +367,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     authorReward,
   }: UpdateDataAfterVoteType): Promise<void> {
     let ratioReview = new BigNumber(1);
+
     await this.sponsorsBotUpvoteRepository.updateStatus({
       _id: upvote._id,
       status: BOT_UPVOTE_STATUS.UPVOTED,
@@ -381,6 +382,7 @@ export class SponsorsBot implements SponsorsBotInterface {
 
     const payments = await this.campaignPaymentRepository.find({
       filter: {
+        reservationPermlink: upvote.reservationPermlink,
         reviewPermlink: upvote.permlink,
         type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE,
       },
@@ -407,7 +409,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     await this.campaignPaymentRepository.updateOne({
       filter: {
         type: CAMPAIGN_PAYMENT.REVIEW,
-        userName: upvote.userName || upvote.author,
+        reservationPermlink: upvote.reservationPermlink,
         reviewPermlink: upvote.permlink,
       },
       update: {
