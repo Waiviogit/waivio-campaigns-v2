@@ -811,7 +811,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     await this.campaignPaymentRepository.updateOne({
       filter: {
         type: CAMPAIGN_PAYMENT.REVIEW,
-        userName: author,
+        userName: _.get(campaign, 'users[0].name'),
         reviewPermlink: permlink,
       },
       update: {
@@ -869,7 +869,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     await this.campaignPaymentRepository.updateOne({
       filter: {
         type: CAMPAIGN_PAYMENT.REVIEW,
-        userName: upvote.author,
+        reservationPermlink: upvote.reservationPermlink,
         reviewPermlink: upvote.permlink,
       },
       update: {
