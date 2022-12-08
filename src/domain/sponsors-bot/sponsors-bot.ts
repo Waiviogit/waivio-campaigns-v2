@@ -192,6 +192,7 @@ export class SponsorsBot implements SponsorsBotInterface {
         reservationPermlink: campaign.userReservationPermlink,
         botName: bot.botName,
         author: botName || campaign.userName,
+        userName: campaign.userName,
         sponsor: campaign.guideName,
         permlink,
         amountToVote: amountToVote.toNumber(),
@@ -406,7 +407,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     await this.campaignPaymentRepository.updateOne({
       filter: {
         type: CAMPAIGN_PAYMENT.REVIEW,
-        userName: upvote.author,
+        userName: upvote.userName || upvote.author,
         reviewPermlink: upvote.permlink,
       },
       update: {
@@ -790,7 +791,8 @@ export class SponsorsBot implements SponsorsBotInterface {
       symbol: campaign.payoutToken,
       reservationPermlink: _.get(campaign, 'users[0].reservationPermlink'),
       botName: voter,
-      author: _.get(campaign, 'users[0].name'),
+      author: _.get(campaign, 'users[0].rootName'),
+      userName: _.get(campaign, 'users[0].name'),
       sponsor: campaign.guideName,
       permlink,
       amountToVote: new BigNumber(payment.amount).times(2).toNumber(),
