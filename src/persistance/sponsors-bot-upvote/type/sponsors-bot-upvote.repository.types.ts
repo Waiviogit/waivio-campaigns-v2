@@ -21,6 +21,7 @@ export type GetUpvoteType = {
   votingPercent: number;
   minVotingPower: number;
   author: string;
+  userName: string;
   permlink: string;
   reward: number;
   totalVotesWeight: number;

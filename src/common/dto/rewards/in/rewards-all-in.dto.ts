@@ -1,12 +1,6 @@
 import { SkipLimitDto } from '../../skip-limit.dto';
 import { Transform } from 'class-transformer';
-import {
-  IsArray,
-  IsIn, IsNumber,
-  IsOptional,
-  IsString,
-
-} from 'class-validator';
+import { IsArray, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { numberStingToArray, stringToArray } from '../../../helpers';
 import { CAMPAIGN_SORTS } from '../../../constants';

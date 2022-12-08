@@ -15,6 +15,9 @@ export class SponsorsBotUpvote {
   @Prop({ type: String, required: true })
   author: string;
 
+  @Prop({ type: String })
+  userName: string;
+
   @Prop({ type: Number, default: 0 })
   voteWeight?: number;
 

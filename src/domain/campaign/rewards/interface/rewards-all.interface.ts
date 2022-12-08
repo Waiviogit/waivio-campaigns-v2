@@ -92,6 +92,8 @@ export interface RewardsAllInterface {
     rewards,
     host,
   }: AddDataOnRewardsByObjectType): Promise<RewardsByRequiredType[]>;
+
+  getUserRewards(params: GetRewardsEligibleType): Promise<RewardsAllType>;
 }
 
 export interface GetSponsorsEligibleInterface {

@@ -27,4 +27,5 @@ type MetadataWaivioRewardsType = {
   activationPermlink?: string;
   requiredObject?: string;
   reservationPermlink?: string;
+  payoutTokenRateUSD?: number;
 };

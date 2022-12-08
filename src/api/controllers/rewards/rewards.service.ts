@@ -4,7 +4,7 @@ import {
   GetReservedFiltersInterface,
   GetSponsorsEligibleInterface,
   RewardsAllInterface,
-} from '../../../domain/campaign/rewards/interface/rewards-all.interface';
+} from '../../../domain/campaign/rewards/interface';
 import {
   CanReserveParamType,
   CanReserveType,
@@ -58,6 +58,12 @@ export class RewardsService {
 
   async getAllRewards(params: GetRewardsMainType): Promise<RewardsAllType> {
     return this.rewardsAll.getRewardsMain(params);
+  }
+
+  async getUserRewards(
+    params: GetRewardsEligibleType,
+  ): Promise<RewardsAllType> {
+    return this.rewardsAll.getUserRewards(params);
   }
 
   async getAllEligible(

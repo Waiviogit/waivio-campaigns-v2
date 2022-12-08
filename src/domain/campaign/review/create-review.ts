@@ -393,6 +393,7 @@ export class CreateReview implements CreateReviewInterface {
       rewardInToken: rewardInToken.toNumber(),
       symbol: campaign.payoutToken,
       guideName: campaign.guideName,
+      payoutTokenRateUSD: campaign.payoutTokenRateUSD,
     });
   }
 
