@@ -200,7 +200,7 @@ export class PaymentReport implements PaymentReportInterface {
       _.includes(['beneficiaryFee', 'review'], history.type),
     );
 
-    let rewardTokenAmount = sumBy({
+    const rewardTokenAmount = sumBy({
       arr: rewards,
       callback: (reward) => _.get(reward, 'amount', 0),
       dp: PAYOUT_TOKEN_PRECISION[payoutToken],
@@ -216,17 +216,15 @@ export class PaymentReport implements PaymentReportInterface {
       (history) => history.type === 'review',
     );
 
-    if (rewardRecord.votesAmount) {
-      rewardTokenAmount = new BigNumber(rewardTokenAmount)
-        .plus(
-          sumBy({
-            arr: rewards,
-            callback: (reward) => _.get(reward, 'votesAmount', 0),
-            dp: PAYOUT_TOKEN_PRECISION[payoutToken],
-          }),
-        )
-        .toNumber();
-    }
+    const rewardTokenAmountPlusVotes = new BigNumber(rewardTokenAmount)
+      .plus(
+        sumBy({
+          arr: rewards,
+          callback: (reward) => _.get(reward, 'votesAmount', 0),
+          dp: PAYOUT_TOKEN_PRECISION[payoutToken],
+        }),
+      )
+      .toNumber();
 
     const { requiredObject, secondaryObject } =
       await this.wobjectHelper.getRequiredAndSecondaryObjects({
@@ -248,7 +246,7 @@ export class PaymentReport implements PaymentReportInterface {
       reservationPermlink: _.get(reservation, 'reservationPermlink', ''),
       requiredObject,
       secondaryObject,
-      rewardTokenAmount,
+      rewardTokenAmount: rewardTokenAmountPlusVotes,
       rewardUsd,
       histories,
       sponsor: _.pick(sponsor, [

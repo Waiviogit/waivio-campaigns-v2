@@ -4,7 +4,7 @@ import {
   GetReservedFiltersInterface,
   GetSponsorsEligibleInterface,
   RewardsAllInterface,
-} from '../../../domain/campaign/rewards/interface/rewards-all.interface';
+} from '../../../domain/campaign/rewards/interface';
 import {
   CanReserveParamType,
   CanReserveType,
