@@ -5,7 +5,6 @@ import { parseJSON } from '../../common/helpers';
 import * as _ from 'lodash';
 import {
   BLACKLIST_PROVIDE,
-  REDIS_KEY,
   REDIS_PROVIDE,
   SPONSORS_BOT_PROVIDE,
 } from '../../common/constants';
@@ -20,8 +19,6 @@ export class HiveJsonParser implements HiveJsonParserInterface {
     private readonly sponsorsBot: SponsorsBotInterface,
     @Inject(BLACKLIST_PROVIDE.PARSER)
     private readonly blacklistParser: BlacklistParserInterface,
-    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
-    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
   async parse({
     id,
@@ -47,21 +44,5 @@ export class HiveJsonParser implements HiveJsonParserInterface {
       json: parsedJson,
       transaction_id,
     });
-
-    await this.publishToChannel(transaction_id, id);
-  }
-
-  async publishToChannel(transaction_id: string, id: string): Promise<void> {
-    const operationsToPublish = [
-      'confirm_referral_license',
-      'reject_referral_license',
-    ];
-
-    if (!operationsToPublish.includes(id)) return;
-
-    await this.campaignRedisClient.publish(
-      REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
-      transaction_id,
-    );
   }
 }
