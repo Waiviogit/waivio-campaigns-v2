@@ -5,12 +5,10 @@ import { parseJSON } from '../../common/helpers';
 import * as _ from 'lodash';
 import {
   BLACKLIST_PROVIDE,
-  REDIS_PROVIDE,
   SPONSORS_BOT_PROVIDE,
 } from '../../common/constants';
 import { SponsorsBotInterface } from '../sponsors-bot/interface';
 import { BlacklistParserInterface } from '../blacklist/interface';
-import { RedisClientInterface } from '../../services/redis/clients/interface';
 
 @Injectable()
 export class HiveJsonParser implements HiveJsonParserInterface {
