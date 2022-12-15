@@ -153,6 +153,7 @@ export class PaymentReport implements PaymentReportInterface {
     reviewPermlink,
     host,
     payoutToken,
+    reservationPermlink,
   }: GetSingleReportInterface): Promise<SingleReportType> {
     const users = await this.userRepository.find({
       filter: { name: { $in: [userName, guideName] } },
@@ -169,7 +170,13 @@ export class PaymentReport implements PaymentReportInterface {
     const histories: CampaignPaymentDocumentType[] =
       await this.campaignPaymentRepository.aggregate({
         pipeline: [
-          { $match: { reviewPermlink: reviewPermlink, payoutToken } },
+          {
+            $match: {
+              reviewPermlink,
+              payoutToken,
+              reservationPermlink,
+            },
+          },
           {
             $addFields: {
               payableInUSD: {

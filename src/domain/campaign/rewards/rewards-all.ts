@@ -797,6 +797,7 @@ export class RewardsAll implements RewardsAllInterface {
       await this.getExpertiseVariables();
 
     return [
+      { $match: { guideName: { $ne: userName } } },
       {
         $addFields: {
           requiredExpertise: {
