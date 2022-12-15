@@ -17,4 +17,9 @@ export class SingleReportInDto extends PayablesInDto {
   @IsNotEmpty()
   @ApiProperty({ type: String })
   reviewPermlink: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ type: String })
+  reservationPermlink: string;
 }

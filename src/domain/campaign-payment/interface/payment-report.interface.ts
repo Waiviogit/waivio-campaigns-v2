@@ -9,6 +9,7 @@ export interface GetSingleReportInterface {
   guideName: string;
   userName: string;
   reviewPermlink: string;
+  reservationPermlink: string;
   host: string;
   payoutToken: string;
 }
