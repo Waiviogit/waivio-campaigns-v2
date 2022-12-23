@@ -380,8 +380,8 @@ export class WobjectHelper implements WobjectHelperInterface {
     return percent > 0 ? percent : 0;
   }
 
-  private getFieldVoteRole(vote: FieldVoteType): string | null {
-    let role = ADMIN_ROLES.ADMIN;
+  private getFieldVoteRole(vote: FieldVoteType): string {
+    let role: string = ADMIN_ROLES.ADMIN;
     vote.ownership ? (role = ADMIN_ROLES.OWNERSHIP) : null;
     vote.administrative ? (role = ADMIN_ROLES.ADMINISTRATIVE) : null;
     vote.owner ? (role = ADMIN_ROLES.OWNER) : null;
