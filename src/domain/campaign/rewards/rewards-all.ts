@@ -937,11 +937,7 @@ export class RewardsAll implements RewardsAllInterface {
         return _.orderBy(rewards, ['payout'], ['desc']);
       case CAMPAIGN_SORTS.DEFAULT:
       default:
-        return _.orderBy(
-          rewards,
-          [(reward) => reward.distance, 'payout'],
-          ['asc', 'desc'],
-        );
+        return _.orderBy(rewards, ['payout'], ['desc']);
     }
   }
 }
