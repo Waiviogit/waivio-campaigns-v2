@@ -223,12 +223,13 @@ export class SponsorsBot implements SponsorsBotInterface {
       const votingPowers = await this.getVotingPowers(upvote);
 
       if (votingPowers.votingPower < upvote.minVotingPower) return;
+
       const weight = await this.getWeightToVote({
         amount: upvote.amountToVote,
         symbol: upvote.symbol,
         votingPower: votingPowers.votingPower,
         account: upvote.botName,
-        maxVoteWeight: upvote.votingPercent * 10000,
+        maxVoteWeight: 10000,
       });
 
       const { authorReward, curationReward } = await this.getVoteAmount({
