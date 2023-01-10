@@ -8,6 +8,10 @@ export interface RewardsHelperInterface {
   getPayedForMain(campaigns: CampaignDocumentType[]): number;
   parseCoordinates(map: string): number[] | null;
   getDistance(first: number[], second: number[]): number;
+  addMutedAndHidden({
+    rewards,
+    guideName,
+  }: AddMutedAndHiddenInterface): Promise<RewardsByRequiredType[]>;
 }
 
 export interface FillUserReservationsInterface {
@@ -16,4 +20,9 @@ export interface FillUserReservationsInterface {
   area?: number[];
   sort?: string;
   showFraud?: boolean;
+}
+
+export interface AddMutedAndHiddenInterface {
+  guideName: string;
+  rewards: RewardsByRequiredType[];
 }

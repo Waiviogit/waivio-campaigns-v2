@@ -6,4 +6,10 @@ export interface PostRepositoryInterface {
     projection,
     options,
   }: PostFindType): Promise<PostDocumentType>;
+
+  find({
+    filter,
+    projection,
+    options,
+  }: PostFindType): Promise<PostDocumentType[]>;
 }

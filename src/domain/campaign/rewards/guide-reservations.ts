@@ -82,8 +82,13 @@ export class GuideReservations implements GuideReservationsInterface {
       showFraud: true,
     });
 
-    return {
+    const rewardsWithMuted = await this.rewardsHelper.addMutedAndHidden({
       rewards: rewards.slice(skip, skip + limit),
+      guideName,
+    });
+
+    return {
+      rewards: rewardsWithMuted,
       hasMore: rewards.slice(skip).length > limit,
     };
   }
@@ -123,8 +128,13 @@ export class GuideReservations implements GuideReservationsInterface {
       showFraud: true,
     });
 
-    return {
+    const rewardsWithMuted = await this.rewardsHelper.addMutedAndHidden({
       rewards: rewards.slice(skip, skip + limit),
+      guideName,
+    });
+
+    return {
+      rewards: rewardsWithMuted,
       hasMore: rewards.slice(skip).length > limit,
     };
   }
@@ -163,8 +173,13 @@ export class GuideReservations implements GuideReservationsInterface {
       showFraud: true,
     });
 
-    return {
+    const rewardsWithMuted = await this.rewardsHelper.addMutedAndHidden({
       rewards: rewards.slice(skip, skip + limit),
+      guideName,
+    });
+
+    return {
+      rewards: rewardsWithMuted,
       hasMore: rewards.slice(skip).length > limit,
     };
   }

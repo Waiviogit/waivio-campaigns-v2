@@ -25,4 +25,16 @@ export class PostRepository implements PostRepositoryInterface {
       this.logger.error(error.message);
     }
   }
+
+  async find({
+    filter,
+    projection,
+    options,
+  }: PostFindType): Promise<PostDocumentType[]> {
+    try {
+      return this.model.find(filter, projection, options).lean();
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }

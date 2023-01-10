@@ -39,6 +39,9 @@ export type RewardsByRequiredType = {
   campaignName: string;
   userName: string;
   reviewStatus: string;
+  muted?: boolean;
+  isHide?: boolean;
+  reviewPermlink?: string;
 };
 
 export type RewardsByObjectType = {
