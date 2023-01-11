@@ -25,6 +25,14 @@ export const BLACKLIST_PROVIDE = Object.freeze({
   PARSER: 'BlacklistParser',
 });
 
+export const HIDDEN_POST_PROVIDE = Object.freeze({
+  REPOSITORY: 'HiddenPostRepository',
+});
+
+export const MUTED_USER_PROVIDE = Object.freeze({
+  REPOSITORY: 'MutedUserRepository',
+});
+
 export const APP_PROVIDE = Object.freeze({
   REPOSITORY: 'AppRepository',
 });

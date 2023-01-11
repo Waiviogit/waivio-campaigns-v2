@@ -3,7 +3,10 @@ import * as _ from 'lodash';
 import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_SORTS,
+  HIDDEN_POST_PROVIDE,
+  MUTED_USER_PROVIDE,
   PAYOUT_TOKEN,
+  POST_PROVIDE,
   RESERVATION_STATUS,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
@@ -11,10 +14,14 @@ import { GetSortedRewardsReservedType, RewardsByRequiredType } from './types';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import {
+  AddMutedAndHiddenInterface,
   FillUserReservationsInterface,
   RewardsHelperInterface,
 } from './interface';
 import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
+import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
+import { HiddenPostRepositoryInterface } from '../../../persistance/hidden-post/interface';
+import { PostRepositoryInterface } from '../../../persistance/post/interface';
 
 @Injectable()
 export class RewardsHelper implements RewardsHelperInterface {
@@ -23,7 +30,51 @@ export class RewardsHelper implements RewardsHelperInterface {
     private readonly wobjectHelper: WobjectHelperInterface,
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.GUIDE_PAYMENTS_Q)
     private readonly guidePaymentsQuery: GuidePaymentsQueryInterface,
+    @Inject(MUTED_USER_PROVIDE.REPOSITORY)
+    private readonly mutedUserRepository: MutedUserRepositoryInterface,
+    @Inject(HIDDEN_POST_PROVIDE.REPOSITORY)
+    private readonly hiddenPostRepository: HiddenPostRepositoryInterface,
+    @Inject(POST_PROVIDE.REPOSITORY)
+    private readonly postRepository: PostRepositoryInterface,
   ) {}
+
+  async addMutedAndHidden({
+    rewards,
+    guideName,
+  }: AddMutedAndHiddenInterface): Promise<RewardsByRequiredType[]> {
+    if (_.isEmpty(rewards)) return rewards;
+    const mutedDocs = await this.mutedUserRepository.find({
+      filter: { mutedBy: guideName },
+    });
+    const mutedUsers = _.map(mutedDocs, 'userName');
+
+    const postFilterQuery = rewards.map((r) => ({
+      author: r.userName,
+      permlink: r.reviewPermlink,
+    }));
+
+    const postsIds = await this.postRepository.find({
+      filter: { $or: postFilterQuery },
+      projection: { author: 1, permlink: 1 },
+    });
+
+    for (const reward of rewards) {
+      reward.muted = _.includes(mutedUsers, reward.userName);
+      const postWithId = _.find(
+        postsIds,
+        (p) =>
+          p.author === reward.userName && p.permlink === reward.reviewPermlink,
+      );
+      const hidden = await this.hiddenPostRepository.findOne({
+        filter: {
+          userName: guideName,
+          postId: _.get(postWithId, '_id', '').toString(),
+        },
+      });
+      reward.isHide = !!hidden;
+    }
+    return rewards;
+  }
 
   async fillUserReservations({
     campaigns,

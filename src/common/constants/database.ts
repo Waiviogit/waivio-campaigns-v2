@@ -17,4 +17,6 @@ export const COLLECTION = Object.freeze({
   SPONSORS_BOTS: 'sponsors_bots',
   SPONSORS_BOT_UPVOTE: 'sponsors_bots_upvotes',
   BLACKLIST: 'guide-blacklists',
+  HIDDEN_POST: 'hidden_posts',
+  MUTED_USERS: 'muted_users',
 });
