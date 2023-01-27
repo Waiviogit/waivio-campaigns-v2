@@ -633,7 +633,7 @@ export class CreateReview implements CreateReviewInterface {
         type: CAMPAIGN_PAYMENT.CAMPAIGNS_SERVER_FEE,
         commission: new BigNumber(campaignCommission)
           .dividedBy(rewardInToken)
-          .times(1000)
+          .times(10000)
           .decimalPlaces(tokenPrecision),
       });
     }
