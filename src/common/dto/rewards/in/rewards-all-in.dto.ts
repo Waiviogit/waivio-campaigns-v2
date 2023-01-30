@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { numberStingToArray, stringToArray } from '../../../helpers';
-import { CAMPAIGN_SORTS } from '../../../constants';
+import { CAMPAIGN_SORTS, REACH_TYPE } from '../../../constants';
 
 export class RewardsAllInDto extends SkipLimitDto {
   @Transform(({ value }) => stringToArray(value))
@@ -49,4 +49,13 @@ export class RewardsAllInDto extends SkipLimitDto {
   @IsNumber()
   @ApiProperty({ type: Number, required: false })
   radius?: number;
+
+  @IsString()
+  @IsOptional()
+  @IsIn(Object.values(REACH_TYPE))
+  @ApiProperty({
+    type: String,
+    enum: Object.values(REACH_TYPE),
+  })
+  reach?: string;
 }

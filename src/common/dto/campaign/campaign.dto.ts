@@ -20,6 +20,7 @@ import {
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
   PAYOUT_TOKEN,
+  REACH_TYPE,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
 } from '../../constants';
@@ -359,4 +360,12 @@ export class CampaignDto {
     default: PAYOUT_TOKEN.WAIV,
   })
   payoutToken: string;
+
+  @IsString()
+  @IsIn(Object.values(REACH_TYPE))
+  @ApiProperty({
+    type: String,
+    enum: Object.values(REACH_TYPE),
+  })
+  reach: string;
 }

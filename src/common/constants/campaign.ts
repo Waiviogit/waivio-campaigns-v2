@@ -57,6 +57,11 @@ export const RESERVATION_STATUS = Object.freeze({
   EXPIRED: 'expired',
 });
 
+export const REACH_TYPE = Object.freeze({
+  LOCAL: 'local',
+  GLOBAL: 'global',
+});
+
 export const CONVERSATION_STATUS = Object.freeze({
   ALL: 'all',
   CLOSE: 'close',
