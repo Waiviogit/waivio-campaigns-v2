@@ -59,6 +59,7 @@ export type GetRewardsMainType = {
   area?: number[];
   requiredObjects?: string[];
   radius?: number;
+  reach?: string;
 };
 
 export type GetReservedType = GetRewardsMainType & {
@@ -85,11 +86,13 @@ export type GetRewardsByRequiredObjectType = {
   sort?: string;
   area?: number[];
   userName?: string;
+  reach?: string;
 };
 
 export type GetSponsorsType = {
   type: string[];
   sponsors: string[];
+  reach: string[];
 };
 
 export type GetSortedCampaignMainType = {
