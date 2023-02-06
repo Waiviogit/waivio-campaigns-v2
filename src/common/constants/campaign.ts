@@ -19,6 +19,7 @@ export const REWARDS_TAB = Object.freeze({
   ALL: 'all',
   ELIGIBLE: 'eligible',
   RESERVED: 'reserved',
+  LOCAL: 'local',
 });
 
 export const CAMPAIGN_SORTS = Object.freeze({

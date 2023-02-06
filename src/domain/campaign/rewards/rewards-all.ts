@@ -154,14 +154,7 @@ export class RewardsAll implements RewardsAllInterface {
       host: configService.getAppHost(),
     });
     if (rewards.length) return { tabType: REWARDS_TAB.RESERVED };
-    const { rewards: eligible } = await this.getRewardsEligibleMain({
-      userName,
-      skip: 0,
-      limit: 1,
-      host: configService.getAppHost(),
-    });
-    if (eligible.length) return { tabType: REWARDS_TAB.ELIGIBLE };
-    return { tabType: REWARDS_TAB.ALL };
+    return { tabType: REWARDS_TAB.LOCAL };
   }
 
   async getReservedFilters({
