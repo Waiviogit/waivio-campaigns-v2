@@ -905,7 +905,7 @@ export class RewardsAll implements RewardsAllInterface {
           },
           frequency: {
             $or: [
-              { $gt: ['$daysPassed', '$frequencyAssign'] },
+              { $gte: ['$daysPassed', '$frequencyAssign'] },
               { $eq: ['$daysPassed', null] },
             ],
           },
