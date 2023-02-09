@@ -32,34 +32,12 @@ import {
   CONVERSATION_STATUS,
   RESERVATION_STATUS,
 } from '../../../common/constants';
-import { UserFollowingsInDto } from '../../../common/dto/rewards/in/user-followings-in.dto';
+import { UserFollowingsInDto } from '../../../common/dto/rewards/in';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
 export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}
-
-  @Get('tab-type/:userName')
-  @RewardsControllerDoc.getTabType()
-  async getTabType(
-    @Param('userName')
-    userName: string,
-  ): Promise<RewardsTabDto> {
-    return this.rewardsService.getTabType(userName);
-  }
-
-  @Get('user')
-  @RewardsControllerDoc.getAllRewards()
-  async getUserRewards(
-    @CustomHeaders(new HostPipe())
-    host: string,
-    @Query() rewardsAllInDto: RewardsAllInDto,
-  ): Promise<RewardsAllMainOutDto> {
-    return this.rewardsService.getUserRewards({
-      ...rewardsAllInDto,
-      host,
-    });
-  }
 
   @Get('all')
   @RewardsControllerDoc.getAllRewards()
@@ -71,19 +49,6 @@ export class RewardsController {
     return this.rewardsService.getAllRewards({
       ...rewardsAllInDto,
       host,
-    });
-  }
-
-  @Post('all/map')
-  @RewardsControllerDoc.getMap()
-  async getAllMap(
-    @CustomHeaders(new HostPipe())
-    host: string,
-    @Body() body: RewardsMapInDto,
-  ): Promise<RewardsMapOutDto> {
-    return this.rewardsService.getAllMap({
-      host,
-      ...body,
     });
   }
 
@@ -131,20 +96,6 @@ export class RewardsController {
     });
   }
 
-  @Get('all/sponsors')
-  @RewardsControllerDoc.getSponsors()
-  async getAllSponsors(): Promise<RewardSponsorsDto> {
-    return this.rewardsService.getSponsorsAll();
-  }
-
-  @Get('eligible/sponsors')
-  @RewardsControllerDoc.getSponsors()
-  async getEligibleSponsors(
-    @Query() query: EligibleSponsorsDto,
-  ): Promise<RewardSponsorsDto> {
-    return this.rewardsService.getSponsorsEligible(query);
-  }
-
   @Get('all/sponsors/object/:requiredObject')
   @RewardsControllerDoc.getSponsors()
   async getAllSponsorsByObject(
@@ -165,6 +116,55 @@ export class RewardsController {
       requiredObject,
       ...query,
     });
+  }
+
+  @Get('tab-type/:userName')
+  @RewardsControllerDoc.getTabType()
+  async getTabType(
+    @Param('userName')
+    userName: string,
+  ): Promise<RewardsTabDto> {
+    return this.rewardsService.getTabType(userName);
+  }
+
+  @Get('user')
+  @RewardsControllerDoc.getAllRewards()
+  async getUserRewards(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Query() rewardsAllInDto: RewardsAllInDto,
+  ): Promise<RewardsAllMainOutDto> {
+    return this.rewardsService.getUserRewards({
+      ...rewardsAllInDto,
+      host,
+    });
+  }
+
+  @Post('all/map')
+  @RewardsControllerDoc.getMap()
+  async getAllMap(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Body() body: RewardsMapInDto,
+  ): Promise<RewardsMapOutDto> {
+    return this.rewardsService.getAllMap({
+      host,
+      ...body,
+    });
+  }
+
+  @Get('all/sponsors')
+  @RewardsControllerDoc.getSponsors()
+  async getAllSponsors(): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsAll();
+  }
+
+  @Get('eligible/sponsors')
+  @RewardsControllerDoc.getSponsors()
+  async getEligibleSponsors(
+    @Query() query: EligibleSponsorsDto,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsEligible(query);
   }
 
   @Post('eligible/map')

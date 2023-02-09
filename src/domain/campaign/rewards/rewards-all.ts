@@ -154,14 +154,7 @@ export class RewardsAll implements RewardsAllInterface {
       host: configService.getAppHost(),
     });
     if (rewards.length) return { tabType: REWARDS_TAB.RESERVED };
-    const { rewards: eligible } = await this.getRewardsEligibleMain({
-      userName,
-      skip: 0,
-      limit: 1,
-      host: configService.getAppHost(),
-    });
-    if (eligible.length) return { tabType: REWARDS_TAB.ELIGIBLE };
-    return { tabType: REWARDS_TAB.ALL };
+    return { tabType: REWARDS_TAB.LOCAL };
   }
 
   async getReservedFilters({
@@ -181,6 +174,7 @@ export class RewardsAll implements RewardsAllInterface {
               _id: null,
               type: { $addToSet: '$type' },
               sponsors: { $addToSet: '$guideName' },
+              reach: { $addToSet: '$reach' },
             },
           },
           {
@@ -191,7 +185,7 @@ export class RewardsAll implements RewardsAllInterface {
         ],
       },
     );
-    if (_.isEmpty(sponsors)) return { type: [], sponsors: [] };
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [], reach: [] };
     return sponsors[0];
   }
 
@@ -270,6 +264,7 @@ export class RewardsAll implements RewardsAllInterface {
     userName,
     activationPermlink,
     radius,
+    reach,
   }: GetRewardsEligibleType): Promise<RewardsAllType> {
     const user = await this.userRepository.findOne({
       filter: { name: userName },
@@ -285,6 +280,7 @@ export class RewardsAll implements RewardsAllInterface {
               ...(sponsors && { guideName: { $in: sponsors } }),
               ...(type && { type: { $in: type } }),
               ...(activationPermlink && { activationPermlink }),
+              ...(reach && { reach }),
             },
           },
           ...(await this.getEligiblePipe({
@@ -366,6 +362,7 @@ export class RewardsAll implements RewardsAllInterface {
     type,
     userName,
     requiredObject,
+    reach,
   }: GetRewardsEligibleType): Promise<RewardsByObjectType> {
     const user = await this.userRepository.findOne({
       filter: { name: userName },
@@ -381,6 +378,7 @@ export class RewardsAll implements RewardsAllInterface {
               ...(requiredObject && { requiredObject }),
               ...(sponsors && { guideName: { $in: sponsors } }),
               ...(type && { type: { $in: type } }),
+              ...(reach && { reach }),
             },
           },
           ...(await this.getEligiblePipe({ userName, user })),
@@ -446,6 +444,7 @@ export class RewardsAll implements RewardsAllInterface {
     area,
     requiredObjects,
     radius,
+    reach,
   }: GetRewardsMainType): Promise<RewardsAllType> {
     const campaigns = await this.campaignRepository.find({
       filter: {
@@ -453,6 +452,7 @@ export class RewardsAll implements RewardsAllInterface {
         ...(sponsors && { guideName: { $in: sponsors } }),
         ...(type && { type: { $in: type } }),
         ...(requiredObjects && { requiredObject: { $in: requiredObjects } }),
+        ...(reach && { reach }),
       },
     });
 
@@ -541,6 +541,7 @@ export class RewardsAll implements RewardsAllInterface {
     type,
     sort,
     userName,
+    reach,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType> {
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
@@ -551,6 +552,7 @@ export class RewardsAll implements RewardsAllInterface {
               status: CAMPAIGN_STATUS.ACTIVE,
               ...(sponsors && { guideName: { $in: sponsors } }),
               ...(type && { type: { $in: type } }),
+              ...(reach && { reach }),
             },
           },
           { $sort: { rewardInUsd: -1 } },
@@ -714,6 +716,7 @@ export class RewardsAll implements RewardsAllInterface {
               _id: '$status',
               type: { $addToSet: '$type' },
               sponsors: { $addToSet: '$guideName' },
+              reach: { $addToSet: '$reach' },
             },
           },
           {
@@ -724,7 +727,7 @@ export class RewardsAll implements RewardsAllInterface {
         ],
       },
     );
-    if (_.isEmpty(sponsors)) return { type: [], sponsors: [] };
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [], reach: [] };
     return sponsors[0];
   }
 
@@ -736,7 +739,7 @@ export class RewardsAll implements RewardsAllInterface {
       filter: { name: userName },
       projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
     });
-    if (!user) return { type: [], sponsors: [] };
+    if (!user) return { type: [], sponsors: [], reach: [] };
     const sponsors: GetSponsorsType[] = await this.campaignRepository.aggregate(
       {
         pipeline: [
@@ -752,6 +755,7 @@ export class RewardsAll implements RewardsAllInterface {
               _id: '$status',
               type: { $addToSet: '$type' },
               sponsors: { $addToSet: '$guideName' },
+              reach: { $addToSet: '$reach' },
             },
           },
           {
@@ -762,7 +766,7 @@ export class RewardsAll implements RewardsAllInterface {
         ],
       },
     );
-    if (_.isEmpty(sponsors)) return { type: [], sponsors: [] };
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [], reach: [] };
     return sponsors[0];
   }
 
@@ -901,7 +905,7 @@ export class RewardsAll implements RewardsAllInterface {
           },
           frequency: {
             $or: [
-              { $gt: ['$daysPassed', '$frequencyAssign'] },
+              { $gte: ['$daysPassed', '$frequencyAssign'] },
               { $eq: ['$daysPassed', null] },
             ],
           },

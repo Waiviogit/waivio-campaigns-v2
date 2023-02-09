@@ -134,12 +134,14 @@ export class CampaignHelper implements CampaignHelperInterface {
     guideName,
     requiredObject,
     userName,
+    activationPermlink,
   }: GetCompletedUsersInSameCampaignsType): Promise<GetCompletedUsersInSameCampaignsOutType> {
     const pipeline = [
       {
         $match: {
           guideName,
           requiredObject,
+          activationPermlink,
           status: { $nin: ['pending'] },
           'users.name': userName,
           'users.status': { $in: ['completed', 'assigned'] },

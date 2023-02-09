@@ -5,6 +5,7 @@ import {
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
   PAYOUT_TOKEN,
+  REACH_TYPE,
   RESERVATION_STATUS,
   SUPPORTED_CURRENCY,
 } from '../../common/constants';
@@ -225,6 +226,14 @@ export class Campaign {
     enum: Object.values(PAYOUT_TOKEN),
   })
   payoutToken: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    enum: Object.values(REACH_TYPE),
+    index: true,
+  })
+  reach: string;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);

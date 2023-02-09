@@ -6,4 +6,7 @@ export class RewardSponsorsDto {
 
   @ApiProperty({ type: [String] })
   sponsors: string[];
+
+  @ApiProperty({ type: [String] })
+  reach: string[];
 }

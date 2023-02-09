@@ -19,6 +19,7 @@ export const REWARDS_TAB = Object.freeze({
   ALL: 'all',
   ELIGIBLE: 'eligible',
   RESERVED: 'reserved',
+  LOCAL: 'local',
 });
 
 export const CAMPAIGN_SORTS = Object.freeze({
@@ -55,6 +56,11 @@ export const RESERVATION_STATUS = Object.freeze({
   UNASSIGNED: 'unassigned',
   REJECTED: 'rejected',
   EXPIRED: 'expired',
+});
+
+export const REACH_TYPE = Object.freeze({
+  LOCAL: 'local',
+  GLOBAL: 'global',
 });
 
 export const CONVERSATION_STATUS = Object.freeze({
