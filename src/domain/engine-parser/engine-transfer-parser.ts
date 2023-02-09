@@ -37,6 +37,11 @@ export class EngineTransferParser implements EngineTransferParserInterface {
           userName: transfer.to,
           transactionId,
         });
+        //only Waiv for now
+        await this.campaignSuspend.getGuideDebt({
+          guideName: transfer.sender,
+          tokens: [transfer.symbol],
+        });
         await this.campaignSuspend.checkGuideForUnblock(transfer.sender);
         break;
       case CAMPAIGN_TRANSFER_ID.GUEST_CAMPAIGN_REWARD:
@@ -47,6 +52,11 @@ export class EngineTransferParser implements EngineTransferParserInterface {
           transactionId,
           memoJson,
           destination: transfer.to,
+        });
+        //only Waiv for now
+        await this.campaignSuspend.getGuideDebt({
+          guideName: transfer.sender,
+          tokens: [transfer.symbol],
         });
         await this.campaignSuspend.checkGuideForUnblock(transfer.sender);
         break;
