@@ -186,6 +186,7 @@ export class AssignReservation {
         guideName: campaign.guideName,
         requiredObject: campaign.requiredObject,
         userName: name,
+        activationPermlink,
       });
 
     const daysPassed = Math.trunc(

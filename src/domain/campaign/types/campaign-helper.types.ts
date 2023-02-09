@@ -4,6 +4,7 @@ export type GetCompletedUsersInSameCampaignsType = {
   guideName: string;
   requiredObject: string;
   userName: string;
+  activationPermlink: string;
 };
 
 export type AggregateSameUserReservationType = SameUserReservationType[];
