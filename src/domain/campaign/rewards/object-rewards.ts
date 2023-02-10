@@ -180,15 +180,15 @@ export class ObjectRewards implements ObjectRewardsInterface {
 
     const app = await this.appRepository.findOneByHost(host);
 
-    const primary = await this.wobjectRepository.findOne({
-      filter: { author_permlink: objectLinks[0] },
+    const primary = await this.wobjectRepository.find({
+      filter: { author_permlink: { $in: _.map(rewards, 'requiredObject') } },
     });
 
-    const requiredObject = await this.wobjectHelper.processWobjects({
-      wobjects: primary as ProcessedWobjectType,
+    const requiredObjects = await this.wobjectHelper.processWobjects({
+      wobjects: primary as ProcessedWobjectType[],
       fields: CAMPAIGN_FIELDS,
       app,
-      returnArray: false,
+      returnArray: true,
     });
 
     const rewardsWithData = await this.rewardsAll.addDataOnRewardsByObject({
@@ -196,9 +196,15 @@ export class ObjectRewards implements ObjectRewardsInterface {
       host,
     });
 
-    return _.map(rewardsWithData, (r) => ({
-      ...r,
-      requiredObject,
-    }));
+    return _.map(rewardsWithData, (r) => {
+      const requiredObject = _.find(
+        requiredObjects,
+        (o) => o.author_permlink === r.author_permlink,
+      );
+      return {
+        ...r,
+        requiredObject,
+      };
+    });
   }
 }
