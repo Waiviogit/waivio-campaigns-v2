@@ -44,6 +44,7 @@ import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import {
   GetReservedFiltersInterface,
+  GetSponsorsAllInterface,
   GetSponsorsEligibleInterface,
   RewardsAllInterface,
   RewardsHelperInterface,
@@ -154,7 +155,7 @@ export class RewardsAll implements RewardsAllInterface {
       host: configService.getAppHost(),
     });
     if (rewards.length) return { tabType: REWARDS_TAB.RESERVED };
-    return { tabType: REWARDS_TAB.LOCAL };
+    return { tabType: REWARDS_TAB.GLOBAL };
   }
 
   async getReservedFilters({
@@ -521,6 +522,7 @@ export class RewardsAll implements RewardsAllInterface {
         distance,
         object,
         payout,
+        reach: _.uniq(_.map(campaigns, 'reach')),
       });
     }
 
@@ -701,7 +703,10 @@ export class RewardsAll implements RewardsAllInterface {
     return rewards;
   }
 
-  async getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType> {
+  async getSponsorsAll({
+    requiredObject,
+    reach,
+  }: GetSponsorsAllInterface): Promise<GetSponsorsType> {
     const sponsors: GetSponsorsType[] = await this.campaignRepository.aggregate(
       {
         pipeline: [
@@ -709,6 +714,7 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
               ...(requiredObject && { requiredObject }),
+              ...(reach && { reach }),
             },
           },
           {
@@ -734,6 +740,7 @@ export class RewardsAll implements RewardsAllInterface {
   async getSponsorsEligible({
     userName,
     requiredObject,
+    reach,
   }: GetSponsorsEligibleInterface): Promise<GetSponsorsType> {
     const user = await this.userRepository.findOne({
       filter: { name: userName },
@@ -747,6 +754,7 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
               ...(requiredObject && { requiredObject }),
+              ...(reach && { reach }),
             },
           },
           ...(await this.getEligiblePipe({ userName, user })),

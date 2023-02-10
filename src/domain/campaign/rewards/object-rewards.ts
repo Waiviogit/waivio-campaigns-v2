@@ -1,10 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
+import * as _ from 'lodash';
 import {
+  APP_PROVIDE,
+  CAMPAIGN_FIELDS,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   COLLECTION,
   RESERVATION_STATUS,
   REWARDS_PROVIDE,
+  WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import {
   GetObjectRewardsInterface,
@@ -15,6 +19,10 @@ import {
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { RewardsByRequiredType } from './types';
 import { ObjectRewardsType } from './types/object-rewards.types';
+import { WobjectHelperInterface } from '../../wobject/interface';
+import { AppRepositoryInterface } from '../../../persistance/app/interface';
+import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
+import { ProcessedWobjectType } from '../../wobject/types';
 
 @Injectable()
 export class ObjectRewards implements ObjectRewardsInterface {
@@ -23,6 +31,12 @@ export class ObjectRewards implements ObjectRewardsInterface {
     private readonly rewardsAll: RewardsAllInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(WOBJECT_PROVIDE.HELPER)
+    private readonly wobjectHelper: WobjectHelperInterface,
+    @Inject(APP_PROVIDE.REPOSITORY)
+    private readonly appRepository: AppRepositoryInterface,
+    @Inject(WOBJECT_PROVIDE.REPOSITORY)
+    private readonly wobjectRepository: WobjectRepositoryInterface,
   ) {}
 
   async getObjectRewards({
@@ -30,6 +44,14 @@ export class ObjectRewards implements ObjectRewardsInterface {
     userName,
     host,
   }: GetObjectRewardsInterface): Promise<ObjectRewardsType> {
+    if (!authorPermlink) {
+      return {
+        authorPermlink,
+        main: null,
+        secondary: [],
+      };
+    }
+
     const { rewards } = await this.rewardsAll.getRewardsMain({
       host,
       skip: 0,
@@ -150,14 +172,39 @@ export class ObjectRewards implements ObjectRewardsInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              requiredObject: 1,
             },
           },
         ],
       });
 
-    return this.rewardsAll.addDataOnRewardsByObject({
+    const app = await this.appRepository.findOneByHost(host);
+
+    const primary = await this.wobjectRepository.find({
+      filter: { author_permlink: { $in: _.map(rewards, 'requiredObject') } },
+    });
+
+    const requiredObjects = await this.wobjectHelper.processWobjects({
+      wobjects: primary as ProcessedWobjectType[],
+      fields: CAMPAIGN_FIELDS,
+      app,
+      returnArray: true,
+    });
+
+    const rewardsWithData = await this.rewardsAll.addDataOnRewardsByObject({
       rewards,
       host,
+    });
+
+    return _.map(rewardsWithData, (r) => {
+      const requiredObject = _.find(
+        requiredObjects,
+        (o) => o.author_permlink === r.requiredObject,
+      );
+      return {
+        ...r,
+        requiredObject,
+      };
     });
   }
 }

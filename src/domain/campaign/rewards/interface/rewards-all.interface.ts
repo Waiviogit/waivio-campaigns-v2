@@ -37,7 +37,7 @@ export interface RewardsAllInterface {
     area,
   }: GetRewardsByRequiredObjectType): Promise<RewardsByObjectType>;
 
-  getSponsorsAll(requiredObject?: string): Promise<GetSponsorsType>;
+  getSponsorsAll(params: GetSponsorsAllInterface): Promise<GetSponsorsType>;
 
   getRewardsEligibleMain({
     skip,
@@ -99,6 +99,12 @@ export interface RewardsAllInterface {
 export interface GetSponsorsEligibleInterface {
   userName: string;
   requiredObject?: string;
+  reach?: string;
+}
+
+export interface GetSponsorsAllInterface {
+  requiredObject?: string;
+  reach?: string;
 }
 
 export interface GetReservedFiltersInterface {

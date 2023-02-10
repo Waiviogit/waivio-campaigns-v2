@@ -12,6 +12,7 @@ export type RewardsMainType = {
   maxReward: number;
   minReward: number;
   distance: number | null;
+  reach: string[];
 };
 
 export type RewardsAllType = {
