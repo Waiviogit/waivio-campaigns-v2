@@ -150,6 +150,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              requiredObject: 1,
             },
           },
         ],
