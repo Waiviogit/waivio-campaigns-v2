@@ -199,7 +199,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
     return _.map(rewardsWithData, (r) => {
       const requiredObject = _.find(
         requiredObjects,
-        (o) => o.author_permlink === r.author_permlink,
+        (o) => o.author_permlink === r.requiredObject,
       );
       return {
         ...r,
