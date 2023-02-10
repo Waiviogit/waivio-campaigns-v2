@@ -522,6 +522,7 @@ export class RewardsAll implements RewardsAllInterface {
         distance,
         object,
         payout,
+        reach: _.uniq(_.map(campaigns, 'reach')),
       });
     }
 
