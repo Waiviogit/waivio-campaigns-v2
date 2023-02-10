@@ -33,6 +33,7 @@ import {
   RESERVATION_STATUS,
 } from '../../../common/constants';
 import { UserFollowingsInDto } from '../../../common/dto/rewards/in';
+import { SponsorsDto } from '../../../common/dto/rewards/in/sponsors.dto';
 
 @RewardsControllerDoc.main()
 @Controller('rewards')
@@ -101,8 +102,12 @@ export class RewardsController {
   async getAllSponsorsByObject(
     @Param('requiredObject')
     requiredObject: string,
+    @Query() query: SponsorsDto,
   ): Promise<RewardSponsorsDto> {
-    return this.rewardsService.getSponsorsAll(requiredObject);
+    return this.rewardsService.getSponsorsAll({
+      requiredObject,
+      ...query,
+    });
   }
 
   @Get('eligible/sponsors/object/:requiredObject')
@@ -155,8 +160,10 @@ export class RewardsController {
 
   @Get('all/sponsors')
   @RewardsControllerDoc.getSponsors()
-  async getAllSponsors(): Promise<RewardSponsorsDto> {
-    return this.rewardsService.getSponsorsAll();
+  async getAllSponsors(
+    @Query() query: SponsorsDto,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsAll(query);
   }
 
   @Get('eligible/sponsors')
