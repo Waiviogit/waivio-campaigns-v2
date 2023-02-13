@@ -20,3 +20,7 @@ export type ReservationDetailsObjectType = {
   author_permlink: string;
   name: string;
 };
+
+export type reservationCountType = {
+  count: number;
+};

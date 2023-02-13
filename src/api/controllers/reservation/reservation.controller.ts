@@ -8,7 +8,10 @@ import { ReservationService } from './reservation.service';
 import { ReservationControllerDoc } from './reservation.controller.doc';
 import { CustomHeaders } from '../../../common/decorators';
 import { HostPipe } from '../../pipes/host.pipe';
-import { ReservationDetailsOutDto } from '../../../common/dto/reservation/out';
+import {
+  ReservationCountOutDto,
+  ReservationDetailsOutDto,
+} from '../../../common/dto/reservation/out';
 
 @Controller('reservation')
 @ReservationControllerDoc.main()
@@ -45,6 +48,17 @@ export class ReservationController {
       userName,
       campaignId,
       host,
+    });
+  }
+
+  @Get('count/:userName')
+  @ReservationControllerDoc.getReservationCount()
+  async getReservationCount(
+    @Param('userName')
+    userName: string,
+  ): Promise<ReservationCountOutDto> {
+    return this.reservationService.getReservationCount({
+      userName,
     });
   }
 }
