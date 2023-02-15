@@ -298,6 +298,7 @@ export class RewardsAll implements RewardsAllInterface {
       area,
       campaigns,
       radius,
+      userName,
     });
   }
 
@@ -427,6 +428,7 @@ export class RewardsAll implements RewardsAllInterface {
     const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
       rewards,
       host,
+      userName,
     });
 
     return {
@@ -676,6 +678,7 @@ export class RewardsAll implements RewardsAllInterface {
     const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
       rewards,
       host,
+      userName,
     });
 
     return {
