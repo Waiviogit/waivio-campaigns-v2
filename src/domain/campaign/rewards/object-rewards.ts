@@ -57,6 +57,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
       skip: 0,
       limit: 1,
       requiredObjects: [authorPermlink],
+      userName,
     });
     const main = rewards[0] || null;
 

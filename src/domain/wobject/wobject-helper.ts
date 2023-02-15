@@ -190,6 +190,7 @@ export class WobjectHelper implements WobjectHelperInterface {
         case FIELDS_NAMES.GALLERY_ITEM:
         case FIELDS_NAMES.LIST_ITEM:
         case FIELDS_NAMES.NEWS_FILTER:
+        case FIELDS_NAMES.AUTHORITY:
           if (_.includes(filter, FIELDS_NAMES.GALLERY_ALBUM)) break;
           if (_.get(field, 'adminVote.status') === VOTE_STATUS.APPROVED)
             validFields.push(field);
