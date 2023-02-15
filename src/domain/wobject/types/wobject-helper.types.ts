@@ -11,6 +11,7 @@ export type ProcessWobjectsType = {
   app?: AppDocumentType;
   locale?: string;
   returnArray?: boolean;
+  reqUserName?: string;
 };
 
 export type ProcessWobjectsSingleType = {
@@ -19,6 +20,7 @@ export type ProcessWobjectsSingleType = {
   app?: AppDocumentType;
   locale?: string;
   returnArray?: boolean;
+  reqUserName?: string;
 };
 
 export type ProcessWobjectsManyType = {
@@ -27,6 +29,7 @@ export type ProcessWobjectsManyType = {
   app?: AppDocumentType;
   locale?: string;
   returnArray?: boolean;
+  reqUserName?: string;
 };
 
 export type ProcessedWobjectType = WobjectDocumentType &
@@ -117,6 +120,7 @@ export type GetWobjectsForCampaignsType = {
   links: string[];
   host: string;
   fields?: string[];
+  userName?: string;
 };
 
 export type RequiredSecondaryType = {

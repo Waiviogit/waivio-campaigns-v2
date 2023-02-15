@@ -7,4 +7,5 @@ export type SendBellNotificationType = {
   objects: string[];
   primaryObject: string;
   guideName: string;
+  reach: string;
 };

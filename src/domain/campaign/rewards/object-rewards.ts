@@ -189,11 +189,13 @@ export class ObjectRewards implements ObjectRewardsInterface {
       fields: CAMPAIGN_FIELDS,
       app,
       returnArray: true,
+      reqUserName: userName,
     });
 
     const rewardsWithData = await this.rewardsAll.addDataOnRewardsByObject({
       rewards,
       host,
+      userName,
     });
 
     return _.map(rewardsWithData, (r) => {

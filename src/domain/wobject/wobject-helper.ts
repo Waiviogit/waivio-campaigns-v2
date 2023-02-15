@@ -449,6 +449,7 @@ export class WobjectHelper implements WobjectHelperInterface {
     app,
     locale = LANGUAGES.en_US,
     returnArray,
+    reqUserName,
   }: ProcessWobjectsType): ProcessedWobjectType | ProcessedWobjectType[] {
     const filteredWobjects = [];
     const admins = _.get(app, 'admins', []);
@@ -498,6 +499,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       }
 
       obj.defaultShowLink = this.getLinkToPageLoad(obj);
+      obj.authority = _.find(obj.authority, (a) => a.creator === reqUserName);
       if (_.has(obj, FIELDS_NAMES.TAG_CATEGORY)) {
         obj.topTags = this.getTopTags(obj);
       }
@@ -545,6 +547,7 @@ export class WobjectHelper implements WobjectHelperInterface {
     links,
     host,
     fields = CAMPAIGN_FIELDS,
+    userName,
   }: GetWobjectsForCampaignsType): Promise<ProcessedWobjectType[]> {
     const app = await this.appRepository.findOneByHost(host);
     const wobjects = (await this.wobjectRepository.find({
@@ -556,6 +559,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       fields,
       app,
       returnArray: true,
+      reqUserName: userName,
     });
   }
 

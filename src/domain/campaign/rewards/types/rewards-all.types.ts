@@ -61,6 +61,7 @@ export type GetRewardsMainType = {
   requiredObjects?: string[];
   radius?: number;
   reach?: string;
+  userName?: string;
 };
 
 export type GetReservedType = GetRewardsMainType & {
