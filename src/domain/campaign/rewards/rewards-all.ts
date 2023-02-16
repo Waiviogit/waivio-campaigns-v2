@@ -298,6 +298,7 @@ export class RewardsAll implements RewardsAllInterface {
       area,
       campaigns,
       radius,
+      userName,
     });
   }
 
@@ -427,6 +428,7 @@ export class RewardsAll implements RewardsAllInterface {
     const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
       rewards,
       host,
+      userName,
     });
 
     return {
@@ -446,6 +448,7 @@ export class RewardsAll implements RewardsAllInterface {
     requiredObjects,
     radius,
     reach,
+    userName,
   }: GetRewardsMainType): Promise<RewardsAllType> {
     const campaigns = await this.campaignRepository.find({
       filter: {
@@ -465,6 +468,7 @@ export class RewardsAll implements RewardsAllInterface {
       area,
       campaigns,
       radius,
+      userName,
     });
   }
 
@@ -476,11 +480,13 @@ export class RewardsAll implements RewardsAllInterface {
     area,
     campaigns,
     radius,
+    userName,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
       links: _.uniq(_.map(campaigns, 'requiredObject')),
       host,
+      userName,
     });
 
     const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
@@ -672,6 +678,7 @@ export class RewardsAll implements RewardsAllInterface {
     const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
       rewards,
       host,
+      userName,
     });
 
     return {
@@ -683,6 +690,7 @@ export class RewardsAll implements RewardsAllInterface {
   async addDataOnRewardsByObject({
     rewards,
     host,
+    userName,
   }: AddDataOnRewardsByObjectType): Promise<RewardsByRequiredType[]> {
     const app = await this.appRepository.findOneByHost(host);
     const payed = await this.guidePaymentsQuery.getGuidesTotalPayed({
@@ -698,6 +706,7 @@ export class RewardsAll implements RewardsAllInterface {
         fields: CAMPAIGN_FIELDS,
         app,
         returnArray: false,
+        reqUserName: userName,
       });
     }
     return rewards;

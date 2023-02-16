@@ -74,6 +74,7 @@ export class Notifications implements NotificationsInterface {
     objects,
     primaryObject,
     guideName,
+    reach,
   }: SendBellNotificationType): Promise<void> {
     for (const object of objects) {
       const users =
@@ -90,6 +91,7 @@ export class Notifications implements NotificationsInterface {
           users,
           primaryObject,
           guideName,
+          reach,
         },
       });
     }
@@ -113,12 +115,14 @@ export class Notifications implements NotificationsInterface {
         author_permlink: campaign.requiredObject,
         object_name,
         newCampaigns: true,
+        reach: campaign.reach,
       },
     });
     await this.sendBellNotification({
       objects: campaign.objects,
       primaryObject: campaign.requiredObject,
       guideName: campaign.guideName,
+      reach: campaign.reach,
     });
   }
 

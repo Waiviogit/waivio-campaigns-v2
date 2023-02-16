@@ -4,6 +4,7 @@ import {
   AssignReservationInterface,
   GetReservationDetailsInterface,
   RejectReservationInterface,
+  reservationCountInterface,
   ReservationDetailsInterface,
 } from '../../../domain/campaign/reservation/interface';
 import {
@@ -11,7 +12,10 @@ import {
   ValidateAssignType,
 } from '../../../domain/campaign/reservation/types';
 import { CampaignCustomException } from '../../../common/exeptions';
-import { GetReservationDetailsType } from '../../../domain/campaign/reservation/types/reservation-details.types';
+import {
+  GetReservationDetailsType,
+  reservationCountType,
+} from '../../../domain/campaign/reservation/types/reservation-details.types';
 
 @Injectable()
 export class ReservationService {
@@ -63,5 +67,11 @@ export class ReservationService {
       );
     }
     return details;
+  }
+
+  async getReservationCount(
+    params: reservationCountInterface,
+  ): Promise<reservationCountType> {
+    return this.reservationDetails.reservationCount(params);
   }
 }

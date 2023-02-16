@@ -1,18 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   CAMPAIGN_PROVIDE,
+  CAMPAIGN_STATUS,
   RESERVATION_STATUS,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
   GetReservationDetailsInterface,
+  reservationCountInterface,
   ReservationDetailsInterface,
 } from './interface';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import * as _ from 'lodash';
-import { GetReservationDetailsType } from './types/reservation-details.types';
+import {
+  GetReservationDetailsType,
+  reservationCountType,
+} from './types/reservation-details.types';
 
 @Injectable()
 export class ReservationDetails implements ReservationDetailsInterface {
@@ -71,5 +76,30 @@ export class ReservationDetails implements ReservationDetailsInterface {
       userRequirements: campaign.userRequirements,
       reservationPermlink: _.get(campaign, 'users[0].reservationPermlink'),
     };
+  }
+
+  async reservationCount({
+    userName,
+  }: reservationCountInterface): Promise<reservationCountType> {
+    const result: reservationCountType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              status: {
+                $in: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.ON_HOLD],
+              },
+              users: {
+                $elemMatch: {
+                  name: userName,
+                  status: RESERVATION_STATUS.ASSIGNED,
+                },
+              },
+            },
+          },
+          { $count: 'count' },
+        ],
+      });
+    return result[0]?.count ? result[0] : { count: 0 };
   }
 }

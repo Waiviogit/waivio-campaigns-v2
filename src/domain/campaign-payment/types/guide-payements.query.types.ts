@@ -66,4 +66,5 @@ export type GuidesTotalPayedType = {
 export type AddDataOnRewardsByObjectType = {
   host: string;
   rewards: RewardsByRequiredType[];
+  userName?: string;
 };

@@ -2,7 +2,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 
 import { ValidationResponseDto } from '../../../common/dto/campaign/out';
-import { ReservationDetailsOutDto } from '../../../common/dto/reservation/out';
+import {
+  ReservationCountOutDto,
+  ReservationDetailsOutDto,
+} from '../../../common/dto/reservation/out';
 
 export class ReservationControllerDoc {
   static main(): ClassDecorator {
@@ -54,6 +57,17 @@ export class ReservationControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: ReservationDetailsOutDto,
+      }),
+    );
+  }
+  static getReservationCount(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'endpoint reservation count',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: ReservationCountOutDto,
       }),
     );
   }
