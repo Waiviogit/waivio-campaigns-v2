@@ -65,23 +65,59 @@ export class BlacklistHelper implements BlacklistHelperInterface {
         followLists: [],
       };
     }
+
+    const followLists = await this.blacklistRepository.find({
+      filter: { user: { $in: blackList.followLists } },
+    });
+
+    for (const followList of followLists) {
+      followList.blackList = _.filter(
+        followList.blackList,
+        (el) => !_.includes(blackList.blackList, el),
+      );
+    }
+
     const userNames = [
       ...blackList.followLists,
       ...blackList.whiteList,
       ...blackList.blackList,
+      ..._.flatten(followLists.map((list) => list.blackList)),
     ];
+
     const users = await this.userRepository.find({
-      filter: { name: { $in: userNames } },
+      filter: { name: { $in: _.compact(_.uniq(userNames)) } },
       projection: { name: 1, json_metadata: 1, wobjects_weight: 1 },
     });
 
-    return {
-      blackList: _.compact(
+    const blackListResponse = [
+      ..._.compact(
         blackList.blackList.map((name) => {
           const currentUser = users.find((user) => user.name === name);
           if (currentUser) return currentUser;
         }),
       ),
+      ..._.compact(
+        _.reduce(
+          followLists,
+          (acc, list) => {
+            const guidesList = list.blackList.map((name) => {
+              const currentUser = users.find((user) => user.name === name);
+              if (currentUser)
+                return {
+                  ...currentUser,
+                  guideName: list.user,
+                };
+            });
+            acc.push(...guidesList);
+            return acc;
+          },
+          [],
+        ),
+      ),
+    ];
+
+    return {
+      blackList: blackListResponse,
       whiteList: _.compact(
         blackList.whiteList.map((name) => {
           const currentUser = users.find((user) => user.name === name);
