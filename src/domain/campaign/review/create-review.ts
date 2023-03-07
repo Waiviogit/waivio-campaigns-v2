@@ -18,6 +18,7 @@ import {
   SPONSORS_BOT_PROVIDE,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
+  PAYMENT_SELF_POSTFIX,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -46,6 +47,7 @@ import { UserDocumentType } from '../../../persistance/user/types';
 import {
   CreateReviewInterface,
   FraudDetectionInterface,
+  getSelfOrGivenTypeInterface,
   RaiseRewardInterface,
   ReduceRewardInterface,
   RestoreReviewInterface,
@@ -546,12 +548,14 @@ export class CreateReview implements CreateReviewInterface {
       beneficiaries,
       rewardInToken,
       tokenPrecision,
+      guideName: campaign.guideName,
     });
 
     const reviewPayment = this.getReviewPayment({
       userName: campaign.userName,
       beneficiariesPayments,
       rewardInToken,
+      guideName: campaign.guideName,
     });
 
     const commissionPayments = await this.getCommissionPayments({
@@ -561,15 +565,26 @@ export class CreateReview implements CreateReviewInterface {
       referralAgent: this.getReferralAgent(user),
       referralHost: campaign.campaignServer,
       appHost: host,
+      guideName: campaign.guideName,
     });
 
     return [...commissionPayments, ...beneficiariesPayments, reviewPayment];
+  }
+
+  private getSelfOrGivenType({
+    type,
+    guideName,
+    account,
+  }: getSelfOrGivenTypeInterface): string {
+    if (guideName === account) return `${type}${PAYMENT_SELF_POSTFIX}`;
+    return type;
   }
 
   private getBeneficiariesPayments({
     beneficiaries,
     rewardInToken,
     tokenPrecision,
+    guideName,
   }: GetBeneficiariesPaymentsType): CampaignPaymentType[] {
     return _.map(beneficiaries, (bnf) => ({
       account: bnf.account,
@@ -578,7 +593,11 @@ export class CreateReview implements CreateReviewInterface {
         .times(rewardInToken)
         .decimalPlaces(tokenPrecision),
       weight: bnf.weight,
-      type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE,
+      type: this.getSelfOrGivenType({
+        type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE,
+        guideName,
+        account: bnf.account,
+      }),
     }));
   }
 
@@ -586,6 +605,7 @@ export class CreateReview implements CreateReviewInterface {
     userName,
     rewardInToken,
     beneficiariesPayments,
+    guideName,
   }: GetReviewPaymentType): CampaignPaymentType {
     return {
       account: userName,
@@ -596,7 +616,11 @@ export class CreateReview implements CreateReviewInterface {
           new BigNumber(0),
         ),
       ),
-      type: CAMPAIGN_PAYMENT.REVIEW,
+      type: this.getSelfOrGivenType({
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        guideName,
+        account: userName,
+      }),
     };
   }
 
@@ -617,6 +641,7 @@ export class CreateReview implements CreateReviewInterface {
     referralAgent,
     appHost,
     referralHost,
+    guideName,
   }: GetCommissionPaymentsType): Promise<CampaignPaymentType[]> {
     const commissionPayments = [];
     const commissions = await this.getCommissions(appHost, referralHost);
@@ -630,7 +655,11 @@ export class CreateReview implements CreateReviewInterface {
       commissionPayments.push({
         account: commissions.campaignsAccount,
         amount: campaignCommission,
-        type: CAMPAIGN_PAYMENT.CAMPAIGNS_SERVER_FEE,
+        type: this.getSelfOrGivenType({
+          type: CAMPAIGN_PAYMENT.CAMPAIGNS_SERVER_FEE,
+          guideName,
+          account: commissions.campaignsAccount,
+        }),
         commission: new BigNumber(campaignCommission)
           .dividedBy(rewardInToken)
           .times(10000)
@@ -648,7 +677,11 @@ export class CreateReview implements CreateReviewInterface {
       commissionPayments.push({
         account: commissions.indexAccount,
         amount: indexCommission,
-        type: CAMPAIGN_PAYMENT.INDEX_FEE,
+        type: this.getSelfOrGivenType({
+          type: CAMPAIGN_PAYMENT.INDEX_FEE,
+          guideName,
+          account: commissions.indexAccount,
+        }),
         commission: new BigNumber(indexCommission)
           .dividedBy(rewardInToken)
           .times(10000)
@@ -674,10 +707,16 @@ export class CreateReview implements CreateReviewInterface {
       .minus(indexCommission)
       .decimalPlaces(tokenPrecision);
 
+    const referralServerAccount = referralAgent || commissions.referralAccount;
+
     commissionPayments.push({
-      account: referralAgent || commissions.referralAccount,
+      account: referralServerAccount,
       amount: referralCommission,
-      type: CAMPAIGN_PAYMENT.REFERRAL_SERVER_FEE,
+      type: this.getSelfOrGivenType({
+        type: CAMPAIGN_PAYMENT.REFERRAL_SERVER_FEE,
+        guideName,
+        account: commissions.indexAccount,
+      }),
       commission: new BigNumber(referralCommission)
         .dividedBy(rewardInToken)
         .times(10000)

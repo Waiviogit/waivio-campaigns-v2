@@ -35,3 +35,9 @@ export interface ReduceRewardInterface {
   permlink: string;
   reduceAmount: number;
 }
+
+export interface getSelfOrGivenTypeInterface {
+  account: string;
+  guideName: string;
+  type: string;
+}
