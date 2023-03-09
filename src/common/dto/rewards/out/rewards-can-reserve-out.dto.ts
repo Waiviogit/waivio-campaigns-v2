@@ -24,7 +24,4 @@ export class RewardsCanReserveOutDto {
 
   @ApiProperty({ type: Boolean })
   notBlacklisted: boolean;
-
-  @ApiProperty({ type: Boolean })
-  notGuide: boolean;
 }

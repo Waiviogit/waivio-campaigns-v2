@@ -74,6 +74,7 @@ export type GetCommissionPaymentsType = {
   referralAgent: string;
   appHost: string;
   referralHost: string;
+  guideName: string;
 };
 
 export type CampaignPaymentType = {
@@ -86,6 +87,7 @@ export type CampaignPaymentType = {
 
 export type GetReviewPaymentType = {
   userName: string;
+  guideName: string;
   rewardInToken: BigNumber;
   beneficiariesPayments: CampaignPaymentType[];
 };
@@ -94,6 +96,7 @@ export type GetBeneficiariesPaymentsType = {
   beneficiaries: Beneficiary[];
   rewardInToken: BigNumber;
   tokenPrecision: number;
+  guideName: string;
 };
 
 export type GetCampaignPaymentsType = Pick<

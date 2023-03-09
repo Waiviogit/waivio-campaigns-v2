@@ -500,7 +500,10 @@ export class WobjectHelper implements WobjectHelperInterface {
       }
 
       obj.defaultShowLink = this.getLinkToPageLoad(obj);
-      obj.authority = _.find(obj.authority, (a) => a.creator === reqUserName);
+      obj.authority = _.find(
+        obj.authority,
+        (a) => a.creator === reqUserName && a.body === 'administrative',
+      );
       if (_.has(obj, FIELDS_NAMES.TAG_CATEGORY)) {
         obj.topTags = this.getTopTags(obj);
       }

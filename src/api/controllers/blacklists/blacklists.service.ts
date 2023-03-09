@@ -11,7 +11,6 @@ export class BlacklistsService {
   ) {}
 
   async getUserBlacklist(user: string): Promise<GetApiBlacklistType> {
-    const yo = await this.blacklistHelper.getApiBlacklist(user);
-    return yo;
+    return await this.blacklistHelper.getApiBlacklist(user);
   }
 }
