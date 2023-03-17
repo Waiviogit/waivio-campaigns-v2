@@ -45,6 +45,7 @@ export const ENGINE_CONTRACT = Object.freeze({
       VOTING_POWER: 'votingPower',
       REWARD_POOLS: 'rewardPools',
       VOTES: 'votes',
+      POSTS: 'posts',
     },
     ACTION: {
       VOTE: 'vote',

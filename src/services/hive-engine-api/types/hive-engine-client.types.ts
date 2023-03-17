@@ -134,3 +134,16 @@ export type EngineVoteType = {
   timestamp: number;
   voter: string;
 };
+
+export type EnginePostType = {
+  rewardPoolId: number;
+  symbol: string;
+  authorperm: string;
+  author: string;
+  created: number;
+  cashoutTime: number;
+  votePositiveRshareSum: string;
+  voteRshareSum: string;
+  app: string;
+  declinePayout: boolean;
+};
