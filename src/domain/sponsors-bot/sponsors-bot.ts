@@ -56,7 +56,6 @@ import { CampaignRepositoryInterface } from '../../persistance/campaign/interfac
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
 import { sumBy } from '../../common/helpers/calc-helper';
-import { GetUpvoteType } from '../../persistance/sponsors-bot-upvote/type';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -204,6 +203,18 @@ export class SponsorsBot implements SponsorsBotInterface {
     }
   }
 
+  createTimestamps(timestamp: number): number[] {
+    const dayInSeconds = 24 * 60 * 60;
+    const timestamps = [];
+
+    do {
+      timestamps.push(timestamp);
+      timestamp -= dayInSeconds;
+    } while (timestamp >= 0);
+
+    return timestamps;
+  }
+
   async setTtlRecalculate({
     author,
     permlink,
@@ -220,13 +231,21 @@ export class SponsorsBot implements SponsorsBotInterface {
     const now = moment.utc().valueOf();
     const threeHoursMs = 3 * 60 * 60 * 1000;
 
-    const ttlTime = Math.round((post.cashoutTime - now - threeHoursMs) / 1000);
-    if (ttlTime < 0) return;
-    await this.campaignRedisClient.setex(
-      `${REDIS_KEY.SPONSOR_BOT_POST}|${upvoteId.toString()}`,
-      ttlTime,
-      '',
+    const ttlTimeSec = Math.round(
+      (post.cashoutTime - now - threeHoursMs) / 1000,
     );
+
+    if (ttlTimeSec < 0) return;
+
+    const timeToCheckUpdates = this.createTimestamps(ttlTimeSec);
+
+    for (const timeToCheckUpdate of timeToCheckUpdates) {
+      await this.campaignRedisClient.setex(
+        `${REDIS_KEY.SPONSOR_BOT_POST}|${upvoteId.toString()}`,
+        timeToCheckUpdate,
+        '',
+      );
+    }
   }
 
   async executeUpvotes(): Promise<void> {
