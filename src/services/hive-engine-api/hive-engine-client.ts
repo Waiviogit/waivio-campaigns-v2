@@ -11,7 +11,7 @@ import {
 } from '../../common/constants';
 import {
   EngineBalanceType,
-  EngineBlockType,
+  EngineBlockType, EnginePostType,
   EngineProxyType,
   EngineQueryType,
   EngineRewardPoolType,
@@ -172,6 +172,25 @@ export class HiveEngineClient implements HiveEngineClientInterface {
         },
       },
     })) as EngineVoteType[];
+  }
+
+  async getPost({
+    author,
+    permlink,
+    symbol,
+  }: GetActiveVotesInterface): Promise<EnginePostType> {
+    return (await this.engineProxy({
+      method: ENGINE_METHOD.FIND_ONE,
+      endpoint: ENGINE_ENDPOINT.CONTRACTS,
+      params: {
+        contract: ENGINE_CONTRACT.COMMENTS.NAME,
+        table: ENGINE_CONTRACT.COMMENTS.TABLE.POSTS,
+        query: {
+          authorperm: `@${author}/${permlink}`,
+          symbol,
+        },
+      },
+    })) as EnginePostType;
   }
 
   async getVote({
