@@ -5,6 +5,11 @@ import {
   SponsorsBotApiType,
 } from '../type';
 import { EngineVoteType } from '../../engine-parser/types';
+import { ObjectId } from 'mongoose';
+import {
+  SponsorsBotUpvoteDocumentType,
+} from '../../../persistance/sponsors-bot-upvote/type';
+import BigNumber from 'bignumber.js';
 
 export interface SponsorsBotInterface {
   parseHiveCustomJson({
@@ -72,4 +77,18 @@ export interface GetVotingPowersInterface {
 export interface UpdateSponsorsCurrentVote {
   author: string;
   permlink: string;
+}
+
+export interface setTtlRecalculateInterface {
+  author: string;
+  permlink: string;
+  upvoteId: ObjectId;
+  symbol: string;
+}
+
+export interface updateDataPaymentsAfterSevenDays {
+  upvote: SponsorsBotUpvoteDocumentType;
+  weight: number;
+  authorReward: BigNumber;
+  curationReward: BigNumber;
 }

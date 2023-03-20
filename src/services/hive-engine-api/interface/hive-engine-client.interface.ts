@@ -1,6 +1,7 @@
 import {
   EngineBalanceType,
   EngineBlockType,
+  EnginePostType,
   EngineRewardPoolType,
   EngineVoteType,
   EngineVotingPowerType,
@@ -27,6 +28,11 @@ export interface HiveEngineClientInterface {
     symbol,
     voter,
   }: GetVoteInterface): Promise<EngineVoteType>;
+  getPost({
+    author,
+    permlink,
+    symbol,
+  }: GetActiveVotesInterface): Promise<EnginePostType>;
 }
 
 export interface GetActiveVotesInterface {

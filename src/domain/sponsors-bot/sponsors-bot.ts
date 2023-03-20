@@ -23,6 +23,8 @@ import {
   UpdateDownVoteNoActiveInterface,
   GetVotingPowersInterface,
   UpdateSponsorsCurrentVote,
+  setTtlRecalculateInterface,
+  updateDataPaymentsAfterSevenDays,
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
@@ -201,6 +203,51 @@ export class SponsorsBot implements SponsorsBotInterface {
     }
   }
 
+  createTimestamps(timestamp: number): number[] {
+    const dayInSeconds = 24 * 60 * 60;
+    const timestamps = [];
+
+    do {
+      timestamps.push(timestamp);
+      timestamp -= dayInSeconds;
+    } while (timestamp >= 0);
+
+    return timestamps;
+  }
+
+  async setTtlRecalculate({
+    author,
+    permlink,
+    symbol,
+    upvoteId,
+  }: setTtlRecalculateInterface): Promise<void> {
+    const post = await this.hiveEngineClient.getPost({
+      author,
+      permlink,
+      symbol,
+    });
+    if (!post) return;
+
+    const now = moment.utc().valueOf();
+    const threeHoursMs = 3 * 60 * 60 * 1000;
+
+    const ttlTimeSec = Math.round(
+      (post.cashoutTime - now - threeHoursMs) / 1000,
+    );
+
+    if (ttlTimeSec < 0) return;
+
+    const timeToCheckUpdates = this.createTimestamps(ttlTimeSec);
+
+    for (const timeToCheckUpdate of timeToCheckUpdates) {
+      await this.campaignRedisClient.setex(
+        `${REDIS_KEY.SPONSOR_BOT_POST}|${upvoteId.toString()}`,
+        timeToCheckUpdate,
+        '',
+      );
+    }
+  }
+
   async executeUpvotes(): Promise<void> {
     const upvotes = await this.sponsorsBotUpvoteRepository.getUpvotes();
     for (const upvote of upvotes) {
@@ -253,6 +300,12 @@ export class SponsorsBot implements SponsorsBotInterface {
           weight,
           authorReward,
           curationReward,
+        });
+        await this.setTtlRecalculate({
+          upvoteId: upvote._id,
+          author: upvote.author,
+          permlink: upvote.permlink,
+          symbol: upvote.symbol,
         });
       }
     }
@@ -501,7 +554,104 @@ export class SponsorsBot implements SponsorsBotInterface {
           permlink: data[2],
         });
         break;
+      case REDIS_KEY.SPONSOR_BOT_POST:
+        await this.updateAfterSevenDays(data[1]);
+        break;
     }
+  }
+
+  async updateDataPaymentsAfterSevenDays({
+    upvote,
+    weight,
+    authorReward,
+  }: updateDataPaymentsAfterSevenDays): Promise<void> {
+    let ratioReview = new BigNumber(1);
+
+    const diff = new BigNumber(authorReward).minus(upvote.currentVote);
+
+    await this.sponsorsBotUpvoteRepository.updateStatus({
+      _id: upvote._id,
+      status: BOT_UPVOTE_STATUS.UPVOTED,
+      currentVote: authorReward.toNumber(),
+      voteWeight: weight,
+    });
+
+    await this.sponsorsBotUpvoteRepository.updateMany({
+      filter: { author: upvote.author, permlink: upvote.permlink },
+      update: { $inc: { totalVotesWeight: diff.toNumber() } },
+    });
+
+    const payments = await this.campaignPaymentRepository.find({
+      filter: {
+        reservationPermlink: upvote.reservationPermlink,
+        reviewPermlink: upvote.permlink,
+        type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE,
+      },
+    });
+
+    for (const payment of payments) {
+      const beneficiary = _.find(
+        payment.beneficiaries,
+        (b) => b.account === payment.userName,
+      );
+      if (!beneficiary) continue;
+      const beneficiaryShare = new BigNumber(beneficiary.weight).div(10000);
+      await this.campaignPaymentRepository.updateOne({
+        filter: {
+          _id: payment._id,
+        },
+        update: {
+          $inc: { votesAmount: diff.times(beneficiaryShare).dp(8) },
+        },
+      });
+      ratioReview = new BigNumber(ratioReview).minus(beneficiaryShare);
+    }
+
+    await this.campaignPaymentRepository.updateOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: upvote.reservationPermlink,
+        reviewPermlink: upvote.permlink,
+      },
+      update: {
+        $inc: { votesAmount: diff.times(ratioReview).dp(8) },
+      },
+    });
+  }
+
+  async updateAfterSevenDays(upvoteId: string): Promise<void> {
+    const upvote = await this.sponsorsBotUpvoteRepository.findOne({
+      filter: { _id: upvoteId },
+    });
+    const { botName, author, permlink, symbol } = upvote;
+
+    const vote = await this.hiveEngineClient.getVote({
+      author,
+      permlink,
+      voter: botName,
+      symbol,
+    });
+    if (!vote) return;
+    const rewardsPool = await this.hiveEngineClient.getRewardPool(symbol);
+    const { rewardPool, pendingClaims, config } = rewardsPool;
+
+    const rewards = new BigNumber(rewardPool).div(pendingClaims);
+    const totalTokenAmount = new BigNumber(vote.rshares).times(rewards);
+
+    const curationReward = new BigNumber(config.curationRewardPercentage)
+      .div(100)
+      .times(totalTokenAmount)
+      .dp(TOKENS_PRECISION[symbol]);
+    const authorReward = totalTokenAmount
+      .minus(curationReward)
+      .dp(TOKENS_PRECISION[symbol]);
+
+    await this.updateDataPaymentsAfterSevenDays({
+      upvote,
+      weight: vote.weight,
+      authorReward,
+      curationReward,
+    });
   }
 
   async updateSponsorsCurrentVote({
