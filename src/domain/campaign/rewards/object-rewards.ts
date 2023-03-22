@@ -199,15 +199,23 @@ export class ObjectRewards implements ObjectRewardsInterface {
       userName,
     });
 
-    return _.map(rewardsWithData, (r) => {
-      const requiredObject = _.find(
-        requiredObjects,
-        (o) => o.author_permlink === r.requiredObject,
-      );
-      return {
-        ...r,
-        requiredObject,
-      };
-    });
+    return _.reduce(
+      rewardsWithData,
+      (acc, r) => {
+        const requiredObject = _.find(
+          requiredObjects,
+          (o) => o.author_permlink === r.requiredObject,
+        );
+        if (requiredObject.author_permlink === r?.object?.author_permlink) {
+          return acc;
+        }
+        acc.push({
+          ...r,
+          requiredObject,
+        });
+        return acc;
+      },
+      [],
+    );
   }
 }
