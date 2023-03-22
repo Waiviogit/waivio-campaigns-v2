@@ -118,6 +118,15 @@ export class Notifications implements NotificationsInterface {
         reach: campaign.reach,
       },
     });
+
+    if (
+      Array.isArray(campaign?.objects) &&
+      campaign.objects.length === 1 &&
+      campaign.objects[0] === campaign.requiredObject
+    ) {
+      return;
+    }
+
     await this.sendBellNotification({
       objects: campaign.objects,
       primaryObject: campaign.requiredObject,
