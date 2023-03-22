@@ -120,6 +120,7 @@ export class Notifications implements NotificationsInterface {
     });
 
     if (
+      Array.isArray(campaign?.objects) &&
       campaign.objects.length === 1 &&
       campaign.objects[0] === campaign.requiredObject
     ) {
