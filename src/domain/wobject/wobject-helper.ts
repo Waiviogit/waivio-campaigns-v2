@@ -97,15 +97,15 @@ export class WobjectHelper implements WobjectHelperInterface {
       return `/object/${obj.author_permlink}/list`;
 
     const field = _.find(_.get(obj, 'listItem', []), {
-      body: obj.sortCustom[0],
+      body: _.get(obj, 'sortCustom.include[0]'),
     });
     const blog = _.find(
       _.get(obj, 'blog', []),
-      (el) => el.permlink === obj.sortCustom[0],
+      (el) => el.permlink === _.get(obj, 'sortCustom.include[0]'),
     );
     const news = _.find(
       _.get(obj, 'newsFilter', []),
-      (el) => el.permlink === obj.sortCustom[0],
+      (el) => el.permlink === _.get(obj, 'sortCustom.include[0]'),
     );
     if (field)
       return `/object/${obj.author_permlink}/${
@@ -125,7 +125,9 @@ export class WobjectHelper implements WobjectHelperInterface {
     //         ? `/object/${obj.author_permlink}`
     //         : `/object/${obj.author_permlink}/about`;
     // }
-    if (_.get(obj, 'sortCustom', []).length) return this.getCustomSortLink(obj);
+    if (_.get(obj, 'sortCustom.include', []).length) {
+      return this.getCustomSortLink(obj);
+    }
 
     switch (obj.object_type) {
       case OBJECT_TYPES.PAGE:
