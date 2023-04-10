@@ -19,6 +19,9 @@ export class CampaignPost {
 
   @Prop({ type: String })
   guideName: string;
+
+  @Prop({ type: String })
+  reservationPermlink: string;
 }
 
 export const CampaignPostsSchema = SchemaFactory.createForClass(CampaignPost);

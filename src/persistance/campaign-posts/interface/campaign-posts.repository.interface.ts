@@ -17,6 +17,7 @@ export interface CampaignPostCreateInterface {
   payoutTokenRateUSD: number;
   symbol: string;
   guideName: string;
+  reservationPermlink: string;
 }
 
 export interface CampaignPostDeleteInterface {
