@@ -1,5 +1,5 @@
 import { PayablesInDto } from './payables-in.dto';
-import { IsNumber, IsOptional, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -29,4 +29,15 @@ export class GuidePayablesAllInDto extends PayablesInDto {
   @IsOptional()
   @ApiProperty({ type: Number, required: false, default: 10 })
   limit?: number = 10;
+
+  @IsString()
+  @IsEnum(['amount', 'time'])
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: 'amount',
+    enum: ['amount', 'time'],
+  })
+  sort?: string = 'amount';
 }

@@ -23,6 +23,7 @@ export type GetPayablesType = {
   payable?: number;
   skip?: number;
   limit?: number;
+  sort?: string;
 };
 
 export type GetPayableType = {

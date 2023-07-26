@@ -58,6 +58,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     days,
     skip = 0,
     limit = 0,
+    sort,
   }: GetPayablesType): Promise<GetPayablesOutType> {
     const histories: PayablesAllType[] =
       await this.campaignPaymentRepository.aggregate({
@@ -72,6 +73,13 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     const totalPayable = await this.campaignPaymentRepository.aggregate({
       pipeline: getGuideTotalPayablePipe({ guideName, payoutToken }),
     });
+
+    const sortFunc = {
+      amount: (a, b) => b.payable - a.payable,
+      time: (a, b) => a.notPayedDate - b.notPayedDate,
+    };
+
+    histories.sort(sortFunc[sort] || sortFunc.amount);
 
     return {
       totalPayable: _.get(totalPayable, '[0].total', 0),
