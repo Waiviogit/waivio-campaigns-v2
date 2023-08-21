@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 
 import { ENSURE_VALUES } from '../constants';
+import * as process from 'process';
 
 dotenv.config({ path: `env/${process.env.NODE_ENV || 'development'}.env` });
 
@@ -24,14 +25,25 @@ class ConfigService {
     const host = this.getValue('MONGO_HOST');
     const port = this.getValue('MONGO_PORT');
     const db = this.getValue('WAIVIO_DB');
-    return `mongodb://${host}:${port}/${db}`;
+
+    const defaultConnectionString = `mongodb://${host}:${port}/${db}`;
+    const connectionString = process.env.MONGO_URI_WAIVIO
+      ? process.env.MONGO_URI_WAIVIO
+      : defaultConnectionString;
+
+    return connectionString;
   }
 
   public getMongoCurrenciesConnectionString(): string {
     const host = this.getValue('MONGO_HOST');
     const port = this.getValue('MONGO_PORT');
     const db = this.getValue('CURRENCIES_DB');
-    return `mongodb://${host}:${port}/${db}`;
+    const defaultConnectionString = `mongodb://${host}:${port}/${db}`;
+    const connectionString = process.env.MONGO_URI_CURRENCIES
+      ? process.env.MONGO_URI_CURRENCIES
+      : defaultConnectionString;
+
+    return connectionString;
   }
 
   public getRedisBlocksConfig(): string {
