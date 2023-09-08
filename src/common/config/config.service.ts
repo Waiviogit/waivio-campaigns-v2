@@ -75,10 +75,7 @@ class ConfigService {
   }
 
   public getGuestValidationURL(): string {
-    return `https://${this.getValue('APP_HOST', true)}${this.getValue(
-      'VALIDATE_GUEST_TOKEN_ROUTE',
-      true,
-    )}`;
+    return this.getValue('VALIDATE_GUEST_TOKEN_ROUTE', true);
   }
 
   public getNotificationsKey(): string {
@@ -90,10 +87,7 @@ class ConfigService {
   }
 
   public getNotificationsRoute(): string {
-    return `https://${this.getValue('APP_HOST', true)}${this.getValue(
-      'NOTIFICATIONS_SET',
-      true,
-    )}`;
+    return this.getValue('NOTIFICATIONS_SET', true);
   }
 }
 
