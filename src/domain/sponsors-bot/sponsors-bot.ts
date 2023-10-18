@@ -178,7 +178,7 @@ export class SponsorsBot implements SponsorsBotInterface {
       });
       if (!bot) continue;
 
-      const existingVote = this.sponsorsBotUpvoteRepository.findOne({
+      const existingVote = await this.sponsorsBotUpvoteRepository.findOne({
         filter: {
           author: botName || campaign.userName,
           sponsor: campaign.guideName,
