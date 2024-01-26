@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     const hiveAuth = headers['hive-auth'];
 
     if (hiveAuth) {
-      return this.validateHiveAuth(account, hiveAuth);
+      return this.validateHiveAuth(account, token);
     }
 
     if (headers['waivio-auth']) {
