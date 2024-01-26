@@ -2,11 +2,13 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import axios from 'axios';
 import * as sc2 from 'sc2-sdk';
+import CryptoJS from 'crypto-js';
 
 import { configService } from '../../common/config';
 import { ValidateRequestType } from './types/auth.guard.types';
 import { HIVE_SIGNER_URL } from '../../common/constants';
 
+const secretKey = process.env.HIVE_AUTH;
 @Injectable()
 export class AuthGuard implements CanActivate {
   canActivate(
@@ -19,8 +21,11 @@ export class AuthGuard implements CanActivate {
   async validateRequest({ headers }: ValidateRequestType): Promise<boolean> {
     const account = headers.account;
     const token = headers['access-token'];
+    const hiveAuth = headers['hive-auth'];
 
-    if (!account || !token) return false;
+    if (hiveAuth) {
+      return this.validateHiveAuth(account, token);
+    }
 
     if (headers['waivio-auth']) {
       return this.validateGuestUser(account, token);
@@ -40,6 +45,18 @@ export class AuthGuard implements CanActivate {
         return response?.data?.user?.name === account;
       }
       return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  validateHiveAuth(account: string, token: string): boolean {
+    try {
+      const bytes = CryptoJS.AES.decrypt(token, secretKey);
+      const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
+      const json = JSON.parse(decryptedMessage);
+
+      return json.username === account && json.expire > Date.now();
     } catch (error) {
       return false;
     }
