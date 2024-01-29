@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import axios from 'axios';
 import * as sc2 from 'sc2-sdk';
-import CryptoJS from 'crypto-js';
+import * as CryptoJS from 'crypto-js';
 
 import { configService } from '../../common/config';
 import { ValidateRequestType } from './types/auth.guard.types';
