@@ -266,6 +266,7 @@ export class CreateReview implements CreateReviewInterface {
           permlink: rejectedUser.reviewPermlink,
         },
       });
+      if (!post) return;
       const reviewCampaign: ReviewCampaignType = {
         userId: rejectedUser._id,
         userName: rejectedUser.name,
