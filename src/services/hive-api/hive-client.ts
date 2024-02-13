@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Client, PrivateKey } from '@hiveio/dhive';
 import axios from 'axios';
 
-import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
+import {
+  BLOCK_API,
+  CONDENSER_API,
+  HIVE_RPC_NODES,
+} from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
 import { GetVoteInterface, HiveClientInterface } from './interface';
 import {
@@ -51,7 +55,11 @@ export class HiveClient implements HiveClientInterface {
   }
 
   async getBlock(blockNumber: number): Promise<HiveBlockType | undefined> {
-    return this.hiveRequest(CONDENSER_API.GET_BLOCK, [blockNumber]);
+    const response = await this.hiveRequest(BLOCK_API.GET_BLOCK, {
+      block_num: blockNumber,
+    });
+
+    return response?.block;
   }
 
   async voteOnPost({
