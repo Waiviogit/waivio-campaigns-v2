@@ -717,7 +717,7 @@ export class CreateReview implements CreateReviewInterface {
       type: this.getSelfOrGivenType({
         type: CAMPAIGN_PAYMENT.REFERRAL_SERVER_FEE,
         guideName,
-        account: commissions.indexAccount,
+        account: referralServerAccount,
       }),
       commission: new BigNumber(referralCommission)
         .dividedBy(rewardInToken)
