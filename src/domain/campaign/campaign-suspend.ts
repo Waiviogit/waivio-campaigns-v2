@@ -146,7 +146,18 @@ export class CampaignSuspend implements CampaignSuspendInterface {
 
   async suspendCampaigns(guideName: string): Promise<void> {
     await this.campaignRepository.updateMany({
-      filter: { guideName },
+      filter: {
+        guideName,
+        status: {
+          $in: [
+            CAMPAIGN_STATUS.ACTIVE,
+            CAMPAIGN_STATUS.PENDING,
+            CAMPAIGN_STATUS.ON_HOLD,
+            CAMPAIGN_STATUS.REACHED_LIMIT,
+            CAMPAIGN_STATUS.SUSPENDED,
+          ],
+        },
+      },
       update: { status: CAMPAIGN_STATUS.SUSPENDED },
     });
     await this.wobjectHelper.updateCampaignsCountForManyCampaigns(
