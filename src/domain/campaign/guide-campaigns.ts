@@ -87,7 +87,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
             $match: {
               guideName: guideName,
               status: {
-                $nin: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.PENDING],
+                $in: [CAMPAIGN_STATUS.EXPIRED, CAMPAIGN_STATUS.INACTIVE],
               },
             },
           },
@@ -200,6 +200,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
                   CAMPAIGN_STATUS.PENDING,
                   CAMPAIGN_STATUS.ON_HOLD,
                   CAMPAIGN_STATUS.REACHED_LIMIT,
+                  CAMPAIGN_STATUS.SUSPENDED,
                 ],
               },
             },
