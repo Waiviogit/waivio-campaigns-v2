@@ -323,4 +323,11 @@ export class CampaignHelper implements CampaignHelperInterface {
       });
     }
   }
+
+  async reachedLimitUpdateToActive(): Promise<void> {
+    await this.campaignRepository.updateMany({
+      filter: { status: CAMPAIGN_STATUS.REACHED_LIMIT },
+      update: { $set: { status: CAMPAIGN_STATUS.ACTIVE } },
+    });
+  }
 }
