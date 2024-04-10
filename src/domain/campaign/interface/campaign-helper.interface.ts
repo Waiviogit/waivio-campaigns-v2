@@ -38,6 +38,7 @@ export interface CampaignHelperInterface {
 
   incrReviewComment(params: IncrReviewCommentInterface): Promise<void>;
   reCalcCampaignsRewardInUsd(): Promise<void>;
+  reachedLimitUpdateToActive(): Promise<void>;
 }
 
 export interface IncrReviewCommentInterface {
