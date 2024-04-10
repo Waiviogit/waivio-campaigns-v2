@@ -72,6 +72,7 @@ export const CONVERSATION_STATUS = Object.freeze({
 
 export const CAMPAIGN_TYPE = Object.freeze({
   REVIEWS: 'reviews',
+  MENTIONS: 'mentions',
 });
 
 export const SUPPORTED_CURRENCY = Object.freeze({

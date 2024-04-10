@@ -12,6 +12,9 @@ export interface RewardsHelperInterface {
     rewards,
     guideName,
   }: AddMutedAndHiddenInterface): Promise<RewardsByRequiredType[]>;
+  extractUsername(fromString: string): string;
+  getCampaignUsersFromArray(objects: string[]): string[];
+  filterObjectLinks(objects: string[]): string[];
 }
 
 export interface FillUserReservationsInterface {

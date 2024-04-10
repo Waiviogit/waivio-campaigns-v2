@@ -481,16 +481,27 @@ export class RewardsAll implements RewardsAllInterface {
     userName,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
+    const requiredObjects = _.uniq(_.map(campaigns, 'requiredObject'));
+
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: _.uniq(_.map(campaigns, 'requiredObject')),
+      links: this.rewardsHelper.filterObjectLinks(requiredObjects),
       host,
       userName,
     });
 
+    const campaignUsers = await this.userRepository.findCampaignsUsers(
+      this.rewardsHelper.getCampaignUsersFromArray(requiredObjects),
+    );
+
     const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
     for (const key in groupedCampaigns) {
       const object = objects.find((o) => o.author_permlink === key);
-      if (!object) continue;
+      const user = campaignUsers.find(
+        (u) => u.name === this.rewardsHelper.extractUsername(key),
+      );
+      const webLink = !object && !user && key.includes('https://') && key;
+
+      if (!object && !user && !webLink) continue;
       if (
         _.includes(
           [WOBJECT_STATUS.RELISTED, WOBJECT_STATUS.UNAVAILABLE],
@@ -525,6 +536,8 @@ export class RewardsAll implements RewardsAllInterface {
         ).rewardInUSD,
         distance,
         object,
+        user,
+        webLink,
         payout,
         reach: _.uniq(_.map(campaigns, 'reach')),
       });
@@ -695,17 +708,37 @@ export class RewardsAll implements RewardsAllInterface {
       guideNames: _.map(rewards, 'guideName'),
       payoutToken: TOKEN_WAIV.SYMBOL,
     });
+
+    const campaignUsers = await this.userRepository.findCampaignsUsers(
+      this.rewardsHelper.getCampaignUsersFromArray(
+        rewards.map((el) => el.objects),
+      ),
+    );
+
     for (const reward of rewards) {
       const guidePayed = payed.find((el) => el.guideName === reward.guideName);
       reward.totalPayed = guidePayed?.payed || 0;
-      if (!reward.object) continue;
-      reward.object = await this.wobjectHelper.processWobjects({
-        wobjects: reward.object,
-        fields: CAMPAIGN_FIELDS,
-        app,
-        returnArray: false,
-        reqUserName: userName,
-      });
+
+      const user = campaignUsers.find(
+        (u) => u.name === this.rewardsHelper.extractUsername(reward.objects),
+      );
+      const webLink =
+        !reward.object &&
+        !user &&
+        reward.objects.includes('https://') &&
+        reward.objects;
+
+      if (reward.object) {
+        reward.object = await this.wobjectHelper.processWobjects({
+          wobjects: reward.object,
+          fields: CAMPAIGN_FIELDS,
+          app,
+          returnArray: false,
+          reqUserName: userName,
+        });
+      }
+      if (user) reward.user = user;
+      if (webLink) reward.webLink = webLink;
     }
     return rewards;
   }
