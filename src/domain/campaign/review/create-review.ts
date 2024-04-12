@@ -19,6 +19,7 @@ import {
   USER_PROVIDE,
   WOBJECT_PROVIDE,
   PAYMENT_SELF_POSTFIX,
+  REWARDS_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -59,6 +60,7 @@ import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 import { getBodyLinksArray, parseJSON } from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
 import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-posts/interface';
+import { RewardsAllInterface } from '../rewards/interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -83,6 +85,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly sponsorsBot: SponsorsBotInterface,
     @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
+    @Inject(REWARDS_PROVIDE.ALL)
+    private readonly rewardsAll: RewardsAllInterface,
   ) {}
 
   async raiseReward({
@@ -210,31 +214,36 @@ export class CreateReview implements CreateReviewInterface {
     const objects = _.uniq([...metadataWobj, ...bodyWobj]);
 
     if (_.isEmpty(objects)) return;
-
+    //here
     const campaignsForReview = await this.findReviewCampaigns(
       postAuthor,
       objects,
     );
+
+    //campaigns for mentions
+
     if (_.isEmpty(campaignsForReview)) return;
-    const validCampaigns = await this.validateReview({
+    const validCampaignsReview = await this.validateReview({
       campaigns: campaignsForReview,
       metadata,
       postAuthor,
     });
-    if (_.isEmpty(validCampaigns)) return;
-    for (const validCampaign of validCampaigns) {
-      await this.createReview({
-        campaign: validCampaign,
-        beneficiaries,
-        objects,
-        app,
-        title: comment.title,
-        reviewPermlink: comment.permlink,
-        images: _.get(metadata, 'image', []),
-        host: _.get(metadata, 'host', ''),
-        botName,
-        postAuthor,
-      });
+
+    if (!_.isEmpty(validCampaignsReview)) {
+      for (const validCampaign of validCampaignsReview) {
+        await this.createReview({
+          campaign: validCampaign,
+          beneficiaries,
+          objects,
+          app,
+          title: comment.title,
+          reviewPermlink: comment.permlink,
+          images: _.get(metadata, 'image', []),
+          host: _.get(metadata, 'host', ''),
+          botName,
+          postAuthor,
+        });
+      }
     }
   }
 
@@ -847,6 +856,27 @@ export class CreateReview implements CreateReviewInterface {
             _id: 0,
           },
         },
+      ],
+    });
+  }
+
+  private async findMentionCampaigns(userName: string, objects: string[]) {
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+
+    const eligible = await this.rewardsAll.getEligiblePipe({ userName, user });
+
+    const campaigns = await this.campaignRepository.aggregate({
+      pipeline: [
+        {
+          $match: {
+            requiredObject: { $in: objects },
+            objects: { $elemMatch: { $in: objects } },
+          },
+        },
+        ...eligible,
       ],
     });
   }
