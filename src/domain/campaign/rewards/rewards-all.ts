@@ -20,6 +20,7 @@ import {
   WOBJECT_STATUS,
   WOBJECT_SUBSCRIPTION_PROVIDE,
   USER_SUBSCRIPTION_PROVIDE,
+  MUTED_USER_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -58,6 +59,7 @@ import { PipelineStage } from 'mongoose';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
+import {MutedUserRepositoryInterface} from "../../../persistance/muted-user/interface";
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -80,6 +82,8 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly wobjectSubscriptionsRepository: WobjectSubscriptionsRepositoryInterface,
     @Inject(USER_SUBSCRIPTION_PROVIDE.REPOSITORY)
     private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
+    @Inject(MUTED_USER_PROVIDE.REPOSITORY)
+    private readonly mutedUserRepository: MutedUserRepositoryInterface,
   ) {}
 
   async findAssignedMainObjects(userName: string): Promise<string[]> {
@@ -845,6 +849,12 @@ export class RewardsAll implements RewardsAllInterface {
     const currentDay = moment().format('dddd').toLowerCase();
     const assignedObjects = await this.findAssignedMainObjects(userName);
 
+    const mutedList = await this.mutedUserRepository.find({
+      filter: { mutedBy: userName },
+    });
+
+    const mutedNames = mutedList.map((el) => el.userName);
+
     const { rewardBalanceTimesRate, claims } =
       await this.getExpertiseVariables();
 
@@ -968,6 +978,7 @@ export class RewardsAll implements RewardsAllInterface {
           notAssigned: true,
           frequency: true,
           blacklist: { $ne: userName },
+          ...(mutedNames.length && { guideName: { $nin: mutedNames } }),
         },
       },
     ];
