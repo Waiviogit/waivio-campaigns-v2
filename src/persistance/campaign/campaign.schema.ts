@@ -228,6 +228,12 @@ export class Campaign {
   payoutToken: string;
 
   @Prop({
+    type: Boolean,
+    default: true,
+  })
+  qualifiedPayoutToken: boolean;
+
+  @Prop({
     type: String,
     required: true,
     enum: Object.values(REACH_TYPE),
@@ -242,13 +248,3 @@ CampaignSchema.index({ createdAt: -1 });
 CampaignSchema.index({ reward: -1 });
 CampaignSchema.index({ rewardInUSD: -1 });
 CampaignSchema.index({ userName: 1, postPermlink: 1 });
-
-//TODO validate in dto
-// CampaignSchema.pre('save', function (next) {
-//   if (this.reward > this.budget) {
-//     const error = new Error('Reward more than budget');
-//
-//     return next(error);
-//   }
-//   next();
-// });

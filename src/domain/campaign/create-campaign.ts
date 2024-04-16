@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { BLACKLIST_PROVIDE, CAMPAIGN_PROVIDE } from '../../common/constants';
 import { CreateCampaignInterface } from './interface';
@@ -8,6 +8,8 @@ import {
   CreateCampaignType,
 } from '../../persistance/campaign/types';
 import { BlacklistHelperInterface } from '../blacklist/interface';
+
+const MIN_CAMPAIGN_REWARD_USD = 0.5;
 
 @Injectable()
 export class CreateCampaign implements CreateCampaignInterface {
@@ -27,6 +29,15 @@ export class CreateCampaign implements CreateCampaignInterface {
       campaign.currency,
       campaign.reward,
     );
+
+    if (rewardInUSD < MIN_CAMPAIGN_REWARD_USD) {
+      throw new HttpException(`Reward < ${MIN_CAMPAIGN_REWARD_USD} $`, 422);
+    }
+
+    if (campaign.reward > campaign.budget) {
+      throw new HttpException(`Reward more than budget`, 422);
+    }
+
     const { blacklist, whitelist } = await this.blacklistHelper.getBlacklist(
       campaign.guideName,
     );

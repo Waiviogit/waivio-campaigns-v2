@@ -72,6 +72,10 @@ export type ParseReviewType = {
   beneficiaries: Beneficiary[];
 };
 
+export type QualifyConditionType = {
+  qualifiedPayoutToken?: boolean | undefined;
+};
+
 export type ReviewCommissionsType = {
   indexCommission: number;
   indexAccount: string;

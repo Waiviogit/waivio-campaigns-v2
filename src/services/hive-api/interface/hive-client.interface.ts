@@ -1,6 +1,7 @@
 import { HiveBlockType } from '../../../common/types';
 import {
   ActiveVotesType,
+  BroadcastCommentType,
   CommentStateType,
   HiveContentType,
   VoteOnPostType,
@@ -23,6 +24,7 @@ export interface HiveClientInterface {
     permlink,
   }: GetVoteInterface): Promise<ActiveVotesType>;
   getState(author: string, permlink: string): Promise<CommentStateType>;
+  createComment(params: BroadcastCommentType): Promise<boolean>;
 }
 
 export interface GetVoteInterface {

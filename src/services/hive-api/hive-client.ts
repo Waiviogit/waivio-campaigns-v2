@@ -7,6 +7,7 @@ import { HiveBlockType } from '../../common/types';
 import { GetVoteInterface, HiveClientInterface } from './interface';
 import {
   ActiveVotesType,
+  BroadcastCommentType,
   CommentStateType,
   HiveContentType,
   VoteOnPostType,
@@ -68,6 +69,35 @@ export class HiveClient implements HiveClientInterface {
           author,
           permlink,
           weight,
+        },
+        PrivateKey.fromString(key),
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async createComment({
+    key,
+    author,
+    permlink,
+    parent_author,
+    parent_permlink,
+    body,
+    title,
+    json_metadata,
+  }: BroadcastCommentType): Promise<boolean> {
+    try {
+      await this.broadcastClient.broadcast.comment(
+        {
+          author,
+          permlink,
+          parent_author,
+          parent_permlink,
+          body,
+          title,
+          json_metadata,
         },
         PrivateKey.fromString(key),
       );

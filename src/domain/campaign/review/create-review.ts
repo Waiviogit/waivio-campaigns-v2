@@ -25,6 +25,8 @@ import {
   WOBJECT_REF,
   REGEX_MENTIONS,
   CAMPAIGN_TYPE,
+  TOKEN_WAIV,
+  HIVE_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -42,6 +44,7 @@ import {
   GetCommissionPaymentsType,
   GetReviewPaymentType,
   ParseReviewType,
+  QualifyConditionType,
   ReviewCampaignType,
   ReviewCommissionsType,
   UpdateMentionStatusesType,
@@ -74,6 +77,9 @@ import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-
 import { RewardsAllInterface } from '../rewards/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
+import { MetadataType } from '../../hive-parser/types';
+import { HiveClientInterface } from '../../../services/hive-api/interface';
+import { configService } from '../../../common/config';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -102,6 +108,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly rewardsAll: RewardsAllInterface,
     @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
     private readonly blockRedisClient: RedisClientInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
 
   //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
@@ -118,6 +126,18 @@ export class CreateReview implements CreateReviewInterface {
   async getRegExToParseObjects(): Promise<RegExp> {
     const hosts = await this.getHostsToParseObjects();
     return RegExp(`${hosts.map((el) => `${el}${WOBJECT_REF}`).join('|')}`);
+  }
+
+  //in Future Can Validate MultipleTokens
+  getQualifiedPayoutTokenCondition(
+    metadata: MetadataType,
+  ): QualifyConditionType {
+    const qualified = TOKEN_WAIV.TAGS.some((el) =>
+      (metadata?.tags ?? []).includes(el),
+    );
+    if (qualified) return {};
+
+    return { qualifiedPayoutToken: false };
   }
 
   async raiseReward({
@@ -252,16 +272,20 @@ export class CreateReview implements CreateReviewInterface {
 
     const links = extractLinksFromString(comment.body);
 
+    const qualifiedTokenCondition =
+      this.getQualifiedPayoutTokenCondition(metadata);
+
     const campaignsForReview = await this.findReviewCampaigns(
       postAuthor,
       objects,
+      qualifiedTokenCondition,
     );
 
-    const campaignsForMentions = await this.findMentionCampaigns(postAuthor, [
-      ...objects,
-      ...mentions,
-      ...links,
-    ]);
+    const campaignsForMentions = await this.findMentionCampaigns(
+      postAuthor,
+      [...objects, ...mentions, ...links],
+      qualifiedTokenCondition,
+    );
 
     const postImages = _.get(metadata, 'image', []);
 
@@ -486,6 +510,17 @@ export class CreateReview implements CreateReviewInterface {
       symbol: campaign.payoutToken,
       guideName: campaign.guideName,
       payoutTokenRateUSD,
+    });
+
+    await this.hiveClient.createComment({
+      parent_author: botName || postAuthor,
+      parent_permlink: reviewPermlink,
+      title: '',
+      json_metadata: '',
+      body: `your post might get a reward for mentioning ${userReservationObject}, ${campaign.requiredObject} in your post`,
+      author: configService.getMentionsAccount(),
+      permlink: `re-${botName || postAuthor}-${reviewPermlink}-reward`,
+      key: configService.getMentionsPostingKey(),
     });
   }
 
@@ -995,6 +1030,7 @@ export class CreateReview implements CreateReviewInterface {
   private async findReviewCampaigns(
     postAuthor: string,
     objects: string[],
+    qualifyCondition: QualifyConditionType,
   ): Promise<ReviewCampaignType[]> {
     return this.campaignRepository.aggregate({
       pipeline: [
@@ -1005,6 +1041,7 @@ export class CreateReview implements CreateReviewInterface {
             'users.objectPermlink': { $in: objects },
             'users.name': postAuthor,
             'users.status': RESERVATION_STATUS.ASSIGNED,
+            ...qualifyCondition,
           },
         },
         {
@@ -1043,6 +1080,7 @@ export class CreateReview implements CreateReviewInterface {
   private async findMentionCampaigns(
     userName: string,
     objects: string[],
+    qualifyCondition: QualifyConditionType,
   ): Promise<CampaignDocumentType[]> {
     const user = await this.userRepository.findOne({
       filter: { name: userName },
@@ -1059,6 +1097,7 @@ export class CreateReview implements CreateReviewInterface {
             objects: { $elemMatch: { $in: objects } },
             type: CAMPAIGN_TYPE.MENTIONS,
             status: CAMPAIGN_STATUS.ACTIVE,
+            ...qualifyCondition,
           },
         },
         ...eligible,

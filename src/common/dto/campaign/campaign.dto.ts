@@ -361,6 +361,14 @@ export class CampaignDto {
   })
   payoutToken: string;
 
+  @IsBoolean()
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    default: true,
+  })
+  qualifiedPayoutToken: boolean;
+
   @IsString()
   @IsIn(Object.values(REACH_TYPE))
   @ApiProperty({
