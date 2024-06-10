@@ -22,14 +22,15 @@ export class AuthGuard implements CanActivate {
     const account = headers.account;
     const token = headers['access-token'];
     const hiveAuth = headers['hive-auth'] === 'true';
+    // const waivioAuth = headers['waivio-auth'] === 'true';
 
     if (hiveAuth) {
       return this.validateHiveAuth(account, token);
     }
-
-    if (headers['waivio-auth']) {
-      return this.validateGuestUser(account, token);
-    }
+    //
+    // if (waivioAuth) {
+    //   return this.validateGuestUser(account, token);
+    // }
     return this.validateHiveSigner(account, token);
   }
 
