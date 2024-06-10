@@ -188,6 +188,12 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   description: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  @ApiProperty({ type: String, required: false })
+  imageToDisplay?: string;
+
   @IsNotEmpty()
   @IsString()
   @IsIn(Object.values(CAMPAIGN_TYPE))

@@ -59,7 +59,7 @@ import { PipelineStage } from 'mongoose';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
-import {MutedUserRepositoryInterface} from "../../../persistance/muted-user/interface";
+import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -950,12 +950,17 @@ export class RewardsAll implements RewardsAllInterface {
           canAssignByCurrentDay: {
             $eq: [`$reservationTimetable.${currentDay}`, true],
           },
-          posts: { $gte: [user.count_posts, '$userRequirements.minPosts'] },
+          posts: {
+            $gte: [user?.count_posts ?? 0, '$userRequirements.minPosts'],
+          },
           followers: {
-            $gte: [user.followers_count, '$userRequirements.minFollowers'],
+            $gte: [
+              user?.followers_count ?? 0,
+              '$userRequirements.minFollowers',
+            ],
           },
           expertise: {
-            $gte: [user.wobjects_weight, '$requiredExpertise'],
+            $gte: [user?.wobjects_weight ?? 0, '$requiredExpertise'],
           },
           notAssigned: {
             $cond: [{ $in: ['$requiredObject', assignedObjects] }, false, true],

@@ -102,6 +102,9 @@ export class Campaign {
   @Prop({ type: String, maxlength: 512 })
   description: string;
 
+  @Prop({ type: String, maxlength: 512 })
+  imageToDisplay?: string;
+
   @Prop({ type: String, required: true, enum: Object.values(CAMPAIGN_TYPE) })
   type: string;
 
