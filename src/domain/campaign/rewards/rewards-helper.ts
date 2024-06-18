@@ -38,6 +38,24 @@ export class RewardsHelper implements RewardsHelperInterface {
     private readonly postRepository: PostRepositoryInterface,
   ) {}
 
+  extractUsername(fromString: string): string {
+    const match = fromString.match(/@(\w+)/);
+    return match ? match[1] : '';
+  }
+
+  getCampaignUsersFromArray(objects: string[]): string[] {
+    return objects.reduce((acc, el) => {
+      const user = this.extractUsername(el);
+      if (user) acc.push(user);
+      return acc;
+    }, []);
+  }
+
+  filterObjectLinks(objects: string[]): string[] {
+    const pattern = /@|https:\/\//;
+    return objects.filter((el) => !pattern.test(el));
+  }
+
   async addMutedAndHidden({
     rewards,
     guideName,

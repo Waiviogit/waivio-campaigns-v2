@@ -27,7 +27,7 @@ export type GetUpvoteType = {
   totalVotesWeight: number;
   requiredObject: string;
   amountToVote: number;
-  reservationPermlink: string;
+  reservationPermlink?: string;
 };
 
 export type UpdateStatusType = {

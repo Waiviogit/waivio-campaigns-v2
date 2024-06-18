@@ -6,6 +6,17 @@ export type VoteOnPostType = {
   weight: number;
 };
 
+export type BroadcastCommentType = {
+  key: string;
+  parent_author: string;
+  parent_permlink: string;
+  author: string;
+  permlink: string;
+  title: string;
+  body: string;
+  json_metadata: string;
+};
+
 export type HiveContentType = {
   id: number;
   author: string;

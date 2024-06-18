@@ -4,7 +4,7 @@ import {
   ReviewRequirementsType,
   UserRequirementsType,
 } from '../../../../persistance/campaign/types';
-import { UserDocumentType } from '../../../../persistance/user/types';
+import {UserCampaignType, UserDocumentType} from '../../../../persistance/user/types';
 import { ReservationDetailsObjectType } from '../../reservation/types/reservation-details.types';
 
 export type RewardsMainType = {
@@ -22,6 +22,9 @@ export type RewardsAllType = {
 
 export type RewardsByRequiredType = {
   object: ProcessedWobjectType;
+  user?: UserCampaignType;
+  webLink?: string;
+  objects: string;
   requiredObject: ReservationDetailsObjectType;
   payoutToken: string;
   currency: string;

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as _ from 'lodash';
 import { User } from './user.schema';
-import { UserDocumentType, UserFindOneType } from './types';
+import { UserCampaignType, UserDocumentType, UserFindOneType } from './types';
 import { UserRepositoryInterface } from './interface';
 
 @Injectable()
@@ -45,5 +45,20 @@ export class UserRepository implements UserRepositoryInterface {
     });
     if (!users || !users.length) return;
     return _.map(users, 'name');
+  }
+
+  async findCampaignsUsers(names: string[]): Promise<UserCampaignType[]> {
+    if (!names?.length) return [];
+
+    return this.find({
+      filter: { name: { $in: names } },
+      projection: {
+        name: 1,
+        posting_json_metadata: 1,
+        alias: 1,
+        wobjects_weight: 1,
+        profile_image: 1,
+      },
+    });
   }
 }

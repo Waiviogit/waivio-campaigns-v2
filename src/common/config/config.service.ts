@@ -89,6 +89,13 @@ class ConfigService {
   public getNotificationsRoute(): string {
     return this.getValue('NOTIFICATIONS_SET', true);
   }
+
+  public getMentionsAccount(): string {
+    return this.getValue('MENTIONS_ACCOUNT', true);
+  }
+  public getMentionsPostingKey(): string {
+    return this.getValue('MENTIONS_POSTING_KEY', true);
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues(

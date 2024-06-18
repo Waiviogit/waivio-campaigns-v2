@@ -16,3 +16,8 @@ export const getBodyLinksArray = ({
     )
     .compact()
     .value();
+
+export const extractLinksFromString = (text: string): string[] => {
+  const regex = /(https?:\/\/[^\s]+)/gm;
+  return text.match(regex) || [];
+};

@@ -138,6 +138,9 @@ export class User {
   @Prop({ type: String, default: '' })
   json_metadata: string;
 
+  @Prop({ type: String, default: '' })
+  posting_json_metadata: string;
+
   @Prop({ type: Number, default: 0, index: true })
   count_posts: number;
 

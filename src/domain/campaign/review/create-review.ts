@@ -12,13 +12,21 @@ import {
   REDIS_EXPIRE,
   CAMPAIGN_POSTS_PROVIDE,
   REFERRAL_TYPES,
-  REGEX_WOBJECT_REF,
   RESERVATION_STATUS,
   REVIEW_PROVIDE,
   SPONSORS_BOT_PROVIDE,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
   PAYMENT_SELF_POSTFIX,
+  REWARDS_PROVIDE,
+  REDIS_PROVIDE,
+  REDIS_KEY,
+  HOSTS_TO_PARSE_LINKS,
+  WOBJECT_REF,
+  REGEX_MENTIONS,
+  CAMPAIGN_TYPE,
+  TOKEN_WAIV,
+  HIVE_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -29,14 +37,17 @@ import { CampaignHelperInterface } from '../interface';
 import {
   CampaignPaymentType,
   CreateCampaignPaymentsType,
+  CreateMentionType,
   CreateReviewType,
   GetBeneficiariesPaymentsType,
   GetCampaignPaymentsType,
   GetCommissionPaymentsType,
   GetReviewPaymentType,
   ParseReviewType,
+  QualifyConditionType,
   ReviewCampaignType,
   ReviewCommissionsType,
+  UpdateMentionStatusesType,
   UpdateReviewStatusesType,
   UpdateUserStatusType,
   ValidateReviewType,
@@ -56,9 +67,19 @@ import { ObjectId } from 'mongoose';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
-import { getBodyLinksArray, parseJSON } from '../../../common/helpers';
+import {
+  extractLinksFromString,
+  getBodyLinksArray,
+  parseJSON,
+} from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
 import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-posts/interface';
+import { RewardsAllInterface } from '../rewards/interface';
+import { CampaignDocumentType } from '../../../persistance/campaign/types';
+import { RedisClientInterface } from '../../../services/redis/clients/interface';
+import { MetadataType } from '../../hive-parser/types';
+import { HiveClientInterface } from '../../../services/hive-api/interface';
+import { configService } from '../../../common/config';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -83,7 +104,41 @@ export class CreateReview implements CreateReviewInterface {
     private readonly sponsorsBot: SponsorsBotInterface,
     @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
+    @Inject(REWARDS_PROVIDE.ALL)
+    private readonly rewardsAll: RewardsAllInterface,
+    @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
+    private readonly blockRedisClient: RedisClientInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
+
+  //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
+  async getHostsToParseObjects(): Promise<string[]> {
+    const cache = await this.blockRedisClient.get(
+      REDIS_KEY.HOSTS_TO_PARSE_OBJECTS,
+    );
+    if (cache) {
+      return parseJSON(cache);
+    }
+    return HOSTS_TO_PARSE_LINKS;
+  }
+
+  async getRegExToParseObjects(): Promise<RegExp> {
+    const hosts = await this.getHostsToParseObjects();
+    return RegExp(`${hosts.map((el) => `${el}${WOBJECT_REF}`).join('|')}`);
+  }
+
+  //in Future Can Validate MultipleTokens
+  getQualifiedPayoutTokenCondition(
+    metadata: MetadataType,
+  ): QualifyConditionType {
+    const qualified = TOKEN_WAIV.TAGS.some((el) =>
+      (metadata?.tags ?? []).includes(el),
+    );
+    if (qualified) return {};
+
+    return { qualifiedPayoutToken: false };
+  }
 
   async raiseReward({
     activationPermlink,
@@ -202,39 +257,80 @@ export class CreateReview implements CreateReviewInterface {
       'author_permlink',
     );
 
+    const regexObjects = await this.getRegExToParseObjects();
+
     const bodyWobj = getBodyLinksArray({
       body: comment.body,
-      regularExpression: REGEX_WOBJECT_REF,
+      regularExpression: regexObjects,
     });
-
     const objects = _.uniq([...metadataWobj, ...bodyWobj]);
 
-    if (_.isEmpty(objects)) return;
+    const mentions = getBodyLinksArray({
+      body: comment.body,
+      regularExpression: REGEX_MENTIONS,
+    });
+
+    const links = extractLinksFromString(comment.body);
+
+    const qualifiedTokenCondition =
+      this.getQualifiedPayoutTokenCondition(metadata);
 
     const campaignsForReview = await this.findReviewCampaigns(
       postAuthor,
       objects,
+      qualifiedTokenCondition,
     );
-    if (_.isEmpty(campaignsForReview)) return;
-    const validCampaigns = await this.validateReview({
-      campaigns: campaignsForReview,
-      metadata,
+
+    const campaignsForMentions = await this.findMentionCampaigns(
       postAuthor,
-    });
-    if (_.isEmpty(validCampaigns)) return;
-    for (const validCampaign of validCampaigns) {
-      await this.createReview({
-        campaign: validCampaign,
-        beneficiaries,
-        objects,
-        app,
-        title: comment.title,
-        reviewPermlink: comment.permlink,
-        images: _.get(metadata, 'image', []),
-        host: _.get(metadata, 'host', ''),
-        botName,
+      [...objects, ...mentions, ...links],
+      qualifiedTokenCondition,
+    );
+
+    const postImages = _.get(metadata, 'image', []);
+
+    if (campaignsForMentions.length) {
+      for (const campaignsForMention of campaignsForMentions) {
+        if (postImages < campaignsForMention.requirements.minPhotos) continue;
+
+        await this.createMention({
+          campaign: campaignsForMention,
+          beneficiaries,
+          app,
+          title: comment.title,
+          reviewPermlink: comment.permlink,
+          host: _.get(metadata, 'host', ''),
+          botName,
+          postAuthor,
+          postMentions: [...objects, ...mentions, ...links],
+          images: postImages,
+        });
+      }
+    }
+
+    if (!_.isEmpty(campaignsForReview)) {
+      const validCampaignsReview = await this.validateReview({
+        campaigns: campaignsForReview,
+        metadata,
         postAuthor,
       });
+
+      if (!_.isEmpty(validCampaignsReview)) {
+        for (const validCampaign of validCampaignsReview) {
+          await this.createReview({
+            campaign: validCampaign,
+            beneficiaries,
+            objects,
+            app,
+            title: comment.title,
+            reviewPermlink: comment.permlink,
+            images: postImages,
+            host: _.get(metadata, 'host', ''),
+            botName,
+            postAuthor,
+          });
+        }
+      }
     }
   }
 
@@ -337,6 +433,95 @@ export class CreateReview implements CreateReviewInterface {
     }
 
     return new BigNumber(0);
+  }
+
+  async createMention({
+    campaign,
+    botName,
+    reviewPermlink,
+    postAuthor,
+    beneficiaries,
+    host,
+    app,
+    title,
+    postMentions,
+    images,
+  }: CreateMentionType): Promise<void> {
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+
+    const objectsQualified = _.intersection(campaign.objects, postMentions);
+
+    const userReservationObject = objectsQualified[0];
+
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
+
+    await this.updateMentionStatuses({
+      campaign,
+      app,
+      botName,
+      reviewPermlink,
+      postAuthor,
+      images,
+      payoutTokenRateUSD,
+    });
+
+    const campaignReviewType = {
+      ...campaign,
+      userName: postAuthor,
+      payoutTokenRateUSD,
+      campaignId: campaign._id,
+      userReservationObject,
+    } as never as ReviewCampaignType;
+
+    await this.sponsorsBot.createUpvoteRecords({
+      campaign: campaignReviewType,
+      botName,
+      permlink: reviewPermlink,
+      rewardInToken,
+    });
+
+    const payments = await this.getCampaignPayments({
+      beneficiaries,
+      campaign: campaignReviewType,
+      host,
+      isGuest: !!botName,
+      rewardInToken,
+    });
+
+    await this.createCampaignPayments({
+      payments,
+      campaign: campaignReviewType,
+      app,
+      botName,
+      reviewPermlink,
+      title,
+    });
+
+    await this.campaignPostsRepository.create({
+      author: postAuthor,
+      permlink: reviewPermlink,
+      rewardInToken: rewardInToken.toNumber(),
+      symbol: campaign.payoutToken,
+      guideName: campaign.guideName,
+      payoutTokenRateUSD,
+    });
+
+    await this.hiveClient.createComment({
+      parent_author: botName || postAuthor,
+      parent_permlink: reviewPermlink,
+      title: '',
+      json_metadata: '',
+      body: `your post might get a reward for mentioning ${userReservationObject}, ${campaign.requiredObject} in your post`,
+      author: configService.getMentionsAccount(),
+      permlink: `re-${botName || postAuthor}-${reviewPermlink}-reward`,
+      key: configService.getMentionsPostingKey(),
+    });
   }
 
   async createReview({
@@ -467,6 +652,44 @@ export class CreateReview implements CreateReviewInterface {
     });
 
     await this.updateCampaignStatus(campaign.campaignId);
+    await this.campaignHelper.checkOnHoldStatus(campaign.activationPermlink);
+  }
+
+  async updateMentionStatuses({
+    campaign,
+    reviewPermlink,
+    images,
+    payoutTokenRateUSD,
+    postAuthor,
+    botName,
+    app,
+  }: UpdateMentionStatusesType): Promise<void> {
+    const { fraud, fraudCodes } = await this.fraudDetection.detectFraud({
+      campaign: campaign as never as ReviewCampaignType,
+      images,
+    });
+
+    await this.campaignRepository.updateOne({
+      filter: { _id: campaign._id, status: CAMPAIGN_STATUS.ACTIVE },
+      update: {
+        $push: {
+          users: {
+            name: postAuthor,
+            rootName: botName || postAuthor,
+            status: RESERVATION_STATUS.COMPLETED,
+            payoutTokenRateUSD,
+            objectPermlink: campaign.requiredObject,
+            referralServer: app,
+            completedAt: moment.utc().format(),
+            fraudSuspicion: fraud,
+            fraudCodes,
+            reviewPermlink,
+          },
+        },
+      },
+    });
+
+    await this.updateCampaignStatus(campaign._id);
     await this.campaignHelper.checkOnHoldStatus(campaign.activationPermlink);
   }
 
@@ -807,15 +1030,18 @@ export class CreateReview implements CreateReviewInterface {
   private async findReviewCampaigns(
     postAuthor: string,
     objects: string[],
+    qualifyCondition: QualifyConditionType,
   ): Promise<ReviewCampaignType[]> {
     return this.campaignRepository.aggregate({
       pipeline: [
         { $unwind: '$users' },
         {
           $match: {
+            type: CAMPAIGN_TYPE.REVIEWS,
             'users.objectPermlink': { $in: objects },
             'users.name': postAuthor,
             'users.status': RESERVATION_STATUS.ASSIGNED,
+            ...qualifyCondition,
           },
         },
         {
@@ -849,5 +1075,34 @@ export class CreateReview implements CreateReviewInterface {
         },
       ],
     });
+  }
+
+  private async findMentionCampaigns(
+    userName: string,
+    objects: string[],
+    qualifyCondition: QualifyConditionType,
+  ): Promise<CampaignDocumentType[]> {
+    const user = await this.userRepository.findOne({
+      filter: { name: userName },
+      projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
+    });
+
+    const eligible = await this.rewardsAll.getEligiblePipe({ userName, user });
+
+    const campaigns = (await this.campaignRepository.aggregate({
+      pipeline: [
+        {
+          $match: {
+            requiredObject: { $in: objects },
+            objects: { $elemMatch: { $in: objects } },
+            type: CAMPAIGN_TYPE.MENTIONS,
+            status: CAMPAIGN_STATUS.ACTIVE,
+            ...qualifyCondition,
+          },
+        },
+        ...eligible,
+      ],
+    })) as CampaignDocumentType[];
+    return campaigns;
   }
 }
