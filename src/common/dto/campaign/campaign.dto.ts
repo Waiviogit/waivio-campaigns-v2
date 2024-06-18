@@ -368,6 +368,7 @@ export class CampaignDto {
   payoutToken: string;
 
   @IsBoolean()
+  @IsOptional()
   @ApiProperty({
     type: Boolean,
     required: false,
