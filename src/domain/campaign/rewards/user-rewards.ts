@@ -11,21 +11,21 @@ import {
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import {
-  GetObjectRewardsInterface,
   GetSecondaryObjectsRewards,
-  ObjectRewardsInterface,
+  GetUserRewardsInterface,
   RewardsAllInterface,
+  UserRewardsInterface,
 } from './interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { RewardsByRequiredType } from './types';
-import { ObjectRewardsType } from './types/object-rewards.types';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { ProcessedWobjectType } from '../../wobject/types';
+import { UserRewardsType } from './types/user-rewards.types';
 
 @Injectable()
-export class ObjectRewards implements ObjectRewardsInterface {
+export class UserRewards implements UserRewardsInterface {
   constructor(
     @Inject(REWARDS_PROVIDE.ALL)
     private readonly rewardsAll: RewardsAllInterface,
@@ -39,42 +39,34 @@ export class ObjectRewards implements ObjectRewardsInterface {
     private readonly wobjectRepository: WobjectRepositoryInterface,
   ) {}
 
-  async getObjectRewards({
-    authorPermlink,
+  async getUserRewards({
+    user,
     userName,
     host,
-  }: GetObjectRewardsInterface): Promise<ObjectRewardsType> {
-    if (!authorPermlink) {
-      return {
-        authorPermlink,
-        main: null,
-        secondary: [],
-      };
-    }
-
+  }: GetUserRewardsInterface): Promise<UserRewardsType> {
     const { rewards } = await this.rewardsAll.getRewardsMain({
       host,
       skip: 0,
       limit: 1,
-      requiredObjects: [authorPermlink],
+      requiredObjects: [`@${user}`],
       userName,
     });
     const main = rewards[0] || null;
 
-    const secondary = await this.getSecondaryObjectRewards({
+    const secondary = await this.getSecondaryUserRewards({
       userName,
-      objectLinks: [authorPermlink],
+      objectLinks: [`@${user}`],
       host,
     });
 
     return {
-      authorPermlink,
+      user,
       main,
       secondary,
     };
   }
 
-  async getSecondaryObjectRewards({
+  async getSecondaryUserRewards({
     userName,
     objectLinks,
     host,

@@ -17,7 +17,8 @@ import {
   AssignReservationProvider,
   GuideRejectReservationProvider,
   RejectReservationProvider,
-  ReservationDetailsProvider, ReservationHelperProvider,
+  ReservationDetailsProvider,
+  ReservationHelperProvider,
 } from './reservation/reservation.providers';
 import {
   CreateReviewProvider,
@@ -31,6 +32,7 @@ import {
   RewardsHelperProvider,
   RewardsMapProvider,
   UserHistoryProvider,
+  UserRewardsProvider,
 } from './rewards/rewards.provider';
 import { CampaignPaymentModule } from '../campaign-payment/campaign-payment.module';
 import { SponsorsBotModule } from '../sponsors-bot/sponsors-bot.module';
@@ -69,6 +71,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     RewardsHelperProvider,
     GuideReservationsProvider,
     UserHistoryProvider,
+    UserRewardsProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -93,6 +96,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     ReservationHelperProvider,
     GuideReservationsProvider,
     UserHistoryProvider,
+    UserRewardsProvider,
   ],
 })
 export class CampaignModule {}
