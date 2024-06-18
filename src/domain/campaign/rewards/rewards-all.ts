@@ -485,7 +485,7 @@ export class RewardsAll implements RewardsAllInterface {
     userName,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
-    const requiredObjects = _.uniq(_.map(campaigns, 'requiredObject'));
+    const requiredObjects = _.compact(_.uniq(_.map(campaigns, 'requiredObject')));
 
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
       links: this.rewardsHelper.filterObjectLinks(requiredObjects),
@@ -719,7 +719,7 @@ export class RewardsAll implements RewardsAllInterface {
 
     const campaignUsers = await this.userRepository.findCampaignsUsers(
       this.rewardsHelper.getCampaignUsersFromArray(
-        rewards.map((el) => el.objects),
+        _.compact(rewards.map((el) => el.objects)),
       ),
     );
 
