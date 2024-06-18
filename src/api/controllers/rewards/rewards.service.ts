@@ -4,7 +4,9 @@ import {
   GetReservedFiltersInterface,
   GetSponsorsAllInterface,
   GetSponsorsEligibleInterface,
+  GetUserRewardsInterface,
   RewardsAllInterface,
+  UserRewardsInterface,
 } from '../../../domain/campaign/rewards/interface';
 import {
   CanReserveParamType,
@@ -41,6 +43,7 @@ import {
 import { GetObjectRewardsInterface } from '../../../domain/campaign/rewards/interface';
 import { ObjectRewardsType } from '../../../domain/campaign/rewards/types/object-rewards.types';
 import { CheckUserInBlacklistInterface } from '../../../domain/blacklist/interface';
+import { UserRewardsType } from '../../../domain/campaign/rewards/types/user-rewards.types';
 
 @Injectable()
 export class RewardsService {
@@ -51,6 +54,8 @@ export class RewardsService {
     private readonly rewardsMap: RewardsMapInterface,
     @Inject(REWARDS_PROVIDE.OBJECT)
     private readonly objectRewards: ObjectRewardsInterface,
+    @Inject(REWARDS_PROVIDE.USER)
+    private readonly userRewards: UserRewardsInterface,
     @Inject(REWARDS_PROVIDE.GUIDE_RESERVATIONS)
     private readonly guideReservations: GuideReservationsInterface,
     @Inject(REWARDS_PROVIDE.USER_HISTORY)
@@ -129,6 +134,12 @@ export class RewardsService {
     params: GetObjectRewardsInterface,
   ): Promise<ObjectRewardsType> {
     return this.objectRewards.getObjectRewards(params);
+  }
+
+  async getRewardsByUser(
+    params: GetUserRewardsInterface,
+  ): Promise<UserRewardsType> {
+    return this.userRewards.getUserRewards(params);
   }
 
   async getGuideReservations(

@@ -29,7 +29,7 @@ async function bootstrap(): Promise<void> {
   const engineProcessor = app.get(EngineProcessor);
 
   await app.listen(configService.getPort());
-  hiveProcessor.start();
-  engineProcessor.start();
+  // hiveProcessor.start();
+  // engineProcessor.start();
 }
 bootstrap();
