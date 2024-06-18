@@ -399,6 +399,7 @@ export class RewardsAll implements RewardsAllInterface {
           {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
+              objects: 1,
               frequencyAssign: 1,
               matchBots: 1,
               agreementObjects: 1,
