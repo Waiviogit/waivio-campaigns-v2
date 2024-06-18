@@ -525,6 +525,12 @@ export class RewardsAll implements RewardsAllInterface {
       if (radius) {
         if (distance > radius) continue;
       }
+
+      const maxRewardCampaign = _.maxBy(
+        groupedCampaigns[key],
+        (campaign) => campaign.rewardInUSD,
+      );
+
       rewards.push({
         lastCreated: _.maxBy(
           groupedCampaigns[key],
@@ -534,10 +540,8 @@ export class RewardsAll implements RewardsAllInterface {
           groupedCampaigns[key],
           (campaign) => campaign.rewardInUSD,
         ).rewardInUSD,
-        maxReward: _.maxBy(
-          groupedCampaigns[key],
-          (campaign) => campaign.rewardInUSD,
-        ).rewardInUSD,
+        maxReward: maxRewardCampaign.rewardInUSD,
+        guideName: maxRewardCampaign.guideName,
         distance,
         object,
         user,
