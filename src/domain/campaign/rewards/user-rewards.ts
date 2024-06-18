@@ -53,7 +53,7 @@ export class UserRewards implements UserRewardsInterface {
     });
     const main = rewards[0] || null;
 
-    const secondary = await this.getSecondaryObjectRewards({
+    const secondary = await this.getSecondaryUserRewards({
       userName,
       objectLinks: [`@${user}`],
       host,
@@ -66,7 +66,7 @@ export class UserRewards implements UserRewardsInterface {
     };
   }
 
-  async getSecondaryObjectRewards({
+  async getSecondaryUserRewards({
     userName,
     objectLinks,
     host,
@@ -196,9 +196,9 @@ export class UserRewards implements UserRewardsInterface {
       (acc, r) => {
         const requiredObject = _.find(
           requiredObjects,
-          (o) => o.author_permlink === r.requiredObject,
+          (o) => o?.author_permlink === r?.requiredObject,
         );
-        if (requiredObject.author_permlink === r?.object?.author_permlink) {
+        if (requiredObject?.author_permlink === r?.object?.author_permlink) {
           return acc;
         }
         acc.push({

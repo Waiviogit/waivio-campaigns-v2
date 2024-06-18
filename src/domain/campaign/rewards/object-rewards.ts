@@ -204,9 +204,9 @@ export class ObjectRewards implements ObjectRewardsInterface {
       (acc, r) => {
         const requiredObject = _.find(
           requiredObjects,
-          (o) => o.author_permlink === r.requiredObject,
+          (o) => o?.author_permlink === r?.requiredObject,
         );
-        if (requiredObject.author_permlink === r?.object?.author_permlink) {
+        if (requiredObject?.author_permlink === r?.object?.author_permlink) {
           return acc;
         }
         acc.push({

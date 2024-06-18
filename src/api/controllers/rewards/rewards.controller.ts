@@ -243,7 +243,7 @@ export class RewardsController {
   }
 
   @Get('user/:user')
-  @RewardsControllerDoc.getRewardsByObject()
+  @RewardsControllerDoc.getRewardsByUser()
   async getRewardsByUser(
     @CustomHeaders(new HostPipe())
     host: string,

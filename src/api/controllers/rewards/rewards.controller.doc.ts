@@ -2,14 +2,17 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
   GuideMessagesFiltersDto,
-  GuideReservationFiltersDto, InBlacklistOutDto,
+  GuideReservationFiltersDto,
+  InBlacklistOutDto,
   ObjectRewardsOutDto,
   RewardsAllMainOutDto,
   RewardsByObjectOutDto,
   RewardsCanReserveOutDto,
   RewardsMapOutDto,
-  RewardsTabDto, UserFollowingsOutDto,
+  RewardsTabDto,
+  UserFollowingsOutDto,
   UserHistoryFiltersDto,
+  UserRewardsOutDto,
 } from '../../../common/dto/rewards/out';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
 
@@ -111,6 +114,18 @@ export class RewardsControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: ObjectRewardsOutDto,
+      }),
+    );
+  }
+
+  static getRewardsByUser(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'return rewards for user by name',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: UserRewardsOutDto,
       }),
     );
   }
