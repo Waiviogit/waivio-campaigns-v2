@@ -414,6 +414,7 @@ export class RewardsAll implements RewardsAllInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              type: 1,
             },
           },
           {
@@ -486,7 +487,9 @@ export class RewardsAll implements RewardsAllInterface {
     userName,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
-    const requiredObjects = _.compact(_.uniq(_.map(campaigns, 'requiredObject')));
+    const requiredObjects = _.compact(
+      _.uniq(_.map(campaigns, 'requiredObject')),
+    );
 
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
       links: this.rewardsHelper.filterObjectLinks(requiredObjects),
@@ -681,6 +684,7 @@ export class RewardsAll implements RewardsAllInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              type: 1,
             },
           },
           {
