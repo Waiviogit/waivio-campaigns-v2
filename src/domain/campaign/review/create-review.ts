@@ -68,8 +68,9 @@ import { WobjectRepositoryInterface } from '../../../persistance/wobject/interfa
 import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 import {
-  extractLinksFromString,
+  extractLinks,
   getBodyLinksArray,
+  getOrigin,
   parseJSON,
 } from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
@@ -239,6 +240,36 @@ export class CreateReview implements CreateReviewInterface {
     });
   }
 
+  async getObjectTypeLinkFromUrl(body: string): Promise<string[]> {
+    const urls = extractLinks(body);
+
+    for (const url of urls) {
+      const origin = getOrigin(url);
+      if (!origin) continue;
+      if (origin === url) {
+        urls.push(`${url}/`);
+        continue;
+      }
+      urls.push(origin);
+      urls.push(`${origin}/`);
+      url.endsWith('/')
+        ? urls.push(url.replace(/\/$/, ''))
+        : urls.push(`${url}/`);
+    }
+
+    const result = await this.wobjectRepository.find({
+      filter: {
+        object_type: 'link',
+        fields: { $elemMatch: { name: 'url', body: { $in: urls } } },
+      },
+      projection: {
+        author_permlink: 1,
+      },
+    });
+
+    return result.map((el) => el.author_permlink);
+  }
+
   async parseReview({
     metadata,
     beneficiaries,
@@ -270,7 +301,7 @@ export class CreateReview implements CreateReviewInterface {
       regularExpression: REGEX_MENTIONS,
     });
 
-    const links = extractLinksFromString(comment.body);
+    const links = await this.getObjectTypeLinkFromUrl(comment.body);
 
     const qualifiedTokenCondition =
       this.getQualifiedPayoutTokenCondition(metadata);

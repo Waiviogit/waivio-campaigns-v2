@@ -17,7 +17,17 @@ export const getBodyLinksArray = ({
     .compact()
     .value();
 
-export const extractLinksFromString = (text: string): string[] => {
-  const regex = /(https?:\/\/[^\s]+)/gm;
-  return text.match(regex) || [];
+export const extractLinks = (text: string): string[] => {
+  const urlPattern = /https?:\/\/[^\s/$.?#].[^\s]*/gm;
+  const links = text.match(urlPattern);
+  return links ? links : [];
+};
+
+export const getOrigin = (url: string): string => {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.origin;
+  } catch (error) {
+    return '';
+  }
 };
