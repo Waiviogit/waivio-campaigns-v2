@@ -81,6 +81,7 @@ import { RedisClientInterface } from '../../../services/redis/clients/interface'
 import { MetadataType } from '../../hive-parser/types';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
 import { configService } from '../../../common/config';
+import * as crypto from 'node:crypto';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -242,25 +243,33 @@ export class CreateReview implements CreateReviewInterface {
 
   async getObjectTypeLinkFromUrl(body: string): Promise<string[]> {
     const urls = extractLinks(body);
+    const modifiedUrls = [];
 
     for (const url of urls) {
       const origin = getOrigin(url);
       if (!origin) continue;
       if (origin === url) {
-        urls.push(`${url}/`);
+        modifiedUrls.push(`${url}/`);
         continue;
       }
-      urls.push(origin);
-      urls.push(`${origin}/`);
+      modifiedUrls.push(origin);
+      modifiedUrls.push(`${origin}/`);
       url.endsWith('/')
-        ? urls.push(url.replace(/\/$/, ''))
-        : urls.push(`${url}/`);
+        ? modifiedUrls.push(url.replace(/\/$/, ''))
+        : modifiedUrls.push(`${url}/`);
     }
+
+    const permlinks = _.uniq([...urls, ...modifiedUrls]);
 
     const result = await this.wobjectRepository.find({
       filter: {
         object_type: 'link',
-        fields: { $elemMatch: { name: 'url', body: { $in: urls } } },
+        fields: {
+          $elemMatch: {
+            name: 'url',
+            body: { $in: permlinks },
+          },
+        },
       },
       projection: {
         author_permlink: 1,
@@ -301,7 +310,7 @@ export class CreateReview implements CreateReviewInterface {
       regularExpression: REGEX_MENTIONS,
     });
 
-    // const links = await this.getObjectTypeLinkFromUrl(comment.body);
+    const links = await this.getObjectTypeLinkFromUrl(comment.body);
 
     const qualifiedTokenCondition =
       this.getQualifiedPayoutTokenCondition(metadata);
@@ -314,7 +323,7 @@ export class CreateReview implements CreateReviewInterface {
 
     const campaignsForMentions = await this.findMentionCampaigns(
       postAuthor,
-      [...objects, ...mentions ],
+      [...objects, ...mentions, ...links],
       qualifiedTokenCondition,
     );
 
@@ -333,7 +342,7 @@ export class CreateReview implements CreateReviewInterface {
           host: _.get(metadata, 'host', ''),
           botName,
           postAuthor,
-          postMentions: [...objects, ...mentions,],
+          postMentions: [...objects, ...mentions, ...links],
           images: postImages,
         });
       }
@@ -548,9 +557,9 @@ export class CreateReview implements CreateReviewInterface {
       parent_permlink: reviewPermlink,
       title: '',
       json_metadata: '',
-      body: `your post might get a reward for mentioning ${userReservationObject}, ${campaign.requiredObject} in your post`,
+      body: `your post might get a reward for mentioning ${userReservationObject} in your post`,
       author: configService.getMentionsAccount(),
-      permlink: `re-${botName || postAuthor}-${reviewPermlink}-reward`,
+      permlink: `re-${crypto.randomUUID()}`,
       key: configService.getMentionsPostingKey(),
     });
   }
