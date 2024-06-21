@@ -301,7 +301,7 @@ export class CreateReview implements CreateReviewInterface {
       regularExpression: REGEX_MENTIONS,
     });
 
-    const links = await this.getObjectTypeLinkFromUrl(comment.body);
+    // const links = await this.getObjectTypeLinkFromUrl(comment.body);
 
     const qualifiedTokenCondition =
       this.getQualifiedPayoutTokenCondition(metadata);
@@ -314,7 +314,7 @@ export class CreateReview implements CreateReviewInterface {
 
     const campaignsForMentions = await this.findMentionCampaigns(
       postAuthor,
-      [...objects, ...mentions, ...links],
+      [...objects, ...mentions ],
       qualifiedTokenCondition,
     );
 
@@ -333,7 +333,7 @@ export class CreateReview implements CreateReviewInterface {
           host: _.get(metadata, 'host', ''),
           botName,
           postAuthor,
-          postMentions: [...objects, ...mentions, ...links],
+          postMentions: [...objects, ...mentions,],
           images: postImages,
         });
       }
