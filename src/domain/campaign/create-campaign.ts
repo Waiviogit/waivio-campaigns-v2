@@ -31,7 +31,10 @@ export class CreateCampaign implements CreateCampaignInterface {
     );
 
     if (rewardInUSD < MIN_CAMPAIGN_REWARD_USD) {
-      throw new HttpException(`Reward < ${MIN_CAMPAIGN_REWARD_USD} $`, 422);
+      throw new HttpException(
+        `Campaign is not created. Reward should be more than $${MIN_CAMPAIGN_REWARD_USD}.`,
+        422,
+      );
     }
 
     if (campaign.reward > campaign.budget) {

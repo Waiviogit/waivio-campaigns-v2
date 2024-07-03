@@ -94,7 +94,7 @@ class ConfigService {
     return this.getValue('MENTIONS_ACCOUNT', true);
   }
   public getMentionsPostingKey(): string {
-    return this.getValue('MENTIONS_POSTING_KEY', true);
+    return this.getValue('MENTIONS_POSTING_KEY', false);
   }
 }
 

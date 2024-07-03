@@ -69,8 +69,8 @@ import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaig
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 import {
   extractLinks,
+  findPossibleLinks,
   getBodyLinksArray,
-  getOrigin,
   parseJSON,
 } from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
@@ -246,20 +246,11 @@ export class CreateReview implements CreateReviewInterface {
     const modifiedUrls = [];
 
     for (const url of urls) {
-      const origin = getOrigin(url);
-      if (!origin) continue;
-      if (origin === url) {
-        modifiedUrls.push(`${url}/`);
-        continue;
-      }
-      modifiedUrls.push(origin);
-      modifiedUrls.push(`${origin}/`);
-      url.endsWith('/')
-        ? modifiedUrls.push(url.replace(/\/$/, ''))
-        : modifiedUrls.push(`${url}/`);
+      const possibleLinks = findPossibleLinks(url);
+      modifiedUrls.push(...possibleLinks);
     }
 
-    const permlinks = _.uniq([...urls, ...modifiedUrls]);
+    const permlinks = _.uniq(modifiedUrls);
 
     const result = await this.wobjectRepository.find({
       filter: {
@@ -285,6 +276,8 @@ export class CreateReview implements CreateReviewInterface {
     comment,
     app,
   }: ParseReviewType): Promise<void> {
+    if (comment.parent_author) return;
+
     let botName, postAuthor;
 
     if (metadata?.comment?.userId) {
@@ -551,12 +544,24 @@ export class CreateReview implements CreateReviewInterface {
       payoutTokenRateUSD,
     });
 
+    const messages = [
+      `Nice job on your post! Mentioning ${userReservationObject} could lead to a well-deserved reward. Keep it going!`,
+      `Well done! Including ${userReservationObject} in your post might just bring you a reward. Keep up the great work!`,
+      `Awesome post! By mentioning ${userReservationObject}, you could be on your way to earning a reward. Keep it up!`,
+      `Excellent choice of ${userReservationObject} in your post! You might just find yourself rewarded for it. Keep posting!`,
+      `Impressive post! With ${userReservationObject} mentioned, there's a chance you'll earn a reward. Keep it going!`,
+      `Fantastic job! Mentioning ${userReservationObject} in your post might earn you a reward. Keep up the good work!`,
+      `Well-crafted post! By mentioning ${userReservationObject}, you're in the running for a reward. Keep it going strong!`,
+      `Bravo on your post! Including ${userReservationObject} could earn you a reward. Keep up the great content!`,
+      `Stellar post! By mentioning ${userReservationObject}, you're setting yourself up for a potential reward. Keep it up!`,
+    ];
+
     await this.hiveClient.createComment({
       parent_author: botName || postAuthor,
       parent_permlink: reviewPermlink,
       title: '',
       json_metadata: '',
-      body: `your post might get a reward for mentioning ${userReservationObject} in your post`,
+      body: _.sample(messages),
       author: configService.getMentionsAccount(),
       permlink: `re-${crypto.randomUUID()}`,
       key: configService.getMentionsPostingKey(),
