@@ -166,6 +166,7 @@ export class SponsorsBot implements SponsorsBotInterface {
     botName,
     permlink,
     rewardInToken,
+    reservationPermlink,
   }: CreateUpvoteRecordsType): Promise<void> {
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     for (const matchBot of campaign.matchBots) {
@@ -201,7 +202,8 @@ export class SponsorsBot implements SponsorsBotInterface {
       await this.sponsorsBotUpvoteRepository.create({
         requiredObject: campaign.requiredObject,
         symbol: campaign.payoutToken,
-        reservationPermlink: campaign.userReservationPermlink,
+        reservationPermlink:
+          campaign.userReservationPermlink || reservationPermlink,
         botName: bot.botName,
         author: botName || campaign.userName,
         userName: campaign.userName,

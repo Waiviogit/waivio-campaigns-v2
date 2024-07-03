@@ -28,6 +28,7 @@ export type CreateUpvoteRecordsType = {
   permlink: string;
   botName?: string;
   rewardInToken: BigNumber;
+  reservationPermlink?: string;
 };
 
 export type GetWeightToVoteType = {

@@ -479,6 +479,9 @@ export class CreateReview implements CreateReviewInterface {
     postMentions,
     images,
   }: CreateMentionType): Promise<void> {
+    //generate reservation permlink because it used in payments aggregation as uniq field
+    const reservationPermlink = crypto.randomUUID();
+
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
 
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
@@ -501,6 +504,7 @@ export class CreateReview implements CreateReviewInterface {
       postAuthor,
       images,
       payoutTokenRateUSD,
+      reservationPermlink,
     });
 
     const campaignReviewType = {
@@ -516,6 +520,7 @@ export class CreateReview implements CreateReviewInterface {
       botName,
       permlink: reviewPermlink,
       rewardInToken,
+      reservationPermlink,
     });
 
     const payments = await this.getCampaignPayments({
@@ -533,6 +538,7 @@ export class CreateReview implements CreateReviewInterface {
       botName,
       reviewPermlink,
       title,
+      reservationPermlink,
     });
 
     await this.campaignPostsRepository.create({
@@ -542,6 +548,7 @@ export class CreateReview implements CreateReviewInterface {
       symbol: campaign.payoutToken,
       guideName: campaign.guideName,
       payoutTokenRateUSD,
+      reservationPermlink,
     });
 
     const messages = [
@@ -637,6 +644,7 @@ export class CreateReview implements CreateReviewInterface {
     app,
     reviewPermlink,
     botName,
+    reservationPermlink,
   }: CreateCampaignPaymentsType): Promise<void> {
     const beneficiaries = _.chain(payments)
       .filter({ type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE })
@@ -658,7 +666,8 @@ export class CreateReview implements CreateReviewInterface {
         mainObject: campaign.requiredObject,
         payoutTokenRateUSD: campaign.payoutTokenRateUSD,
         reviewObject: campaign.userReservationObject,
-        reservationPermlink: campaign.userReservationPermlink,
+        reservationPermlink:
+          campaign.userReservationPermlink || reservationPermlink,
         isDemoAccount: !!botName,
         ...(payment.commission && { commission: payment.commission }),
       });
@@ -670,7 +679,8 @@ export class CreateReview implements CreateReviewInterface {
       }
     }
     await this.campaignHelper.setExpireSuspendWarning({
-      userReservationPermlink: campaign.userReservationPermlink,
+      userReservationPermlink:
+        campaign.userReservationPermlink || reservationPermlink,
       campaignId: campaign.campaignId,
       expire: REDIS_EXPIRE.CAMPAIGN_SUSPEND_WARNING_5,
       daysToSuspend: REDIS_DAYS_TO_SUSPEND.FIVE,
@@ -707,6 +717,7 @@ export class CreateReview implements CreateReviewInterface {
     postAuthor,
     botName,
     app,
+    reservationPermlink,
   }: UpdateMentionStatusesType): Promise<void> {
     const { fraud, fraudCodes } = await this.fraudDetection.detectFraud({
       campaign: campaign as never as ReviewCampaignType,
@@ -728,6 +739,7 @@ export class CreateReview implements CreateReviewInterface {
             fraudSuspicion: fraud,
             fraudCodes,
             reviewPermlink,
+            reservationPermlink,
           },
         },
       },

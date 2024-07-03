@@ -139,6 +139,7 @@ export type CreateCampaignPaymentsType = {
   app: string;
   reviewPermlink: string;
   botName?: string;
+  reservationPermlink?: string;
 };
 
 export type UpdateMentionStatusesType = {
@@ -149,6 +150,7 @@ export type UpdateMentionStatusesType = {
   postAuthor: string;
   botName?: string;
   app?: string;
+  reservationPermlink: string;
 };
 
 export type UpdateReviewStatusesType = {
