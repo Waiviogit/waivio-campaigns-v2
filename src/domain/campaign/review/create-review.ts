@@ -305,10 +305,9 @@ export class CreateReview implements CreateReviewInterface {
     });
     const objects = _.uniq([...metadataWobj, ...bodyWobj]);
 
-    const mentions = getBodyLinksArray({
-      body: comment.body,
-      regularExpression: REGEX_MENTIONS,
-    });
+    const mentions = _.uniq(
+      _.compact((comment?.body ?? '').match(new RegExp(REGEX_MENTIONS, 'gm'))),
+    );
 
     const links = await this.getObjectTypeLinkFromUrl(comment.body);
 

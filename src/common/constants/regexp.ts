@@ -11,4 +11,4 @@ export const REGEX_WOBJECT_REF = new RegExp(
   `${HOSTS_TO_PARSE_LINKS.map((el) => `${el}${WOBJECT_REF}`).join('|')}`,
 );
 
-export const REGEX_MENTIONS = new RegExp(`@[\w.-]+`);
+export const REGEX_MENTIONS = /@[a-zA-Z0-9._-]+/;
