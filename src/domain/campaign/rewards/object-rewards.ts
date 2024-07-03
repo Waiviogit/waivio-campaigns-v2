@@ -174,6 +174,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
               countReservationDays: 1,
               activationPermlink: 1,
               requiredObject: 1,
+              type: 1,
             },
           },
         ],
