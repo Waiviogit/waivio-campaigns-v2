@@ -135,6 +135,7 @@ export type UpdateUserStatusType = {
 export type CreateCampaignPaymentsType = {
   payments: CampaignPaymentType[];
   campaign: ReviewCampaignType;
+  campaignType: string;
   title: string;
   app: string;
   reviewPermlink: string;

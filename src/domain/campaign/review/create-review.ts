@@ -539,6 +539,7 @@ export class CreateReview implements CreateReviewInterface {
       reviewPermlink,
       title,
       reservationPermlink,
+      campaignType: CAMPAIGN_TYPE.MENTIONS,
     });
 
     await this.campaignPostsRepository.create({
@@ -624,6 +625,7 @@ export class CreateReview implements CreateReviewInterface {
       botName,
       reviewPermlink,
       title,
+      campaignType: CAMPAIGN_TYPE.REVIEWS,
     });
 
     await this.campaignPostsRepository.create({
@@ -645,6 +647,7 @@ export class CreateReview implements CreateReviewInterface {
     reviewPermlink,
     botName,
     reservationPermlink,
+    campaignType,
   }: CreateCampaignPaymentsType): Promise<void> {
     const beneficiaries = _.chain(payments)
       .filter({ type: CAMPAIGN_PAYMENT.BENEFICIARY_FEE })
@@ -653,6 +656,7 @@ export class CreateReview implements CreateReviewInterface {
 
     for (const payment of payments) {
       const result = await this.campaignPaymentRepository.create({
+        campaignType,
         amount: payment.amount,
         type: payment.type,
         payoutToken: campaign.payoutToken,
