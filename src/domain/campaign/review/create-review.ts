@@ -310,7 +310,7 @@ export class CreateReview implements CreateReviewInterface {
     const campaignsForReview = await this.findReviewCampaigns(
       postAuthor,
       objects,
-      qualifiedTokenCondition,
+      {},
     );
 
     const campaignsForMentions = await this.findMentionCampaigns(
