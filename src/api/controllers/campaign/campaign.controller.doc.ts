@@ -2,6 +2,7 @@ import { ApiOperation, ApiResponse, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 
 import {
+  CampaignReservationDetailsDto,
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
@@ -131,6 +132,18 @@ export class CampaignControllerDocs {
       ApiResponse({
         status: HttpStatus.OK,
         type: ValidationResponseDto,
+      }),
+    );
+  }
+
+  static getCampaignDetails(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get campaign requirements by id and secondary object',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: CampaignReservationDetailsDto,
       }),
     );
   }

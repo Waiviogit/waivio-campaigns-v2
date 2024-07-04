@@ -26,6 +26,11 @@ import {
   ActivateCampaignType,
   DeactivateCampaignType,
 } from '../../../domain/campaign/types';
+import {
+  CampaignDetailsInterface,
+  getCampaignRequirementsInterface,
+} from '../../../domain/campaign/interface/campaign-details.interface';
+import { getCampaignRequirementsType } from '../../../domain/campaign/types/campaign-details.types';
 
 @Injectable()
 export class CampaignService {
@@ -44,6 +49,8 @@ export class CampaignService {
     private readonly userRepository: UserRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_DETAILS)
+    private readonly campaignDetails: CampaignDetailsInterface,
   ) {}
 
   async create(
@@ -108,5 +115,18 @@ export class CampaignService {
   async getCampaignById(_id: string): Promise<CampaignDocumentType> {
     const campaign = await this.campaignRepository.findCampaignById(_id);
     return campaign;
+  }
+
+  async getCampaignReservationDetails(
+    params: getCampaignRequirementsInterface,
+  ): Promise<getCampaignRequirementsType> {
+    const details = await this.campaignDetails.getCampaignRequirements(params);
+    if (!details) {
+      throw new CampaignCustomException(
+        'Campaign not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return details;
   }
 }

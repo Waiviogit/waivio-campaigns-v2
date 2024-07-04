@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import {
   CampaignActivationProvider,
   CampaignDeactivationProvider,
+  CampaignDetailsProvider,
   CampaignExpiredListenerProvider,
   CampaignProviderHelper,
   CampaignSuspendProvider,
@@ -72,6 +73,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     GuideReservationsProvider,
     UserHistoryProvider,
     UserRewardsProvider,
+    CampaignDetailsProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -97,6 +99,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     GuideReservationsProvider,
     UserHistoryProvider,
     UserRewardsProvider,
+    CampaignDetailsProvider,
   ],
 })
 export class CampaignModule {}
