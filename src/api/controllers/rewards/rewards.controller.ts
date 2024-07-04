@@ -14,6 +14,7 @@ import {
   RewardsTabDto,
   UserFollowingsOutDto,
   UserHistoryFiltersDto,
+  UserRewardsOutDto,
 } from '../../../common/dto/rewards/out';
 import { RewardsControllerDoc } from './rewards.controller.doc';
 import { RewardSponsorsDto } from '../../../common/dto/rewards/out/reward-sponsors.dto';
@@ -24,6 +25,7 @@ import {
   RewardsAllInDto,
   RewardsCanReserveInDto,
   RewardsMapInDto,
+  RewardsUserDto,
   UserHistoryInDto,
 } from '../../../common/dto/rewards/in';
 import { EligibleSponsorsDto } from '../../../common/dto/rewards/in/eligible-sponsors.dto';
@@ -236,6 +238,22 @@ export class RewardsController {
     return this.rewardsService.getRewardsByObject({
       host,
       authorPermlink,
+      ...query,
+    });
+  }
+
+  @Get('user/:user')
+  @RewardsControllerDoc.getRewardsByUser()
+  async getRewardsByUser(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('user')
+    user: string,
+    @Query() query: RewardsUserDto,
+  ): Promise<UserRewardsOutDto> {
+    return this.rewardsService.getRewardsByUser({
+      host,
+      user,
       ...query,
     });
   }

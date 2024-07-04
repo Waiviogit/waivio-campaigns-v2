@@ -52,11 +52,28 @@ export type CreateReviewType = {
   postAuthor: string;
 };
 
+export type CreateMentionType = {
+  campaign: CampaignDocumentType;
+  reviewPermlink: string;
+  host: string;
+  botName?: string;
+  postAuthor?: string;
+  beneficiaries: Beneficiary[];
+  title: string;
+  app: string;
+  postMentions: string[];
+  images: string[];
+};
+
 export type ParseReviewType = {
   comment: HiveCommentType;
   metadata: MetadataType;
   app: string;
   beneficiaries: Beneficiary[];
+};
+
+export type QualifyConditionType = {
+  qualifiedPayoutToken?: boolean | undefined;
 };
 
 export type ReviewCommissionsType = {
@@ -118,10 +135,23 @@ export type UpdateUserStatusType = {
 export type CreateCampaignPaymentsType = {
   payments: CampaignPaymentType[];
   campaign: ReviewCampaignType;
+  campaignType: string;
   title: string;
   app: string;
   reviewPermlink: string;
   botName?: string;
+  reservationPermlink?: string;
+};
+
+export type UpdateMentionStatusesType = {
+  campaign: CampaignDocumentType;
+  images: string[];
+  reviewPermlink: string;
+  payoutTokenRateUSD: number;
+  postAuthor: string;
+  botName?: string;
+  app?: string;
+  reservationPermlink: string;
 };
 
 export type UpdateReviewStatusesType = {

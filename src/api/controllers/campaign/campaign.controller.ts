@@ -20,12 +20,15 @@ import { CampaignService } from './campaign.service';
 
 import { AuthGuard, ChangeCampaignGuard } from '../../guards';
 import {
+  CampaignReservationDetailsDto,
   CreateCampaignOutDto,
   DeleteCampaignOutDto,
   UpdateCampaignOutDto,
   ValidationResponseDto,
 } from '../../../common/dto/campaign/out';
 import { CampaignDto } from '../../../common/dto/campaign/campaign.dto';
+import { CustomHeaders } from '../../../common/decorators';
+import { HostPipe } from '../../pipes/host.pipe';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
@@ -79,5 +82,20 @@ export class CampaignController {
     @Body() params: ValidateDeactivationDto,
   ): Promise<ValidationResponseDto> {
     return this.campaignService.validateDeactivation(params);
+  }
+
+  @Get('details/:campaignId/:object')
+  @CampaignControllerDocs.getCampaignDetails()
+  async getCampaignReservationDetails(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('campaignId') campaignId: string,
+    @Param('object') object: string,
+  ): Promise<CampaignReservationDetailsDto> {
+    return this.campaignService.getCampaignReservationDetails({
+      campaignId,
+      host,
+      object,
+    });
   }
 }

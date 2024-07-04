@@ -88,6 +88,9 @@ export class CampaignPayment {
   @Prop({ type: String })
   mainObject?: string;
 
+  @Prop({ type: String })
+  campaignType?: string;
+
   createdAt: Date;
   //For all types except transfers
   @Prop({ type: Number })

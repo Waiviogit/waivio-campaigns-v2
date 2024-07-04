@@ -2,6 +2,7 @@ export type MetadataType = {
   comment?: MetadataCommentType;
   waivioRewards?: MetadataWaivioRewardsType;
   wobj?: { wobjects: MetadataWobject[] };
+  tags?: string[];
 };
 
 type MetadataWobject = {

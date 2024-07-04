@@ -1,4 +1,4 @@
-import { UserDocumentType, UserFindOneType } from '../types';
+import { UserCampaignType, UserDocumentType, UserFindOneType } from '../types';
 
 export interface UserRepositoryInterface {
   findOne({
@@ -13,4 +13,5 @@ export interface UserRepositoryInterface {
     options,
   }: UserFindOneType): Promise<UserDocumentType[]>;
   findByNames(names: string[]): Promise<string[]>;
+  findCampaignsUsers(names: string[]): Promise<UserCampaignType[]>;
 }

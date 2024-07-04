@@ -188,6 +188,12 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   description: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  @ApiProperty({ type: String, required: false })
+  imageToDisplay?: string;
+
   @IsNotEmpty()
   @IsString()
   @IsIn(Object.values(CAMPAIGN_TYPE))
@@ -360,6 +366,15 @@ export class CampaignDto {
     default: PAYOUT_TOKEN.WAIV,
   })
   payoutToken: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    default: true,
+  })
+  qualifiedPayoutToken: boolean;
 
   @IsString()
   @IsIn(Object.values(REACH_TYPE))

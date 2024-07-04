@@ -42,3 +42,12 @@ export type ReferralDocumentType = Referral & Document;
 export type UserMetadataDocumentType = UserMetadata & Document;
 
 export type UserDocumentType = User & Document;
+
+export type UserCampaignType = Pick<
+  UserDocumentType,
+  | 'name'
+  | 'alias'
+  | 'profile_image'
+  | 'wobjects_weight'
+  | 'posting_json_metadata'
+>;

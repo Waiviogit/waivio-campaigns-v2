@@ -20,6 +20,7 @@ import {
   WOBJECT_STATUS,
   WOBJECT_SUBSCRIPTION_PROVIDE,
   USER_SUBSCRIPTION_PROVIDE,
+  MUTED_USER_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -58,6 +59,7 @@ import { PipelineStage } from 'mongoose';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
+import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -80,6 +82,8 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly wobjectSubscriptionsRepository: WobjectSubscriptionsRepositoryInterface,
     @Inject(USER_SUBSCRIPTION_PROVIDE.REPOSITORY)
     private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
+    @Inject(MUTED_USER_PROVIDE.REPOSITORY)
+    private readonly mutedUserRepository: MutedUserRepositoryInterface,
   ) {}
 
   async findAssignedMainObjects(userName: string): Promise<string[]> {
@@ -395,6 +399,7 @@ export class RewardsAll implements RewardsAllInterface {
           {
             $project: {
               object: { $arrayElemAt: ['$object', 0] },
+              objects: 1,
               frequencyAssign: 1,
               matchBots: 1,
               agreementObjects: 1,
@@ -409,6 +414,7 @@ export class RewardsAll implements RewardsAllInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              type: 1,
             },
           },
           {
@@ -481,16 +487,29 @@ export class RewardsAll implements RewardsAllInterface {
     userName,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
+    const requiredObjects = _.compact(
+      _.uniq(_.map(campaigns, 'requiredObject')),
+    );
+
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: _.uniq(_.map(campaigns, 'requiredObject')),
+      links: this.rewardsHelper.filterObjectLinks(requiredObjects),
       host,
       userName,
     });
 
+    const campaignUsers = await this.userRepository.findCampaignsUsers(
+      this.rewardsHelper.getCampaignUsersFromArray(requiredObjects),
+    );
+
     const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
     for (const key in groupedCampaigns) {
       const object = objects.find((o) => o.author_permlink === key);
-      if (!object) continue;
+      const user = campaignUsers.find(
+        (u) => u.name === this.rewardsHelper.extractUsername(key),
+      );
+      const webLink = !object && !user && key.includes('https://') && key;
+
+      if (!object && !user && !webLink) continue;
       if (
         _.includes(
           [WOBJECT_STATUS.RELISTED, WOBJECT_STATUS.UNAVAILABLE],
@@ -529,6 +548,8 @@ export class RewardsAll implements RewardsAllInterface {
         guideName: maxRewardCampaign.guideName,
         distance,
         object,
+        user,
+        webLink,
         payout,
         reach: _.uniq(_.map(campaigns, 'reach')),
       });
@@ -663,6 +684,7 @@ export class RewardsAll implements RewardsAllInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              type: 1,
             },
           },
           {
@@ -699,17 +721,37 @@ export class RewardsAll implements RewardsAllInterface {
       guideNames: _.map(rewards, 'guideName'),
       payoutToken: TOKEN_WAIV.SYMBOL,
     });
+
+    const campaignUsers = await this.userRepository.findCampaignsUsers(
+      this.rewardsHelper.getCampaignUsersFromArray(
+        _.compact(rewards.map((el) => el.objects)),
+      ),
+    );
+
     for (const reward of rewards) {
       const guidePayed = payed.find((el) => el.guideName === reward.guideName);
       reward.totalPayed = guidePayed?.payed || 0;
-      if (!reward.object) continue;
-      reward.object = await this.wobjectHelper.processWobjects({
-        wobjects: reward.object,
-        fields: CAMPAIGN_FIELDS,
-        app,
-        returnArray: false,
-        reqUserName: userName,
-      });
+
+      const user = campaignUsers.find(
+        (u) => u.name === this.rewardsHelper.extractUsername(reward.objects),
+      );
+      const webLink =
+        !reward.object &&
+        !user &&
+        reward.objects.includes('https://') &&
+        reward.objects;
+
+      if (reward.object) {
+        reward.object = await this.wobjectHelper.processWobjects({
+          wobjects: reward.object,
+          fields: CAMPAIGN_FIELDS,
+          app,
+          returnArray: false,
+          reqUserName: userName,
+        });
+      }
+      if (user) reward.user = user;
+      if (webLink) reward.webLink = webLink;
     }
     return rewards;
   }
@@ -816,6 +858,12 @@ export class RewardsAll implements RewardsAllInterface {
     const currentDay = moment().format('dddd').toLowerCase();
     const assignedObjects = await this.findAssignedMainObjects(userName);
 
+    const mutedList = await this.mutedUserRepository.find({
+      filter: { mutedBy: userName },
+    });
+
+    const mutedNames = mutedList.map((el) => el.userName);
+
     const { rewardBalanceTimesRate, claims } =
       await this.getExpertiseVariables();
 
@@ -911,12 +959,17 @@ export class RewardsAll implements RewardsAllInterface {
           canAssignByCurrentDay: {
             $eq: [`$reservationTimetable.${currentDay}`, true],
           },
-          posts: { $gte: [user.count_posts, '$userRequirements.minPosts'] },
+          posts: {
+            $gte: [user?.count_posts ?? 0, '$userRequirements.minPosts'],
+          },
           followers: {
-            $gte: [user.followers_count, '$userRequirements.minFollowers'],
+            $gte: [
+              user?.followers_count ?? 0,
+              '$userRequirements.minFollowers',
+            ],
           },
           expertise: {
-            $gte: [user.wobjects_weight, '$requiredExpertise'],
+            $gte: [user?.wobjects_weight ?? 0, '$requiredExpertise'],
           },
           notAssigned: {
             $cond: [{ $in: ['$requiredObject', assignedObjects] }, false, true],
@@ -939,6 +992,7 @@ export class RewardsAll implements RewardsAllInterface {
           notAssigned: true,
           frequency: true,
           blacklist: { $ne: userName },
+          ...(mutedNames.length && { guideName: { $nin: mutedNames } }),
         },
       },
     ];

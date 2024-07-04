@@ -8,7 +8,6 @@ export class CreateCampaignDto extends OmitType(CampaignDto, [
   'users',
   'activationPermlink',
   'deactivationPermlink',
-  // 'payments',
   'rewardInUSD',
   'createdAt',
 ]) {}
