@@ -519,6 +519,7 @@ export class WobjectHelper implements WobjectHelperInterface {
 
   async getWobjectName(permlink: string): Promise<string> {
     const wobject = await this.wobjectRepository.findOneByPermlink(permlink);
+    if (!wobject) return '';
     const app = await this.appRepository.findOneByHost(
       configService.getAppHost(),
     );
