@@ -83,6 +83,8 @@ export class Notifications implements NotificationsInterface {
       if (_.isEmpty(users)) continue;
 
       const objectName = await this.wobjectHelper.getWobjectName(object);
+      if (!objectName) return;
+
       await this.sendNotification({
         id: NOTIFICATION_ID.BELL_WOBJ_REWARDS,
         data: {
@@ -106,6 +108,7 @@ export class Notifications implements NotificationsInterface {
     const object_name = await this.wobjectHelper.getWobjectName(
       campaign.requiredObject,
     );
+    if (!object_name) return;
 
     await this.sendNotification({
       id: NOTIFICATION_ID.ACTIVATION_CAMPAIGN,
@@ -146,6 +149,7 @@ export class Notifications implements NotificationsInterface {
     const object_name = await this.wobjectHelper.getWobjectName(
       campaign.requiredObject,
     );
+    if (!object_name) return;
 
     await this.sendNotification({
       id: NOTIFICATION_ID.DEACTIVATION_CAMPAIGN,
