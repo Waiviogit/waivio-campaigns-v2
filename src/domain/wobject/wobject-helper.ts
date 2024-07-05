@@ -461,6 +461,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       wobjects = [wobjects] as ProcessedWobjectType[];
     }
     for (let obj of wobjects as ProcessedWobjectType[]) {
+      if (!obj) continue;
       /** Get app admins, wobj administrators, which was approved by app owner(creator) */
       const ownership = _.intersection(
         _.get(obj, 'authority.ownership', []),
@@ -472,7 +473,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       );
 
       obj.fields = this.addDataToFields({
-        fields: obj.fields as ProcessedFieldType[],
+        fields: (obj?.fields ?? []) as ProcessedFieldType[],
         filter: fields,
         admins,
         ownership,
@@ -484,7 +485,7 @@ export class WobjectHelper implements WobjectHelperInterface {
       Object.assign(
         obj,
         this.getFieldsToDisplay({
-          fields: obj.fields as ProcessedFieldType[],
+          fields: (obj?.fields ?? []) as ProcessedFieldType[],
           filter: fields,
           locale,
           permlink: obj.author_permlink,
