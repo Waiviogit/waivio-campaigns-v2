@@ -51,13 +51,14 @@ export class HiveEngineClient implements HiveEngineClientInterface {
       );
       return _.get(resp, 'data.result');
     } catch (error) {
+      this.logger.error(hostUrl);
       this.logger.error(error.message);
       return { error };
     }
   }
 
   private async engineProxy({
-    hostUrl,
+    hostUrl = _.sample(HIVE_ENGINE_NODES),
     method,
     params,
     endpoint,
