@@ -58,7 +58,7 @@ export class HiveEngineClient implements HiveEngineClientInterface {
   }
 
   private async engineProxy({
-    hostUrl,
+    hostUrl = _.sample(HIVE_ENGINE_NODES),
     method,
     params,
     endpoint,
