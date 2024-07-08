@@ -51,6 +51,7 @@ export class HiveEngineClient implements HiveEngineClientInterface {
       );
       return _.get(resp, 'data.result');
     } catch (error) {
+      this.logger.error(hostUrl);
       this.logger.error(error.message);
       return { error };
     }
