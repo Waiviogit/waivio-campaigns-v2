@@ -23,7 +23,6 @@ import {
   REDIS_KEY,
   HOSTS_TO_PARSE_LINKS,
   WOBJECT_REF,
-  REGEX_MENTIONS,
   CAMPAIGN_TYPE,
   TOKEN_WAIV,
   HIVE_PROVIDE,
@@ -71,6 +70,7 @@ import {
   extractLinks,
   findPossibleLinks,
   getBodyLinksArray,
+  getMentionsFromPost,
   parseJSON,
 } from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
@@ -298,9 +298,7 @@ export class CreateReview implements CreateReviewInterface {
     });
     const objects = _.uniq([...metadataWobj, ...bodyWobj]);
 
-    const mentions = _.uniq(
-      _.compact((comment?.body ?? '').match(new RegExp(REGEX_MENTIONS, 'gm'))),
-    );
+    const mentions = getMentionsFromPost(comment.body);
 
     const links = await this.getObjectTypeLinkFromUrl(comment.body);
 
