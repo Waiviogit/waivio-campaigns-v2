@@ -1,4 +1,5 @@
 import { GuideRejectReservationType } from '../types';
+import { RejectCustomType } from '../../../../common/types';
 
 export interface GuideRejectReservationInterface {
   reject({
@@ -6,4 +7,11 @@ export interface GuideRejectReservationInterface {
     guideName,
     rejectionPermlink,
   }: GuideRejectReservationType): Promise<void>;
+  parseRejectFromCustomJson({
+    id,
+    parsedJson,
+    required_auths,
+    required_posting_auths,
+    transaction_id,
+  }: RejectCustomType): Promise<void>;
 }

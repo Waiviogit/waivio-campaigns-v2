@@ -1,8 +1,21 @@
 import { validate, ValidatorOptions } from 'class-validator';
 import * as _ from 'lodash';
 import { ActivateCampaignDto } from '../../../common/dto/campaign/in';
+import { RejectReservationCustomDto } from '../../../common/dto/reservation/in/reject-reservation-custom.dto';
 
 class ParserValidator {
+  async validateCampaignRejectCustom(
+    guideName: string,
+    reservationPermlink: string,
+    rejectionPermlink: string,
+  ): Promise<object> {
+    const dto = new RejectReservationCustomDto();
+    dto.guideName = guideName;
+    dto.reservationPermlink = reservationPermlink;
+    dto.rejectionPermlink = rejectionPermlink;
+    return this.validateParams(dto);
+  }
+
   async validateCampaignActivation(
     _id: string,
     guideName: string,

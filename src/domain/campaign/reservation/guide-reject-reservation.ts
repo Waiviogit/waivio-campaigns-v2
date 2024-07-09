@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  CAMPAIGN_CUSTOM_JSON_ID,
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
@@ -18,6 +19,8 @@ import { GuideRejectReservationInterface } from './interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 import { CampaignPaymentRepository } from '../../../persistance/campaign-payment/campaign-payment.repository';
 import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-posts/interface';
+import { RejectCustomType } from '../../../common/types';
+import { parserValidator } from '../../hive-parser/validators';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -59,6 +62,32 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         },
       },
     });
+  }
+
+  async parseRejectFromCustomJson({
+    id,
+    parsedJson,
+    required_auths,
+    required_posting_auths,
+    transaction_id,
+  }: RejectCustomType): Promise<void> {
+    if (id !== CAMPAIGN_CUSTOM_JSON_ID.MAIN) return;
+    if (parsedJson?.action !== CAMPAIGN_CUSTOM_JSON_ID.REJECT_BY_GUIDE) return;
+
+    const authorizedUser = _.isEmpty(required_auths)
+      ? required_posting_auths[0]
+      : required_auths[0];
+
+    if (authorizedUser !== parsedJson?.payload?.guideName) return;
+
+    const payload = (await parserValidator.validateCampaignRejectCustom(
+      parsedJson?.payload?.guideName,
+      parsedJson?.payload?.reservationPermlink,
+      transaction_id,
+    )) as GuideRejectReservationType;
+    if (!payload) return;
+
+    await this.reject(payload);
   }
 
   async reject({

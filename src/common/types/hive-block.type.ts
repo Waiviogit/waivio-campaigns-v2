@@ -75,6 +75,18 @@ export type HiveCustomJsonType = {
   transaction_id: string;
 };
 
+export type parsedJsonReject = {
+  action?: string;
+  payload?: {
+    guideName: string;
+    reservationPermlink: string;
+  };
+};
+
+export type RejectCustomType = Omit<HiveCustomJsonType, 'json'> & {
+  parsedJson?: parsedJsonReject;
+};
+
 export type HiveAccountUpdateType = {
   account: string;
   posting: PostingType;

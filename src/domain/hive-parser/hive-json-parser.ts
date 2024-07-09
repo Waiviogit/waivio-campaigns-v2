@@ -5,10 +5,12 @@ import { parseJSON } from '../../common/helpers';
 import * as _ from 'lodash';
 import {
   BLACKLIST_PROVIDE,
+  RESERVATION_PROVIDE,
   SPONSORS_BOT_PROVIDE,
 } from '../../common/constants';
 import { SponsorsBotInterface } from '../sponsors-bot/interface';
 import { BlacklistParserInterface } from '../blacklist/interface';
+import { GuideRejectReservationInterface } from '../campaign/reservation/interface';
 
 @Injectable()
 export class HiveJsonParser implements HiveJsonParserInterface {
@@ -17,6 +19,8 @@ export class HiveJsonParser implements HiveJsonParserInterface {
     private readonly sponsorsBot: SponsorsBotInterface,
     @Inject(BLACKLIST_PROVIDE.PARSER)
     private readonly blacklistParser: BlacklistParserInterface,
+    @Inject(RESERVATION_PROVIDE.GUIDE_REJECT)
+    private readonly guideRejectReservation: GuideRejectReservationInterface,
   ) {}
   async parse({
     id,
@@ -40,6 +44,14 @@ export class HiveJsonParser implements HiveJsonParserInterface {
       id,
       authorizedUser,
       json: parsedJson,
+      transaction_id,
+    });
+
+    await this.guideRejectReservation.parseRejectFromCustomJson({
+      id,
+      parsedJson,
+      required_auths,
+      required_posting_auths,
       transaction_id,
     });
   }
