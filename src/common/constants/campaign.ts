@@ -145,6 +145,7 @@ export const CAMPAIGN_TRANSFER_ID = Object.freeze({
 export const CAMPAIGN_CUSTOM_JSON_ID = Object.freeze({
   MAIN: 'waivioCampaigns',
   REJECT_BY_GUIDE: 'rejectPostByGuide',
+  RESTORE_BY_GUIDE: 'restorePostByGuide',
 });
 
 export const PAYABLE_DEADLINE = 30;

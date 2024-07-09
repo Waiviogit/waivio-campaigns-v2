@@ -1,4 +1,5 @@
 import { ParseReviewType } from '../types';
+import { RestoreCustomType } from '../../../../common/types';
 
 export interface CreateReviewInterface {
   parseReview({
@@ -10,6 +11,13 @@ export interface CreateReviewInterface {
   restoreReview(params: RestoreReviewInterface): Promise<void>;
   raiseReward(params: RaiseRewardInterface): Promise<void>;
   reduceReward(params: ReduceRewardInterface): Promise<void>;
+  parseRestoreFromCustomJson({
+    id,
+    parsedJson,
+    required_auths,
+    required_posting_auths,
+    transaction_id,
+  }: RestoreCustomType): Promise<void>;
 }
 
 export interface RestoreReviewInterface {
