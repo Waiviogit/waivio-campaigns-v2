@@ -149,6 +149,7 @@ export class RewardsHelper implements RewardsHelperInterface {
         countReservationDays: campaign.countReservationDays,
         currency: campaign.currency,
         reward: campaign.reward,
+        type: campaign.type,
         rewardInUSD: campaign.rewardInUSD,
         guideName: campaign.guideName,
         userName: user.name,
