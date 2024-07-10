@@ -38,15 +38,14 @@ export class RewardsHelper implements RewardsHelperInterface {
     private readonly postRepository: PostRepositoryInterface,
   ) {}
 
-  extractUsername(fromString: string): string {
-    const match = fromString.match(/@(\w+)/);
-    return match ? match[1] : '';
+  extractUsername(name: string): string {
+    return name.slice(1);
   }
 
   getCampaignUsersFromArray(objects: string[]): string[] {
     return objects.reduce((acc, el) => {
-      const user = this.extractUsername(el);
-      if (user) acc.push(user);
+      const user = el.startsWith('@');
+      if (user) acc.push(el.slice(1));
       return acc;
     }, []);
   }
