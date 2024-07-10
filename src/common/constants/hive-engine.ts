@@ -1,6 +1,6 @@
 export const HIVE_ENGINE_NODES = [
   'https://herpc.kanibot.com',
-  'https://engine.deathwing.me',
+  'https://api.deathwing.me',
   'https://he.sourov.dev',
 ];
 
