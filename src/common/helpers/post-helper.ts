@@ -17,6 +17,37 @@ export const getBodyLinksArray = ({
     .compact()
     .value();
 
+export const getMentionsFromPost = (body: string): string[] => {
+  // Regular expression to match URLs
+  const urlRegex = /https?:\/\/[^\s/$.?#].[^\s]*/gm;
+  const emailRegex = /[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/gm;
+
+  // Remove URLs from the body
+  const bodyWithoutUrls = body.replace(urlRegex, '').replace(emailRegex, '');
+
+  // Extract mentions from the remaining text
+  const mentions = bodyWithoutUrls.match(/@[a-z0-9._-]+/gm);
+
+  return _.uniq(
+    _.compact(
+      _.map(mentions, (mention) => {
+        // mention = mention.slice(1); // Remove the first '@' symbol from each mention
+        const parts = mention.split('.');
+        let processedMention;
+        if (parts.length > 1 && parts[1].length >= 3) {
+          processedMention = mention;
+        } else {
+          processedMention = parts[0];
+        }
+        // Remove any trailing dot
+        processedMention = processedMention.replace(/\.$/, '');
+        // Ensure minimum length of 3 characters
+        return processedMention.length >= 3 ? processedMention : null;
+      }),
+    ),
+  );
+};
+
 export const extractLinks = (text: string): string[] => {
   const urlPattern = /https?:\/\/[^\s/$.?#].[^\s)"]*/gm;
   const links = text.match(urlPattern);

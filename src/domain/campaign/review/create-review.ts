@@ -23,10 +23,10 @@ import {
   REDIS_KEY,
   HOSTS_TO_PARSE_LINKS,
   WOBJECT_REF,
-  REGEX_MENTIONS,
   CAMPAIGN_TYPE,
   TOKEN_WAIV,
   HIVE_PROVIDE,
+  CAMPAIGN_CUSTOM_JSON_ID,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -71,6 +71,7 @@ import {
   extractLinks,
   findPossibleLinks,
   getBodyLinksArray,
+  getMentionsFromPost,
   parseJSON,
 } from '../../../common/helpers';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
@@ -82,6 +83,8 @@ import { MetadataType } from '../../hive-parser/types';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
 import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
+import { RestoreCustomType } from '../../../common/types';
+import { parserValidator } from '../../hive-parser/validators';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -112,6 +115,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly blockRedisClient: RedisClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
   ) {}
 
   //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
@@ -297,11 +302,7 @@ export class CreateReview implements CreateReviewInterface {
       regularExpression: regexObjects,
     });
     const objects = _.uniq([...metadataWobj, ...bodyWobj]);
-
-    const mentions = _.uniq(
-      _.compact((comment?.body ?? '').match(new RegExp(REGEX_MENTIONS, 'gm'))),
-    );
-
+    const mentions = getMentionsFromPost(comment.body);
     const links = await this.getObjectTypeLinkFromUrl(comment.body);
 
     const qualifiedTokenCondition =
@@ -366,6 +367,36 @@ export class CreateReview implements CreateReviewInterface {
     }
   }
 
+  async parseRestoreFromCustomJson({
+    id,
+    parsedJson,
+    required_auths,
+    required_posting_auths,
+    transaction_id,
+  }: RestoreCustomType): Promise<void> {
+    if (id !== CAMPAIGN_CUSTOM_JSON_ID.MAIN) return;
+    if (parsedJson?.action !== CAMPAIGN_CUSTOM_JSON_ID.RESTORE_BY_GUIDE) return;
+
+    const authorizedUser = _.isEmpty(required_auths)
+      ? required_posting_auths[0]
+      : required_auths[0];
+
+    if (authorizedUser !== parsedJson?.payload?.guideName) return;
+
+    const payload = (await parserValidator.validateCampaignRestoreCustom(
+      parsedJson?.payload?.guideName,
+      parsedJson?.payload?.reservationPermlink,
+      parsedJson?.payload?.user,
+    )) as RestoreReviewInterface;
+    if (!payload) return;
+
+    await this.restoreReview(payload);
+    await this.campaignRedisClient.publish(
+      REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
+      transaction_id,
+    );
+  }
+
   async restoreReview({
     user,
     parentPermlink,
@@ -421,17 +452,34 @@ export class CreateReview implements CreateReviewInterface {
         matchBots: campaign.matchBots,
         type: campaign.type,
       };
-      await this.createReview({
-        campaign: reviewCampaign,
-        beneficiaries: post.beneficiaries,
-        objects: [rejectedUser.objectPermlink],
-        title: post.title,
-        app: campaign.campaignServer,
-        host: _.get(parseJSON(post.json_metadata), 'host', null),
-        reviewPermlink: post.permlink,
-        images: _.get(parseJSON(post.json_metadata), 'image', []),
-        postAuthor: rejectedUser.name,
-      });
+
+      if (campaign.type === CAMPAIGN_TYPE.REVIEWS) {
+        await this.createReview({
+          campaign: reviewCampaign,
+          beneficiaries: post.beneficiaries,
+          objects: [rejectedUser.objectPermlink],
+          title: post.title,
+          app: campaign.campaignServer,
+          host: _.get(parseJSON(post.json_metadata), 'host', null),
+          reviewPermlink: post.permlink,
+          images: _.get(parseJSON(post.json_metadata), 'image', []),
+          postAuthor: rejectedUser.name,
+        });
+      }
+
+      if (campaign.type === CAMPAIGN_TYPE.MENTIONS) {
+        await this.createMention({
+          campaign,
+          beneficiaries: post.beneficiaries,
+          title: post.title,
+          app: campaign.campaignServer,
+          host: _.get(parseJSON(post.json_metadata), 'host', null),
+          reviewPermlink: post.permlink,
+          images: _.get(parseJSON(post.json_metadata), 'image', []),
+          postAuthor: rejectedUser.name,
+          postMentions: [rejectedUser.objectPermlink],
+        });
+      }
     }
 
     //remove rejection permlink

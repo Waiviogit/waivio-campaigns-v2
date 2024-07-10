@@ -26,4 +26,7 @@ export class CampaignPost {
 
 export const CampaignPostsSchema = SchemaFactory.createForClass(CampaignPost);
 
-CampaignPostsSchema.index({ author: 1, permlink: 1 }, { unique: true });
+CampaignPostsSchema.index(
+  { author: 1, permlink: 1, reservationPermlink: 1 },
+  { unique: true },
+);

@@ -142,6 +142,12 @@ export const CAMPAIGN_TRANSFER_ID = Object.freeze({
   GUEST_CAMPAIGN_REWARD: 'guestCampaignReward',
 });
 
+export const CAMPAIGN_CUSTOM_JSON_ID = Object.freeze({
+  MAIN: 'waivioCampaigns',
+  REJECT_BY_GUIDE: 'rejectPostByGuide',
+  RESTORE_BY_GUIDE: 'restorePostByGuide',
+});
+
 export const PAYABLE_DEADLINE = 30;
 export const PAYABLE_WARNING = 21;
 
