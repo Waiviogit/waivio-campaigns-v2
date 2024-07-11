@@ -48,6 +48,20 @@ export class RewardsHelper implements RewardsHelperInterface {
     return name.slice(1);
   }
 
+  findUserOrObject(
+    item: string,
+    isUser: boolean,
+    campaignUsers: UserCampaignType[],
+    objects: ProcessedWobjectType[],
+  ): UserCampaignType | ProcessedWobjectType {
+    return isUser
+      ? campaignUsers.find((u) => u.name === this.extractUsername(item))
+      : objects.find((o) => o.author_permlink === item);
+  }
+  isUser(item: string): boolean {
+    return item.startsWith('@');
+  }
+
   getCampaignUsersFromArray(objects: string[]): string[] {
     return objects.reduce((acc, el) => {
       const user = el.startsWith('@');
@@ -126,37 +140,32 @@ export class RewardsHelper implements RewardsHelperInterface {
       ),
     ]);
 
-    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: objectLinks,
-      host,
-    });
-
-    const campaignUsers = await this.userRepository.findCampaignsUsers(
-      this.getCampaignUsersFromArray(objectLinks),
-    );
-
-    const findUserOrObject = (
-      item: string,
-      isUser: boolean,
-    ): UserCampaignType | ProcessedWobjectType =>
-      isUser
-        ? campaignUsers.find((u) => u.name === this.extractUsername(item))
-        : objects.find((o) => o.author_permlink === item);
-
-    const isUser = (item: string): boolean => item.startsWith('@');
+    const [campaignUsers, objects] = await Promise.all([
+      this.userRepository.findCampaignsUsers(
+        this.getCampaignUsersFromArray(objectLinks),
+      ),
+      this.wobjectHelper.getWobjectsForCampaigns({
+        links: objectLinks,
+        host,
+      }),
+    ]);
 
     for (const campaign of campaigns) {
       const user = _.get(campaign, 'users');
       if (!user) continue;
 
-      const object = findUserOrObject(
+      const object = this.findUserOrObject(
         user.objectPermlink,
-        isUser(user.objectPermlink),
+        this.isUser(user.objectPermlink),
+        campaignUsers,
+        objects,
       );
 
-      const requiredObject = findUserOrObject(
+      const requiredObject = this.findUserOrObject(
         campaign.requiredObject,
-        isUser(campaign.requiredObject),
+        this.isUser(campaign.requiredObject),
+        campaignUsers,
+        objects,
       );
 
       const payout = this.getPayedForMain([campaign]);

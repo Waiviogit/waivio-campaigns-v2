@@ -16,6 +16,10 @@ import { CurrencyRatesModule } from '../currency-rates/currency-rates.module';
     UserPaymentQProvider,
     PaymentReportProvider,
   ],
-  exports: [GuidePaymentQProvider, UserPaymentQProvider, PaymentReportProvider],
+  exports: [
+    GuidePaymentQProvider,
+    UserPaymentQProvider,
+    PaymentReportProvider,
+  ],
 })
 export class CampaignPaymentModule {}

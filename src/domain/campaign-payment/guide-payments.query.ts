@@ -6,6 +6,7 @@ import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-p
 import {
   CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
+  USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../common/constants';
 import {
@@ -28,6 +29,9 @@ import {
   getGuideTotalPayablePipe,
 } from './pipes';
 import { WobjectHelperInterface } from '../wobject/interface';
+import { UserRepositoryInterface } from '../../persistance/user/interface';
+import { UserCampaignType } from '../../persistance/user/types';
+import { ProcessedWobjectType } from '../wobject/types';
 
 @Injectable()
 export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
@@ -36,7 +40,34 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
     private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
     @Inject(WOBJECT_PROVIDE.HELPER)
     private readonly wobjectHelper: WobjectHelperInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
+
+  extractUsername(name: string): string {
+    return name.slice(1);
+  }
+  findUserOrObject(
+    item: string,
+    isUser: boolean,
+    campaignUsers: UserCampaignType[],
+    objects: ProcessedWobjectType[],
+  ): UserCampaignType | ProcessedWobjectType {
+    return isUser
+      ? campaignUsers.find((u) => u.name === this.extractUsername(item))
+      : objects.find((o) => o.author_permlink === item);
+  }
+  isUser(item: string): boolean {
+    return item.startsWith('@');
+  }
+
+  getCampaignUsersFromArray(objects: string[]): string[] {
+    return objects.reduce((acc, el) => {
+      const user = el.startsWith('@');
+      if (user) acc.push(el.slice(1));
+      return acc;
+    }, []);
+  }
 
   async getGuidesTotalPayed({
     guideNames,
@@ -111,10 +142,16 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       ..._.map(histories, 'reviewObject'),
       ..._.map(histories, 'mainObject'),
     ];
-    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links,
-      host,
-    });
+
+    const [campaignUsers, objects] = await Promise.all([
+      this.userRepository.findCampaignsUsers(
+        this.getCampaignUsersFromArray(links),
+      ),
+      this.wobjectHelper.getWobjectsForCampaigns({
+        links,
+        host,
+      }),
+    ]);
 
     const reviews: CampaignPaymentUserType[] =
       await this.campaignPaymentRepository.aggregate({
@@ -153,17 +190,32 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       );
       history.currentUser = history.userName;
       history.userName = _.get(reviewPayment, 'userName', null);
-      const reviewObject = _.pick(
-        _.find(objects, (o) => o.author_permlink === history.reviewObject),
-        ['name', 'defaultShowLink'],
-      );
-      const mainObject = _.pick(
-        _.find(objects, (o) => o.author_permlink === history.mainObject),
-        ['name', 'defaultShowLink'],
+
+      const reviewObject = this.findUserOrObject(
+        history.reviewObject,
+        this.isUser(history.reviewObject),
+        campaignUsers,
+        objects,
       );
 
-      if (reviewObject) history.reviewObject = reviewObject;
-      if (mainObject) history.mainObject = mainObject;
+      const mainObject = this.findUserOrObject(
+        history.mainObject,
+        this.isUser(history.mainObject),
+        campaignUsers,
+        objects,
+      );
+
+      if (reviewObject) {
+        history.reviewObject = history.reviewObject.startsWith('@')
+          ? reviewObject
+          : _.pick(reviewObject, ['name', 'defaultShowLink']);
+      }
+
+      if (mainObject) {
+        history.mainObject = history.mainObject.startsWith('@')
+          ? mainObject
+          : _.pick(mainObject, ['name', 'defaultShowLink']);
+      }
     }
 
     return { histories, totalPayable, notPayedPeriod };

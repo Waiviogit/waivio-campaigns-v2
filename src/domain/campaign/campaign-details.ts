@@ -73,22 +73,18 @@ export class CampaignDetails implements CampaignDetailsInterface {
       }),
     ]);
 
-    const findUserOrObject = (
-      item: string,
-      isUser: boolean,
-    ): UserCampaignType | ProcessedWobjectType =>
-      isUser
-        ? campaignUsers.find(
-            (u) => u.name === this.rewardsHelper.extractUsername(item),
-          )
-        : objects.find((o) => o.author_permlink === item);
+    const secondaryObject = this.rewardsHelper.findUserOrObject(
+      object,
+      this.rewardsHelper.isUser(object),
+      campaignUsers,
+      objects,
+    );
 
-    const isUser = (item: string): boolean => item.startsWith('@');
-
-    const secondaryObject = findUserOrObject(object, isUser(object));
-    const requiredObject = findUserOrObject(
+    const requiredObject = this.rewardsHelper.findUserOrObject(
       requiredObjectKey,
-      isUser(requiredObjectKey),
+      this.rewardsHelper.isUser(requiredObjectKey),
+      campaignUsers,
+      objects,
     );
 
     return {
