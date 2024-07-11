@@ -8,6 +8,7 @@ import {
   PAYOUT_TOKEN,
   POST_PROVIDE,
   RESERVATION_STATUS,
+  USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { GetSortedRewardsReservedType, RewardsByRequiredType } from './types';
@@ -22,6 +23,9 @@ import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
 import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
 import { HiddenPostRepositoryInterface } from '../../../persistance/hidden-post/interface';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
+import { UserCampaignType } from '../../../persistance/user/types';
+import { ProcessedWobjectType } from '../../wobject/types';
 
 @Injectable()
 export class RewardsHelper implements RewardsHelperInterface {
@@ -36,6 +40,8 @@ export class RewardsHelper implements RewardsHelperInterface {
     private readonly hiddenPostRepository: HiddenPostRepositoryInterface,
     @Inject(POST_PROVIDE.REPOSITORY)
     private readonly postRepository: PostRepositoryInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
 
   extractUsername(name: string): string {
@@ -108,32 +114,55 @@ export class RewardsHelper implements RewardsHelperInterface {
         payoutToken: _.get(campaigns, '[0].payoutToken', PAYOUT_TOKEN.WAIV),
       });
 
+    const objectLinks = _.uniq([
+      ..._.map(campaigns, 'requiredObject'),
+      ..._.reduce(
+        campaigns,
+        (acc, el) => {
+          acc.push(_.get(el.users, 'objectPermlink'));
+          return acc;
+        },
+        [],
+      ),
+    ]);
+
     const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: _.uniq([
-        ..._.map(campaigns, 'requiredObject'),
-        ..._.reduce(
-          campaigns,
-          (acc, el) => {
-            acc.push(_.get(el.users, 'objectPermlink'));
-            return acc;
-          },
-          [],
-        ),
-      ]),
+      links: objectLinks,
       host,
     });
+
+    const campaignUsers = await this.userRepository.findCampaignsUsers(
+      this.getCampaignUsersFromArray(objectLinks),
+    );
+
+    const findUserOrObject = (
+      item: string,
+      isUser: boolean,
+    ): UserCampaignType | ProcessedWobjectType =>
+      isUser
+        ? campaignUsers.find((u) => u.name === this.extractUsername(item))
+        : objects.find((o) => o.author_permlink === item);
+
+    const isUser = (item: string): boolean => item.startsWith('@');
 
     for (const campaign of campaigns) {
       const user = _.get(campaign, 'users');
       if (!user) continue;
-      const object = objects.find(
-        (o) => o.author_permlink === user.objectPermlink,
+
+      const object = findUserOrObject(
+        user.objectPermlink,
+        isUser(user.objectPermlink),
       );
+
+      const requiredObject = findUserOrObject(
+        campaign.requiredObject,
+        isUser(campaign.requiredObject),
+      );
+
       const payout = this.getPayedForMain([campaign]);
+      // @ts-ignore
       const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
-      const requiredObject = objects.find(
-        (o) => o.author_permlink === campaign.requiredObject,
-      );
+
       const payment = _.find(
         totalGuidePayments,
         (el) => (el.guideName = campaign.guideName),
@@ -172,14 +201,16 @@ export class RewardsHelper implements RewardsHelperInterface {
             ? this.getDistance(area, coordinates)
             : null,
         object,
-        requiredObject: _.pick(requiredObject, [
-          'avatar',
-          'name',
-          'default_name',
-          'defaultShowLink',
-          'author_permlink',
-          'map',
-        ]),
+        requiredObject: campaign.requiredObject.startsWith('@')
+          ? requiredObject
+          : _.pick(requiredObject, [
+              'avatar',
+              'name',
+              'default_name',
+              'defaultShowLink',
+              'author_permlink',
+              'map',
+            ]),
         ...(showFraud && { fraudCodes: user.fraudCodes }),
       });
     }

@@ -562,6 +562,8 @@ export class WobjectHelper implements WobjectHelperInterface {
       filter: { author_permlink: { $in: links } },
     })) as ProcessedWobjectType[];
 
+    if (!wobjects?.length) return [];
+
     return this.processWobjects({
       wobjects,
       fields,
