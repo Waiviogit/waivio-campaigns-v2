@@ -58,12 +58,12 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       : objects.find((o) => o.author_permlink === item);
   }
   isUser(item = ''): boolean {
-    return item.startsWith('@');
+    return !!item?.startsWith('@');
   }
 
   getCampaignUsersFromArray(objects: string[]): string[] {
     return objects.reduce((acc, el) => {
-      const user = el.startsWith('@');
+      const user = !!el?.startsWith('@');
       if (user) acc.push(el.slice(1));
       return acc;
     }, []);
@@ -206,13 +206,13 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       );
 
       if (reviewObject) {
-        history.reviewObject = history.reviewObject.startsWith('@')
+        history.reviewObject = history.reviewObject?.startsWith('@')
           ? reviewObject
           : _.pick(reviewObject, ['name', 'defaultShowLink']);
       }
 
       if (mainObject) {
-        history.mainObject = history.mainObject.startsWith('@')
+        history.mainObject = history.mainObject?.startsWith('@')
           ? mainObject
           : _.pick(mainObject, ['name', 'defaultShowLink']);
       }
