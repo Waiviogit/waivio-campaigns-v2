@@ -57,7 +57,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
       ? campaignUsers.find((u) => u.name === this.extractUsername(item))
       : objects.find((o) => o.author_permlink === item);
   }
-  isUser(item: string): boolean {
+  isUser(item = ''): boolean {
     return item.startsWith('@');
   }
 
