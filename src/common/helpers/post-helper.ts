@@ -50,7 +50,7 @@ export const getMentionsFromPost = (body: string): string[] => {
 
 export const extractLinks = (text: string): string[] => {
   const urlPattern = /https?:\/\/[^\s/$.?#].[^\s)"]*/gm;
-  const links = text.match(urlPattern);
+  const links = text.replace(/\\:/gm, ':').match(urlPattern);
   return links ? links : [];
 };
 
