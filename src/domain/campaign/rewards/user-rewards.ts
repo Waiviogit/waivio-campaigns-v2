@@ -166,6 +166,7 @@ export class UserRewards implements UserRewardsInterface {
               countReservationDays: 1,
               activationPermlink: 1,
               requiredObject: 1,
+              type: 1,
             },
           },
         ],
