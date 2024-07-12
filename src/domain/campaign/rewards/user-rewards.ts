@@ -194,12 +194,16 @@ export class UserRewards implements UserRewardsInterface {
     return _.reduce(
       rewardsWithData,
       (acc, r) => {
+        if (r.objects === r?.requiredObject) return acc;
         const requiredObject = _.find(
           requiredObjects,
           (o) => o?.author_permlink === r?.requiredObject,
         );
+        if (r.user) {
+          acc.push(r);
+          return acc;
+        }
         if (requiredObject?.author_permlink === r?.object?.author_permlink) {
-          if (r.user) acc.push(r);
           return acc;
         }
         acc.push({
