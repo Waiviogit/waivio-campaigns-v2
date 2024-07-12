@@ -199,6 +199,7 @@ export class UserRewards implements UserRewardsInterface {
           (o) => o?.author_permlink === r?.requiredObject,
         );
         if (requiredObject?.author_permlink === r?.object?.author_permlink) {
+          if (r.user) acc.push(r);
           return acc;
         }
         acc.push({
