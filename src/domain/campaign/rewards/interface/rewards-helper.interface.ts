@@ -1,5 +1,7 @@
 import { CampaignDocumentType } from '../../../../persistance/campaign/types';
 import { RewardsByRequiredType } from '../types';
+import { UserCampaignType } from '../../../../persistance/user/types';
+import { ProcessedWobjectType } from '../../../wobject/types';
 
 export interface RewardsHelperInterface {
   fillUserReservations(
@@ -15,6 +17,13 @@ export interface RewardsHelperInterface {
   extractUsername(fromString: string): string;
   getCampaignUsersFromArray(objects: string[]): string[];
   filterObjectLinks(objects: string[]): string[];
+  findUserOrObject(
+    item: string,
+    isUser: boolean,
+    campaignUsers: UserCampaignType[],
+    objects: ProcessedWobjectType[],
+  ): UserCampaignType | ProcessedWobjectType;
+  isUser(item: string): boolean;
 }
 
 export interface FillUserReservationsInterface {

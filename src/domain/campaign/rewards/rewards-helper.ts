@@ -8,6 +8,7 @@ import {
   PAYOUT_TOKEN,
   POST_PROVIDE,
   RESERVATION_STATUS,
+  USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { GetSortedRewardsReservedType, RewardsByRequiredType } from './types';
@@ -22,6 +23,9 @@ import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
 import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
 import { HiddenPostRepositoryInterface } from '../../../persistance/hidden-post/interface';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
+import { UserCampaignType } from '../../../persistance/user/types';
+import { ProcessedWobjectType } from '../../wobject/types';
 
 @Injectable()
 export class RewardsHelper implements RewardsHelperInterface {
@@ -36,10 +40,26 @@ export class RewardsHelper implements RewardsHelperInterface {
     private readonly hiddenPostRepository: HiddenPostRepositoryInterface,
     @Inject(POST_PROVIDE.REPOSITORY)
     private readonly postRepository: PostRepositoryInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
 
   extractUsername(name: string): string {
     return name.slice(1);
+  }
+
+  findUserOrObject(
+    item: string,
+    isUser: boolean,
+    campaignUsers: UserCampaignType[],
+    objects: ProcessedWobjectType[],
+  ): UserCampaignType | ProcessedWobjectType {
+    return isUser
+      ? campaignUsers.find((u) => u.name === this.extractUsername(item))
+      : objects.find((o) => o.author_permlink === item);
+  }
+  isUser(item: string): boolean {
+    return item.startsWith('@');
   }
 
   getCampaignUsersFromArray(objects: string[]): string[] {
@@ -108,32 +128,50 @@ export class RewardsHelper implements RewardsHelperInterface {
         payoutToken: _.get(campaigns, '[0].payoutToken', PAYOUT_TOKEN.WAIV),
       });
 
-    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: _.uniq([
-        ..._.map(campaigns, 'requiredObject'),
-        ..._.reduce(
-          campaigns,
-          (acc, el) => {
-            acc.push(_.get(el.users, 'objectPermlink'));
-            return acc;
-          },
-          [],
-        ),
-      ]),
-      host,
-    });
+    const objectLinks = _.uniq([
+      ..._.map(campaigns, 'requiredObject'),
+      ..._.reduce(
+        campaigns,
+        (acc, el) => {
+          acc.push(_.get(el.users, 'objectPermlink'));
+          return acc;
+        },
+        [],
+      ),
+    ]);
+
+    const [campaignUsers, objects] = await Promise.all([
+      this.userRepository.findCampaignsUsers(
+        this.getCampaignUsersFromArray(objectLinks),
+      ),
+      this.wobjectHelper.getWobjectsForCampaigns({
+        links: objectLinks,
+        host,
+      }),
+    ]);
 
     for (const campaign of campaigns) {
       const user = _.get(campaign, 'users');
       if (!user) continue;
-      const object = objects.find(
-        (o) => o.author_permlink === user.objectPermlink,
+
+      const object = this.findUserOrObject(
+        user.objectPermlink,
+        this.isUser(user.objectPermlink),
+        campaignUsers,
+        objects,
       );
+
+      const requiredObject = this.findUserOrObject(
+        campaign.requiredObject,
+        this.isUser(campaign.requiredObject),
+        campaignUsers,
+        objects,
+      );
+
       const payout = this.getPayedForMain([campaign]);
+      // @ts-ignore
       const coordinates = _.compact(this.parseCoordinates(object?.map)) || [];
-      const requiredObject = objects.find(
-        (o) => o.author_permlink === campaign.requiredObject,
-      );
+
       const payment = _.find(
         totalGuidePayments,
         (el) => (el.guideName = campaign.guideName),
@@ -172,14 +210,16 @@ export class RewardsHelper implements RewardsHelperInterface {
             ? this.getDistance(area, coordinates)
             : null,
         object,
-        requiredObject: _.pick(requiredObject, [
-          'avatar',
-          'name',
-          'default_name',
-          'defaultShowLink',
-          'author_permlink',
-          'map',
-        ]),
+        requiredObject: campaign.requiredObject.startsWith('@')
+          ? requiredObject
+          : _.pick(requiredObject, [
+              'avatar',
+              'name',
+              'default_name',
+              'defaultShowLink',
+              'author_permlink',
+              'map',
+            ]),
         ...(showFraud && { fraudCodes: user.fraudCodes }),
       });
     }

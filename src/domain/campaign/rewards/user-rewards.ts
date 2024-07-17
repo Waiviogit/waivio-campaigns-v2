@@ -166,6 +166,7 @@ export class UserRewards implements UserRewardsInterface {
               countReservationDays: 1,
               activationPermlink: 1,
               requiredObject: 1,
+              type: 1,
             },
           },
         ],
@@ -194,10 +195,15 @@ export class UserRewards implements UserRewardsInterface {
     return _.reduce(
       rewardsWithData,
       (acc, r) => {
+        if (r.objects === r?.requiredObject) return acc;
         const requiredObject = _.find(
           requiredObjects,
           (o) => o?.author_permlink === r?.requiredObject,
         );
+        if (r.user) {
+          acc.push(r);
+          return acc;
+        }
         if (requiredObject?.author_permlink === r?.object?.author_permlink) {
           return acc;
         }
