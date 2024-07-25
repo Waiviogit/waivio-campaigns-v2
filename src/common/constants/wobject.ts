@@ -50,6 +50,7 @@ export const FIELDS_NAMES = Object.freeze({
   LINK: 'link',
   MAP: 'map',
   TAG: 'tag',
+  URL: 'url',
 });
 
 export const ARRAY_FIELDS = [
@@ -109,6 +110,7 @@ export const CAMPAIGN_FIELDS = [
   FIELDS_NAMES.NEWS_FILTER,
   FIELDS_NAMES.SORT_CUSTOM,
   FIELDS_NAMES.AUTHORITY,
+  FIELDS_NAMES.URL,
 ];
 
 export const CAMPAIGN_MAP_FIELDS = [
