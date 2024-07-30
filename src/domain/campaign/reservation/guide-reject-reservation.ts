@@ -14,6 +14,7 @@ import {
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
+import BigNumber from 'bignumber.js';
 
 import {
   CampaignHelperInterface,
@@ -133,14 +134,16 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
 
     const message = `Thank you for mentioning ${linksToObjects.join(', ')}${
-      twoOrMorePhotos ? ' and included two or more photos' : ''
+      twoOrMorePhotos ? ' and sharing two or more photos' : ''
     }. Unfortunately, [${
       sponsor.alias || sponsor.name
     }](https://www.waivio.com/@${
       campaign.guideName
-    }) has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${
-      campaign.rewardInUSD
-    } USD this time.
+    }) has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${new BigNumber(
+      campaign.rewardInUSD,
+    )
+      .dp(2)
+      .toString()} USD this time.
 We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
 
     await this.hiveClient.createComment({
