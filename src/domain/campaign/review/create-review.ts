@@ -532,7 +532,9 @@ export class CreateReview implements CreateReviewInterface {
 
     const linksToObjects = [];
 
-    const objects = _.uniq([campaign.requiredObject, userReservationObject]);
+    const objects = _.compact(
+      _.uniq([campaign.requiredObject, userReservationObject]),
+    );
     for (const object of objects) {
       if (object.startsWith('@')) {
         const acc = await this.userRepository.findOne({
@@ -615,6 +617,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       images,
       payoutTokenRateUSD,
       reservationPermlink,
+      userReservationObject,
     });
 
     const campaignReviewType = {
@@ -817,6 +820,7 @@ You can track all of your outstanding payments and discover many more rewards [h
     botName,
     app,
     reservationPermlink,
+    userReservationObject,
   }: UpdateMentionStatusesType): Promise<void> {
     const { fraud, fraudCodes } = await this.fraudDetection.detectFraud({
       campaign: campaign as never as ReviewCampaignType,
@@ -832,7 +836,7 @@ You can track all of your outstanding payments and discover many more rewards [h
             rootName: botName || postAuthor,
             status: RESERVATION_STATUS.COMPLETED,
             payoutTokenRateUSD,
-            objectPermlink: campaign.requiredObject,
+            objectPermlink: userReservationObject,
             referralServer: app,
             completedAt: moment.utc().format(),
             fraudSuspicion: fraud,

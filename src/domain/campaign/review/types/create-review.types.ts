@@ -165,6 +165,7 @@ export type UpdateMentionStatusesType = {
   botName?: string;
   app?: string;
   reservationPermlink: string;
+  userReservationObject: string;
 };
 
 export type UpdateReviewStatusesType = {
