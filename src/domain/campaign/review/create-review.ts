@@ -557,7 +557,7 @@ export class CreateReview implements CreateReviewInterface {
 
     const message = `Thanks for your post! Since you mentioned ${linksToObjects.join(
       ', ',
-    )}  ${
+    )}${
       twoOrMorePhotos ? ' and included two or more photos' : ''
     }, you’re eligible for potential rewards of $${
       campaign.rewardInUSD
