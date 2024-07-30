@@ -31,7 +31,7 @@ import { reviewMessageRejectType } from '../review/types';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { WobjectHelperInterface } from '../../wobject/interface';
 import { configService } from '../../../common/config';
-import crypto from 'node:crypto';
+import * as crypto from 'node:crypto';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
 
 @Injectable()
