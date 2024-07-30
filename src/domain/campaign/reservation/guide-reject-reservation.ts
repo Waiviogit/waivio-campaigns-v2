@@ -130,9 +130,11 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       );
     }
 
-    const message = `Thank you for mentioning ${linksToObjects.join(
-      ', ',
-    )}. Unfortunately, [${
+    const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
+
+    const message = `Thank you for mentioning ${linksToObjects.join(', ')}${
+      twoOrMorePhotos ? ' and included two or more photos' : ''
+    }. Unfortunately, [${
       sponsor.alias || sponsor.name
     }](https://www.waivio.com/@${
       campaign.guideName
