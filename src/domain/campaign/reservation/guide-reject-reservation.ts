@@ -4,10 +4,13 @@ import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
+  HIVE_PROVIDE,
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
   SPONSORS_BOT_PROVIDE,
+  USER_PROVIDE,
+  WOBJECT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -24,6 +27,12 @@ import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-
 import { RejectCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
+import { reviewMessageRejectType } from '../review/types';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
+import { WobjectHelperInterface } from '../../wobject/interface';
+import { configService } from '../../../common/config';
+import crypto from 'node:crypto';
+import { HiveClientInterface } from '../../../services/hive-api/interface';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -42,6 +51,12 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
+    @Inject(WOBJECT_PROVIDE.HELPER)
+    private readonly wobjectHelper: WobjectHelperInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
 
   private async updateCampaignReview({
@@ -66,6 +81,75 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
           'users.$.rejectionPermlink': rejectionPermlink,
         },
       },
+    });
+  }
+
+  async rejectMentionMessage({
+    guideName,
+    reservationPermlink,
+  }: reviewMessageRejectType): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        guideName: guideName,
+        users: {
+          $elemMatch: { reservationPermlink },
+        },
+      },
+    });
+
+    const user = _.find(
+      campaign.users,
+      (user) => user.reservationPermlink === reservationPermlink,
+    );
+    if (!user) return;
+
+    const sponsor = await this.userRepository.findOne({
+      filter: { name: campaign.guideName },
+    });
+
+    const linksToObjects = [];
+
+    const objects = _.uniq([campaign.requiredObject, user.objectPermlink]);
+
+    for (const object of objects) {
+      if (object.startsWith('@')) {
+        const acc = await this.userRepository.findOne({
+          filter: { name: object.slice(1) },
+        });
+        if (!acc) continue;
+
+        linksToObjects.push(
+          `[${acc.alias || acc.name}](https://www.waivio.com/@${acc.name})`,
+        );
+        continue;
+      }
+
+      const objName = await this.wobjectHelper.getWobjectName(object);
+      linksToObjects.push(
+        `[${objName}](https://www.waivio.com/object/${object})`,
+      );
+    }
+
+    const message = `Thank you for mentioning ${linksToObjects.join(
+      ', ',
+    )}. Unfortunately, [${
+      sponsor.alias || sponsor.name
+    }](https://www.waivio.com/@${
+      campaign.guideName
+    }) has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${
+      campaign.rewardInUSD
+    } USD this time.
+We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
+
+    await this.hiveClient.createComment({
+      parent_author: user.rootName,
+      parent_permlink: user.reviewPermlink,
+      title: '',
+      json_metadata: '',
+      body: message,
+      author: configService.getMentionsAccount(),
+      permlink: `re-${crypto.randomUUID()}`,
+      key: configService.getMentionsPostingKey(),
     });
   }
 
@@ -97,6 +181,10 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
       transaction_id,
     );
+    await this.rejectMentionMessage({
+      guideName: payload.guideName,
+      reservationPermlink: payload.reservationPermlink,
+    });
   }
 
   async reject({

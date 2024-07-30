@@ -47,6 +47,7 @@ import {
   QualifyConditionType,
   ReviewCampaignType,
   ReviewCommissionsType,
+  reviewMessageSuccessType,
   UpdateMentionStatusesType,
   UpdateReviewStatusesType,
   UpdateUserStatusType,
@@ -85,6 +86,7 @@ import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
 import { RestoreCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
+import { WobjectHelperInterface } from '../../wobject/interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -117,6 +119,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly hiveClient: HiveClientInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(WOBJECT_PROVIDE.HELPER)
+    private readonly wobjectHelper: WobjectHelperInterface,
   ) {}
 
   //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
@@ -515,6 +519,61 @@ export class CreateReview implements CreateReviewInterface {
     return new BigNumber(0);
   }
 
+  async sendMessageSuccessReview({
+    campaign,
+    userReservationObject,
+    reviewPermlink,
+    postAuthor,
+    botName,
+  }: reviewMessageSuccessType): Promise<void> {
+    const sponsor = await this.userRepository.findOne({
+      filter: { name: campaign.guideName },
+    });
+
+    const linksToObjects = [];
+
+    const objects = _.uniq([campaign.requiredObject, userReservationObject]);
+    for (const object of objects) {
+      if (object.startsWith('@')) {
+        const acc = await this.userRepository.findOne({
+          filter: { name: object.slice(1) },
+        });
+        if (!acc) continue;
+
+        linksToObjects.push(
+          `[${acc.alias || acc.name}](https://www.waivio.com/@${acc.name})`,
+        );
+        continue;
+      }
+
+      const objName = await this.wobjectHelper.getWobjectName(object);
+      linksToObjects.push(
+        `[${objName}](https://www.waivio.com/object/${object})`,
+      );
+    }
+
+    const message = `Thanks for your post! Since you mentioned ${linksToObjects.join(
+      ', ',
+    )} [and included two or more photos], you’re eligible for potential rewards of $${
+      campaign.rewardInUSD
+    } USD from [${sponsor.alias || sponsor.name}](https://www.waivio.com/@${
+      campaign.guideName
+    })! 
+Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
+You can track all of your outstanding payments and discover many more rewards [here] (https://www.waivio.com/rewards/global). Keep sharing great content!`;
+
+    await this.hiveClient.createComment({
+      parent_author: botName || postAuthor,
+      parent_permlink: reviewPermlink,
+      title: '',
+      json_metadata: '',
+      body: message,
+      author: configService.getMentionsAccount(),
+      permlink: `re-${crypto.randomUUID()}`,
+      key: configService.getMentionsPostingKey(),
+    });
+  }
+
   async createMention({
     campaign,
     botName,
@@ -600,27 +659,12 @@ export class CreateReview implements CreateReviewInterface {
       reservationPermlink,
     });
 
-    const messages = [
-      `Nice job on your post! Mentioning ${userReservationObject} could lead to a well-deserved reward. Keep it going!`,
-      `Well done! Including ${userReservationObject} in your post might just bring you a reward. Keep up the great work!`,
-      `Awesome post! By mentioning ${userReservationObject}, you could be on your way to earning a reward. Keep it up!`,
-      `Excellent choice of ${userReservationObject} in your post! You might just find yourself rewarded for it. Keep posting!`,
-      `Impressive post! With ${userReservationObject} mentioned, there's a chance you'll earn a reward. Keep it going!`,
-      `Fantastic job! Mentioning ${userReservationObject} in your post might earn you a reward. Keep up the good work!`,
-      `Well-crafted post! By mentioning ${userReservationObject}, you're in the running for a reward. Keep it going strong!`,
-      `Bravo on your post! Including ${userReservationObject} could earn you a reward. Keep up the great content!`,
-      `Stellar post! By mentioning ${userReservationObject}, you're setting yourself up for a potential reward. Keep it up!`,
-    ];
-
-    await this.hiveClient.createComment({
-      parent_author: botName || postAuthor,
-      parent_permlink: reviewPermlink,
-      title: '',
-      json_metadata: '',
-      body: _.sample(messages),
-      author: configService.getMentionsAccount(),
-      permlink: `re-${crypto.randomUUID()}`,
-      key: configService.getMentionsPostingKey(),
+    await this.sendMessageSuccessReview({
+      campaign,
+      botName,
+      postAuthor,
+      reviewPermlink,
+      userReservationObject,
     });
   }
 

@@ -65,6 +65,19 @@ export type CreateMentionType = {
   images: string[];
 };
 
+export type reviewMessageSuccessType = {
+  campaign: CampaignDocumentType;
+  botName?: string;
+  postAuthor?: string;
+  reviewPermlink: string;
+  userReservationObject: string;
+};
+
+export type reviewMessageRejectType = {
+  guideName: string;
+  reservationPermlink: string;
+};
+
 export type ParseReviewType = {
   comment: HiveCommentType;
   metadata: MetadataType;
