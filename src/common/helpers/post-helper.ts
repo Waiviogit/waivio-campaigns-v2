@@ -74,6 +74,7 @@ export const findPossibleLinks = (url: string): string[] => {
     const pattern = new URL(url);
     const path = pattern.pathname.split('/');
     links.push(url);
+    if (url.endsWith('/')) links.push(`${url}*`);
     links.push(`${pattern.origin}*`);
 
     let dynamicUrl = pattern.origin;
@@ -82,6 +83,7 @@ export const findPossibleLinks = (url: string): string[] => {
       if (!pathName) continue;
       dynamicUrl = `${dynamicUrl}/${pathName}`;
       links.push(`${dynamicUrl}*`);
+      links.push(`${dynamicUrl}/*`);
     }
     return links;
   } catch (e) {
