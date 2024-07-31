@@ -9,7 +9,6 @@ import {
   RESERVATION_STATUS,
   REVIEW_PROVIDE,
   SPONSORS_BOT_PROVIDE,
-  USER_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -44,7 +43,6 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
-    @Inject(USER_PROVIDE.REPOSITORY)
     @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
     private readonly messageOnReview: MessageOnReviewInterface,
   ) {}
