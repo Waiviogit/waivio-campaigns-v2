@@ -519,6 +519,26 @@ export class CreateReview implements CreateReviewInterface {
     return new BigNumber(0);
   }
 
+  async getPermlinkForMessage(
+    author: string,
+    permlink: string,
+    activationPermlink: string,
+  ): Promise<string> {
+    const bot = configService.getMentionsAccount();
+    const result = await this.hiveClient.getState(author, permlink);
+
+    return _.reduce(
+      result.content,
+      (acc, el) => {
+        if (el.author !== bot) return acc;
+        if (el.json_metadata !== activationPermlink) return acc;
+        acc = el.permlink;
+        return acc;
+      },
+      `re-${crypto.randomUUID()}`,
+    );
+  }
+
   async sendMessageSuccessReview({
     campaign,
     userReservationObject,
@@ -569,14 +589,20 @@ export class CreateReview implements CreateReviewInterface {
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
 You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
 
+    const permlink = await this.getPermlinkForMessage(
+      botName || postAuthor,
+      reviewPermlink,
+      campaign.activationPermlink,
+    );
+
     await this.hiveClient.createComment({
       parent_author: botName || postAuthor,
       parent_permlink: reviewPermlink,
       title: '',
-      json_metadata: '',
+      json_metadata: campaign.activationPermlink,
       body: message,
       author: configService.getMentionsAccount(),
-      permlink: `re-${crypto.randomUUID()}`,
+      permlink,
       key: configService.getMentionsPostingKey(),
     });
   }
