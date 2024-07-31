@@ -37,7 +37,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     const result = await this.hiveClient.getState(author, permlink);
 
     return _.reduce(
-      result.content,
+      result?.content,
       (acc, el) => {
         if (el.author !== bot) return acc;
         if (el.json_metadata !== activationPermlink) return acc;
