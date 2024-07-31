@@ -34,13 +34,14 @@ export class MessageOnReview implements MessageOnReviewInterface {
     activationPermlink: string,
   ): Promise<string> {
     const bot = configService.getMentionsAccount();
+    const testCampaign = JSON.stringify({ activationPermlink });
     const result = await this.hiveClient.getState(author, permlink);
 
     return _.reduce(
       result?.content,
       (acc, el) => {
         if (el.author !== bot) return acc;
-        if (el.json_metadata !== activationPermlink) return acc;
+        if (el.json_metadata !== testCampaign) return acc;
         acc = el.permlink;
         return acc;
       },
@@ -108,7 +109,9 @@ You can track all of your outstanding payments and discover many more rewards [h
       parent_author: botName || postAuthor,
       parent_permlink: reviewPermlink,
       title: '',
-      json_metadata: campaign.activationPermlink,
+      json_metadata: JSON.stringify({
+        activationPermlink: campaign.activationPermlink,
+      }),
       body: message,
       author: configService.getMentionsAccount(),
       permlink,
@@ -187,7 +190,9 @@ We encourage you to create and share original content to qualify for rewards in 
       parent_author: user.rootName,
       parent_permlink: user.reviewPermlink,
       title: '',
-      json_metadata: campaign.activationPermlink,
+      json_metadata: JSON.stringify({
+        activationPermlink: campaign.activationPermlink,
+      }),
       body: message,
       author: configService.getMentionsAccount(),
       permlink,
