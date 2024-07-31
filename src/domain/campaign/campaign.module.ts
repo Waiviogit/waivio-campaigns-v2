@@ -24,6 +24,7 @@ import {
 import {
   CreateReviewProvider,
   FraudDetectionProvider,
+  MessageOnReviewProvider,
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
 import {
@@ -74,6 +75,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     UserHistoryProvider,
     UserRewardsProvider,
     CampaignDetailsProvider,
+    MessageOnReviewProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -100,6 +102,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     UserHistoryProvider,
     UserRewardsProvider,
     CampaignDetailsProvider,
+    MessageOnReviewProvider,
   ],
 })
 export class CampaignModule {}

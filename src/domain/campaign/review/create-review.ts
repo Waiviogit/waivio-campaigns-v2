@@ -25,7 +25,6 @@ import {
   WOBJECT_REF,
   CAMPAIGN_TYPE,
   TOKEN_WAIV,
-  HIVE_PROVIDE,
   CAMPAIGN_CUSTOM_JSON_ID,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
@@ -47,7 +46,6 @@ import {
   QualifyConditionType,
   ReviewCampaignType,
   ReviewCommissionsType,
-  reviewMessageSuccessType,
   UpdateMentionStatusesType,
   UpdateReviewStatusesType,
   UpdateUserStatusType,
@@ -81,12 +79,10 @@ import { RewardsAllInterface } from '../rewards/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { MetadataType } from '../../hive-parser/types';
-import { HiveClientInterface } from '../../../services/hive-api/interface';
-import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
 import { RestoreCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
-import { WobjectHelperInterface } from '../../wobject/interface';
+import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -115,12 +111,10 @@ export class CreateReview implements CreateReviewInterface {
     private readonly rewardsAll: RewardsAllInterface,
     @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
     private readonly blockRedisClient: RedisClientInterface,
-    @Inject(HIVE_PROVIDE.CLIENT)
-    private readonly hiveClient: HiveClientInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
-    @Inject(WOBJECT_PROVIDE.HELPER)
-    private readonly wobjectHelper: WobjectHelperInterface,
+    @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
+    private readonly messageOnReview: MessageOnReviewInterface,
   ) {}
 
   //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
@@ -519,94 +513,6 @@ export class CreateReview implements CreateReviewInterface {
     return new BigNumber(0);
   }
 
-  async getPermlinkForMessage(
-    author: string,
-    permlink: string,
-    activationPermlink: string,
-  ): Promise<string> {
-    const bot = configService.getMentionsAccount();
-    const result = await this.hiveClient.getState(author, permlink);
-
-    return _.reduce(
-      result.content,
-      (acc, el) => {
-        if (el.author !== bot) return acc;
-        if (el.json_metadata !== activationPermlink) return acc;
-        acc = el.permlink;
-        return acc;
-      },
-      `re-${crypto.randomUUID()}`,
-    );
-  }
-
-  async sendMessageSuccessReview({
-    campaign,
-    userReservationObject,
-    reviewPermlink,
-    postAuthor,
-    botName,
-  }: reviewMessageSuccessType): Promise<void> {
-    const sponsor = await this.userRepository.findOne({
-      filter: { name: campaign.guideName },
-    });
-
-    const linksToObjects = [];
-
-    const objects = _.compact(
-      _.uniq([campaign.requiredObject, userReservationObject]),
-    );
-    for (const object of objects) {
-      if (object.startsWith('@')) {
-        const acc = await this.userRepository.findOne({
-          filter: { name: object.slice(1) },
-        });
-        if (!acc) continue;
-
-        linksToObjects.push(
-          `[${acc.alias || acc.name}](https://www.waivio.com/@${acc.name})`,
-        );
-        continue;
-      }
-
-      const objName = await this.wobjectHelper.getWobjectName(object);
-      linksToObjects.push(
-        `[${objName}](https://www.waivio.com/object/${object})`,
-      );
-    }
-    const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
-
-    const message = `Thanks for your post! Since you mentioned ${linksToObjects.join(
-      ', ',
-    )}${
-      twoOrMorePhotos ? ' and included two or more photos' : ''
-    }, you’re eligible for potential rewards of $${new BigNumber(
-      campaign.rewardInUSD,
-    )
-      .dp(2)
-      .toString()} USD from [${
-      sponsor.alias || sponsor.name
-    }](https://www.waivio.com/@${campaign.guideName})! 
-Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
-You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
-
-    const permlink = await this.getPermlinkForMessage(
-      botName || postAuthor,
-      reviewPermlink,
-      campaign.activationPermlink,
-    );
-
-    await this.hiveClient.createComment({
-      parent_author: botName || postAuthor,
-      parent_permlink: reviewPermlink,
-      title: '',
-      json_metadata: campaign.activationPermlink,
-      body: message,
-      author: configService.getMentionsAccount(),
-      permlink,
-      key: configService.getMentionsPostingKey(),
-    });
-  }
-
   async createMention({
     campaign,
     botName,
@@ -693,7 +599,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       reservationPermlink,
     });
 
-    await this.sendMessageSuccessReview({
+    await this.messageOnReview.sendMessageSuccessReview({
       campaign,
       botName,
       postAuthor,
