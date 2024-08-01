@@ -7,11 +7,11 @@ import {
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
+  REVIEW_PROVIDE,
   SPONSORS_BOT_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
-
 import {
   CampaignHelperInterface,
   CampaignSuspendInterface,
@@ -24,6 +24,7 @@ import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-
 import { RejectCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
+import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -42,6 +43,8 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
+    private readonly messageOnReview: MessageOnReviewInterface,
   ) {}
 
   private async updateCampaignReview({
@@ -97,6 +100,10 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
       transaction_id,
     );
+    await this.messageOnReview.rejectMentionMessage({
+      guideName: payload.guideName,
+      reservationPermlink: payload.reservationPermlink,
+    });
   }
 
   async reject({
