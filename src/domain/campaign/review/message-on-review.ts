@@ -133,7 +133,7 @@ You can track all of your outstanding payments and discover many more rewards [h
     });
 
     const user = _.find(
-      campaign.users,
+      campaign?.users,
       (user) => user.reservationPermlink === reservationPermlink,
     );
     if (!user) return;
