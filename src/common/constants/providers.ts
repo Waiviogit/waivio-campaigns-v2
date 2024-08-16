@@ -99,6 +99,7 @@ export const CAMPAIGN_PROVIDE = Object.freeze({
   SUSPEND: 'CampaignSuspend',
   EXPIRED_LISTENER: 'CampaignExpiredListener',
   CAMPAIGN_DETAILS: 'CampaignDetails',
+  CAMPAIGN_MESSAGES: 'CampaignMessages',
 });
 
 export const CAMPAIGN_PAYMENT_PROVIDE = Object.freeze({

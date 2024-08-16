@@ -148,6 +148,19 @@ export const CAMPAIGN_CUSTOM_JSON_ID = Object.freeze({
   RESTORE_BY_GUIDE: 'restorePostByGuide',
 });
 
+export const CAMPAIGN_COMMENT_PARSER_ACTIONS = Object.freeze({
+  ACTIVATE_CAMPAIGN: 'activateCampaign',
+  STOP_CAMPAIGN: 'stopCampaign',
+  RESERVE_CAMPAIGN: 'reserveCampaign',
+  REJECT_RESERVATION: 'rejectReservation',
+  REJECT_RESERVATION_GUIDE: 'rejectReservationByGuide',
+  RESTORE_RESERVATION_GUIDE: 'restoreReservationByGuide',
+  RAISE_REWARD: 'raiseReviewReward',
+  REDUCE_REWARD: 'reduceReviewReward',
+  MESSAGE_THREAD: 'createMessageThread',
+  CAMPAIGN_MESSAGE: 'campaignMessage',
+});
+
 export const PAYABLE_DEADLINE = 30;
 export const PAYABLE_WARNING = 21;
 
