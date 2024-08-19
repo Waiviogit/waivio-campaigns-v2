@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
-
 import { parseJSON } from '../../common/helpers';
 import { HiveCommentType } from '../../common/types';
 import { HiveCommentParseType, MetadataType } from './types';
 import { parserValidator } from './validators';
 import {
+  CAMPAIGN_COMMENT_PARSER_ACTIONS,
   CAMPAIGN_PROVIDE,
   REDIS_KEY,
   REDIS_PROVIDE,
@@ -15,7 +15,7 @@ import {
 import {
   CampaignActivationInterface,
   CampaignDeactivationInterface,
-  CampaignHelperInterface,
+  CampaignMessageInterface,
 } from '../campaign/interface';
 import { ActivateCampaignType } from '../campaign/types';
 import {
@@ -43,12 +43,12 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     private readonly guideRejectReservation: GuideRejectReservationInterface,
     @Inject(REVIEW_PROVIDE.CREATE)
     private readonly createReview: CreateReviewInterface,
-    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
-    private readonly campaignHelper: CampaignHelperInterface,
     @Inject(RESERVATION_PROVIDE.HELPER)
     private readonly reservationHelper: ReservationHelperInterface,
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_MESSAGES)
+    private readonly campaignMessage: CampaignMessageInterface,
   ) {}
 
   async parse({
@@ -91,7 +91,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
     const postAuthor = metadata?.comment?.userId || author;
 
     switch (type) {
-      case 'activateCampaign':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.ACTIVATE_CAMPAIGN:
         const activationParams =
           await parserValidator.validateCampaignActivation(
             metadata.waivioRewards.campaignId,
@@ -104,14 +104,14 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           );
         }
         break;
-      case 'stopCampaign':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.STOP_CAMPAIGN:
         await this.campaignDeactivation.deactivate({
           activationPermlink: parent_permlink,
           deactivationPermlink: permlink,
           guideName: postAuthor,
         });
         break;
-      case 'reserveCampaign':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.RESERVE_CAMPAIGN:
         await this.assignReservation.assign({
           activationPermlink: parent_permlink,
           reservationPermlink: permlink,
@@ -122,7 +122,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           payoutTokenRateUSD: metadata.waivioRewards.payoutTokenRateUSD,
         });
         break;
-      case 'rejectReservation':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.REJECT_RESERVATION:
         await this.rejectReservation.rejectReservation({
           activationPermlink: parent_permlink,
           reservationPermlink: metadata.waivioRewards.reservationPermlink,
@@ -130,7 +130,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           name: postAuthor,
         });
         break;
-      case 'rejectReservationByGuide':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.REJECT_RESERVATION_GUIDE:
         await this.guideRejectReservation.reject({
           reservationPermlink: parent_permlink,
           guideName: author,
@@ -141,7 +141,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           transaction_id,
         );
         break;
-      case 'restoreReservationByGuide':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.RESTORE_RESERVATION_GUIDE:
         await this.createReview.restoreReview({
           user: parent_author,
           parentPermlink: parent_permlink,
@@ -152,7 +152,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           transaction_id,
         );
         break;
-      case 'raiseReviewReward':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.RAISE_REWARD:
         await this.createReview.raiseReward({
           user: parent_author,
           parentPermlink: parent_permlink,
@@ -166,7 +166,7 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           transaction_id,
         );
         break;
-      case 'reduceReviewReward':
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.REDUCE_REWARD:
         if (parent_author !== author) return;
         await this.createReview.reduceReward({
           parentPermlink: parent_permlink,
@@ -179,6 +179,14 @@ export class HiveCommentParser implements HiveCommentParserInterface {
           REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
           transaction_id,
         );
+        break;
+      case CAMPAIGN_COMMENT_PARSER_ACTIONS.MESSAGE_THREAD:
+        await this.campaignMessage.createMessageThread({
+          activationPermlink: metadata.waivioRewards.activationPermlink,
+          reservationPermlink: metadata.waivioRewards.reservationPermlink,
+          author,
+          permlink,
+        });
         break;
     }
   }

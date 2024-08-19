@@ -4,6 +4,7 @@ import {
   CampaignDeactivationProvider,
   CampaignDetailsProvider,
   CampaignExpiredListenerProvider,
+  CampaignMessagesProvider,
   CampaignProviderHelper,
   CampaignSuspendProvider,
   CreateCampaignProvider,
@@ -76,6 +77,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     UserRewardsProvider,
     CampaignDetailsProvider,
     MessageOnReviewProvider,
+    CampaignMessagesProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -103,6 +105,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     UserRewardsProvider,
     CampaignDetailsProvider,
     MessageOnReviewProvider,
+    CampaignMessagesProvider,
   ],
 })
 export class CampaignModule {}
