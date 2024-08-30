@@ -71,4 +71,5 @@ export type mappedSponsorType = {
 export type SponsorsBotApiType = {
   results: mappedSponsorType[];
   minVotingPower: number;
+  hasMore: boolean;
 };
