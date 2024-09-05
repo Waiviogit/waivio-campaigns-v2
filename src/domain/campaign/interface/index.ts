@@ -8,3 +8,4 @@ export * from './guide-campaigns.interface';
 export * from './debt-obligations.interface';
 export * from './campaign-suspend.interface';
 export * from './campaign-expired-listener.interface';
+export * from './campaign-message.interface';

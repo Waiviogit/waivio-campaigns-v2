@@ -1049,7 +1049,7 @@ export class SponsorsBot implements SponsorsBotInterface {
   }: GetSponsorsBotInterface): Promise<SponsorsBotApiType> {
     const bot = await this.sponsorsBotRepository.findOne({
       filter: { botName, symbol },
-      projection: { sponsors: { $slice: [skip, limit] } },
+      projection: { sponsors: { $slice: [skip, limit + 1] } },
     });
 
     const mappedData =
@@ -1065,8 +1065,9 @@ export class SponsorsBot implements SponsorsBotInterface {
       }));
 
     return {
-      results: mappedData || [],
+      results: _.take(mappedData, limit) || [],
       minVotingPower: _.get(bot, 'minVotingPower', 0),
+      hasMore: mappedData?.length > limit,
     };
   }
 

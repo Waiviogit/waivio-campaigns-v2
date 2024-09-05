@@ -3,7 +3,6 @@ import * as moment from 'moment';
 import { ObjectId } from 'mongoose';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
-
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
@@ -260,12 +259,16 @@ export class CampaignHelper implements CampaignHelperInterface {
     isOpen,
     author,
     permlink,
+    rootPermlink,
   }: IncrReviewCommentInterface): Promise<void> {
-    const state = await this.hiveClient.getState(rootName, reservationPermlink);
+    const state = await this.hiveClient.getState(
+      rootName,
+      rootPermlink || reservationPermlink,
+    );
 
     const comments = _.filter(
       Object.values(_.get(state, 'content', {})),
-      (el) => el.permlink !== reservationPermlink,
+      (el) => el.permlink !== rootPermlink || reservationPermlink,
     );
 
     const currentComment = _.find(
@@ -281,7 +284,7 @@ export class CampaignHelper implements CampaignHelperInterface {
       filter: {
         users: {
           $elemMatch: {
-            rootName,
+            ...(!rootPermlink && { rootName }),
             reservationPermlink,
           },
         },

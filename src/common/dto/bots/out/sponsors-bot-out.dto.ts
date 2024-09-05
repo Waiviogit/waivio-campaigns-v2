@@ -30,4 +30,7 @@ export class SponsorsBotOutDto {
 
   @ApiProperty({ type: Number })
   minVotingPower: number;
+
+  @ApiProperty({ type: Boolean })
+  hasMore: boolean;
 }

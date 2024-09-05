@@ -84,6 +84,9 @@ export class CampaignUser {
   @Prop({ type: Number, default: 0 })
   commentsCount: number;
 
+  @Prop({ type: String })
+  messagesPermlink?: string;
+
   createdAt: Date;
 }
 

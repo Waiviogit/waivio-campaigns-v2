@@ -47,4 +47,5 @@ export interface IncrReviewCommentInterface {
   rootName: string;
   reservationPermlink: string;
   isOpen?: boolean;
+  rootPermlink?: string;
 }

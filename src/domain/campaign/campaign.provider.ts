@@ -12,6 +12,7 @@ import { DebtObligations } from './debt-obligations';
 import { CampaignSuspend } from './campaign-suspend';
 import { CampaignExpiredListener } from './campaign-expired-listener';
 import { CampaignDetails } from './campaign-details';
+import { CampaignMessages } from './campaign-messages';
 
 export const CreateCampaignProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CREATE_CAMPAIGN,
@@ -66,4 +67,9 @@ export const CampaignExpiredListenerProvider: Provider = {
 export const CampaignDetailsProvider: Provider = {
   provide: CAMPAIGN_PROVIDE.CAMPAIGN_DETAILS,
   useClass: CampaignDetails,
+};
+
+export const CampaignMessagesProvider: Provider = {
+  provide: CAMPAIGN_PROVIDE.CAMPAIGN_MESSAGES,
+  useClass: CampaignMessages,
 };
