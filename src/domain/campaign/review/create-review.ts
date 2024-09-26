@@ -83,6 +83,7 @@ import * as crypto from 'node:crypto';
 import { RestoreCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
+import { AppDocumentType } from '../../../persistance/app/types';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -1044,6 +1045,29 @@ export class CreateReview implements CreateReviewInterface {
     return commissionPayments;
   }
 
+  getReferralCommissionAccount(
+    host: AppDocumentType,
+    refHost: AppDocumentType,
+  ): string {
+    const defaultAccount = 'waivio.referrals';
+
+    const hostReferralAccount = _.get(
+      host,
+      'app_commissions.referral_commission_acc',
+      defaultAccount,
+    );
+
+    const ownerAccount = _.get(refHost, 'owner', hostReferralAccount);
+
+    const referralAccount = _.get(
+      refHost,
+      'app_commissions.referral_commission_acc',
+      ownerAccount,
+    );
+
+    return referralAccount.includes('_') ? defaultAccount : referralAccount;
+  }
+
   private async getCommissions(
     appHost: string,
     referralHost: string,
@@ -1073,19 +1097,7 @@ export class CreateReview implements CreateReviewInterface {
         'app_commissions.campaigns_server_acc',
         'waivio.campaigns',
       ),
-      referralAccount: _.get(
-        refHost,
-        'app_commissions.referral_commission_acc',
-        _.get(
-          refHost,
-          'owner',
-          _.get(
-            host,
-            'app_commissions.referral_commission_acc',
-            'waivio.referrals',
-          ),
-        ),
-      ),
+      referralAccount: this.getReferralCommissionAccount(host, refHost),
     };
   }
 
