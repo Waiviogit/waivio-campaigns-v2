@@ -205,6 +205,7 @@ export class RewardsHelper implements RewardsHelperInterface {
         reservationCreatedAt: user.createdAt,
         reservationUpdatedAt: user.updatedAt,
         payoutTokenRateUSD: user.payoutTokenRateUSD,
+        messagesPermlink: user?.messagesPermlink ?? '',
         distance:
           area && coordinates.length === 2
             ? this.getDistance(area, coordinates)
