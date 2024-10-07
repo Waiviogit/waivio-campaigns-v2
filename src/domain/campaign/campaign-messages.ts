@@ -38,8 +38,8 @@ export class CampaignMessages implements CampaignMessageInterface {
 
     await this.campaignRepository.updateOne({
       filter: {
+        activationPermlink,
         users: {
-          activationPermlink,
           $elemMatch: {
             reservationPermlink,
           },
