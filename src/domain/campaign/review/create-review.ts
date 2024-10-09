@@ -313,32 +313,7 @@ export class CreateReview implements CreateReviewInterface {
       {},
     );
 
-    const campaignsForMentions = await this.findMentionCampaigns(
-      postAuthor,
-      [...objects, ...mentions, ...links],
-      qualifiedTokenCondition,
-    );
-
     const postImages = _.get(metadata, 'image', []);
-
-    if (campaignsForMentions.length) {
-      for (const campaignsForMention of campaignsForMentions) {
-        if (postImages < campaignsForMention.requirements.minPhotos) continue;
-
-        await this.createMention({
-          campaign: campaignsForMention,
-          beneficiaries,
-          app,
-          title: comment.title,
-          reviewPermlink: comment.permlink,
-          host: _.get(metadata, 'host', ''),
-          botName,
-          postAuthor,
-          postMentions: [...objects, ...mentions, ...links],
-          images: postImages,
-        });
-      }
-    }
 
     if (!_.isEmpty(campaignsForReview)) {
       const validCampaignsReview = await this.validateReview({
@@ -362,6 +337,31 @@ export class CreateReview implements CreateReviewInterface {
             postAuthor,
           });
         }
+      }
+    }
+
+    const campaignsForMentions = await this.findMentionCampaigns(
+      postAuthor,
+      [...objects, ...mentions, ...links],
+      qualifiedTokenCondition,
+    );
+
+    if (campaignsForMentions.length) {
+      for (const campaignsForMention of campaignsForMentions) {
+        if (postImages < campaignsForMention.requirements.minPhotos) continue;
+
+        await this.createMention({
+          campaign: campaignsForMention,
+          beneficiaries,
+          app,
+          title: comment.title,
+          reviewPermlink: comment.permlink,
+          host: _.get(metadata, 'host', ''),
+          botName,
+          postAuthor,
+          postMentions: [...objects, ...mentions, ...links],
+          images: postImages,
+        });
       }
     }
   }
