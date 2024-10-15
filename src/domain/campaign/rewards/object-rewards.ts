@@ -6,6 +6,7 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   COLLECTION,
+  MUTED_USER_PROVIDE,
   RESERVATION_STATUS,
   REWARDS_PROVIDE,
   WOBJECT_PROVIDE,
@@ -23,6 +24,7 @@ import { WobjectHelperInterface } from '../../wobject/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { ProcessedWobjectType } from '../../wobject/types';
+import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
 
 @Injectable()
 export class ObjectRewards implements ObjectRewardsInterface {
@@ -37,6 +39,8 @@ export class ObjectRewards implements ObjectRewardsInterface {
     private readonly appRepository: AppRepositoryInterface,
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
+    @Inject(MUTED_USER_PROVIDE.REPOSITORY)
+    private readonly mutedUserRepository: MutedUserRepositoryInterface,
   ) {}
 
   async getObjectRewards({
@@ -79,11 +83,17 @@ export class ObjectRewards implements ObjectRewardsInterface {
     objectLinks,
     host,
   }: GetSecondaryObjectsRewards): Promise<RewardsByRequiredType[]> {
+    const mutedList = await this.mutedUserRepository.find({
+      filter: { mutedBy: userName },
+    });
+    const mutedNames = mutedList.map((el) => el.userName);
+
     const rewards: RewardsByRequiredType[] =
       await this.campaignRepository.aggregate({
         pipeline: [
           {
             $match: {
+              ...(mutedNames?.length && { guideName: { $nin: mutedNames } }),
               status: CAMPAIGN_STATUS.ACTIVE,
               objects: { $in: objectLinks },
             },
