@@ -454,9 +454,21 @@ export class RewardsAll implements RewardsAllInterface {
     reach,
     userName,
   }: GetRewardsMainType): Promise<RewardsAllType> {
+    const mutedList = await this.mutedUserRepository.find({
+      filter: { mutedBy: userName },
+    });
+    const mutedNames = mutedList.map((el) => el.userName);
+    const guideCondition = mutedList?.length || sponsors?.length;
+
     const campaigns = await this.campaignRepository.find({
       filter: {
         status: CAMPAIGN_STATUS.ACTIVE,
+        ...(guideCondition && {
+          guideName: {
+            ...(mutedNames?.length ? { $nin: mutedNames } : {}),
+            ...(sponsors ? { $in: sponsors } : {}),
+          },
+        }),
         ...(sponsors && { guideName: { $in: sponsors } }),
         ...(type && { type: { $in: type } }),
         ...(requiredObjects && { requiredObject: { $in: requiredObjects } }),
