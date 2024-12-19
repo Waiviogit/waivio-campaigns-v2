@@ -15,4 +15,5 @@ export type getCampaignRequirementsType = {
   requirements: ReviewRequirementsType;
   userRequirements: UserRequirementsType;
   type: string;
+  qualifiedPayoutToken: boolean;
 };

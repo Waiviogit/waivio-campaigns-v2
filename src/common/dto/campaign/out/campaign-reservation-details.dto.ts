@@ -33,4 +33,7 @@ export class CampaignReservationDetailsDto {
 
   @ApiProperty({ type: String })
   type: string;
+
+  @ApiProperty({ type: Boolean })
+  qualifiedPayoutToken: boolean;
 }
