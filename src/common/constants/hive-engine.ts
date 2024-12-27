@@ -1,7 +1,7 @@
 export const HIVE_ENGINE_NODES = [
-  'https://herpc.kanibot.com',
-  'https://herpc.actifit.io',
   'https://he.sourov.dev',
+  'https://ha.herpc.dtools.dev',
+  'https://herpc.actifit.io',
 ];
 
 export const TOKEN_WAIV = Object.freeze({
