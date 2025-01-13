@@ -1,21 +1,24 @@
 export const HIVE_RPC_NODES = [
   'https://api.hive.blog',
-  'https://rpc.esteem.app',
+  'https://api.deathwing.me',
   'https://hive-api.arcange.eu',
-  'https://rpc.ausbit.dev',
-  'https://hive.roelandp.nl',
-  'https://hived.emre.sh',
+  'https://api.syncad.com',
+  'https://api.openhive.network',
 ];
 
 const HIVE_API = Object.freeze({
   CONDENSER_API: 'condenser_api',
+  BRIDGE: 'bridge',
 });
 
 export const CONDENSER_API = Object.freeze({
   GET_BLOCK: `${HIVE_API.CONDENSER_API}.get_block`,
   GET_CONTENT: `${HIVE_API.CONDENSER_API}.get_content`,
   GET_ACTIVE_VOTES: `${HIVE_API.CONDENSER_API}.get_active_votes`,
-  GET_STATE: `${HIVE_API.CONDENSER_API}.get_state`,
+});
+
+export const BRIDGE = Object.freeze({
+  GET_DISCUSSION: `${HIVE_API.BRIDGE}.get_discussion`,
 });
 
 export const HIVE_SIGNER_URL = 'https://hivesigner.com';

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Client, PrivateKey } from '@hiveio/dhive';
 import axios from 'axios';
 
-import { CONDENSER_API, HIVE_RPC_NODES } from '../../common/constants';
+import { CONDENSER_API, HIVE_RPC_NODES, BRIDGE } from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
 import { GetVoteInterface, HiveClientInterface } from './interface';
 import {
@@ -112,9 +112,20 @@ export class HiveClient implements HiveClientInterface {
   }
 
   async getState(author: string, permlink: string): Promise<CommentStateType> {
-    return this.hiveRequest(CONDENSER_API.GET_STATE, [
-      `waivio/@${author}/${permlink}`,
-    ]);
+    const content = await this.hiveRequest(BRIDGE.GET_DISCUSSION, {
+      author,
+      permlink,
+    });
+
+    for (const contentKey in content) {
+      if (content[contentKey]?.json_metadata) {
+        content[contentKey].json_metadata = JSON.stringify(
+          content[contentKey].json_metadata,
+        );
+      }
+    }
+
+    return { content };
   }
 
   async getActiveVotes(
