@@ -89,9 +89,5 @@ export type ReblogToType = {
 };
 
 export type CommentStateType = {
-  feed_price: object;
-  props: object;
-  tags: object;
-  accounts: object;
   content: object;
 };
