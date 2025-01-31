@@ -697,6 +697,7 @@ export class RewardsAll implements RewardsAllInterface {
               userRequirements: 1,
               countReservationDays: 1,
               activationPermlink: 1,
+              qualifiedPayoutToken: 1,
               type: 1,
             },
           },
