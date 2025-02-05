@@ -584,7 +584,14 @@ export class WobjectHelper implements WobjectHelperInterface {
     });
 
     const mappedObjects = _.map(objects, (o) =>
-      _.pick(o, ['author_permlink', 'name', 'default_name', 'defaultShowLink']),
+      _.pick(o, [
+        'author_permlink',
+        'name',
+        'default_name',
+        'defaultShowLink',
+        'avatar',
+        'object_type',
+      ]),
     );
     const requiredObject = _.find(
       mappedObjects,
