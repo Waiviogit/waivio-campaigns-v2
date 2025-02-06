@@ -120,7 +120,10 @@ export class HiveEngineClient implements HiveEngineClientInterface {
       this.timesGetNull = 0;
       this.blockUrl = this.getNewNodeUrl(this.blockUrl);
     }
-    if (_.has(result, 'error')) return null;
+    if (_.has(result, 'error')) {
+      this.blockUrl = this.getNewNodeUrl(this.blockUrl);
+      return null;
+    }
 
     return result as EngineBlockType;
   }
