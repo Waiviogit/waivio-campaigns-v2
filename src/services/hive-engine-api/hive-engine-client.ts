@@ -89,7 +89,7 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     return response;
   }
 
-  private getNewNodeUrl(hostUrl): string {
+  private getNewNodeUrl(hostUrl: string): string {
     const index = hostUrl ? HIVE_ENGINE_NODES.indexOf(hostUrl) : 0;
 
     return index === HIVE_ENGINE_NODES.length - 1
@@ -120,6 +120,7 @@ export class HiveEngineClient implements HiveEngineClientInterface {
       this.timesGetNull = 0;
       this.blockUrl = this.getNewNodeUrl(this.blockUrl);
     }
+    if (_.has(result, 'error')) return null;
 
     return result as EngineBlockType;
   }
