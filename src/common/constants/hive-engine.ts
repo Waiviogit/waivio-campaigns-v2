@@ -3,7 +3,7 @@ export const HIVE_ENGINE_NODES = [
   //  'https://ha.herpc.dtools.dev',
   'https://herpc.actifit.io',
   'https://api.primersion.com',
-//  'https://api.hive-engine.com/rpc/',
+  'https://api.hive-engine.com/rpc/',
   // 'https://herpc.dtools.dev',
 ];
 

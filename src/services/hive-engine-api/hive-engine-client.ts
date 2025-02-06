@@ -11,7 +11,8 @@ import {
 } from '../../common/constants';
 import {
   EngineBalanceType,
-  EngineBlockType, EnginePostType,
+  EngineBlockType,
+  EnginePostType,
   EngineProxyType,
   EngineQueryType,
   EngineRewardPoolType,
@@ -28,6 +29,8 @@ import {
 @Injectable()
 export class HiveEngineClient implements HiveEngineClientInterface {
   private readonly logger = new Logger(HiveEngineClient.name);
+  private timesGetNull = 0;
+  private blockUrl = 'https://api.primersion.com';
 
   private async engineQuery({
     hostUrl = HIVE_ENGINE_NODES[0],
@@ -106,11 +109,19 @@ export class HiveEngineClient implements HiveEngineClientInterface {
   }
 
   async getBlock(blockNumber: number): Promise<EngineBlockType> {
-    return (await this.engineProxy({
+    const result = await this.engineQuery({
+      hostUrl: this.blockUrl,
       method: ENGINE_METHOD.GET_BLOCK_INFO,
       endpoint: ENGINE_ENDPOINT.BLOCKCHAIN,
       params: { blockNumber },
-    })) as EngineBlockType;
+    });
+    if (!result) ++this.timesGetNull;
+    if (this.timesGetNull > 2) {
+      this.timesGetNull = 0;
+      this.blockUrl = this.getNewNodeUrl(this.blockUrl);
+    }
+
+    return result as EngineBlockType;
   }
 
   async getVotingPower(
