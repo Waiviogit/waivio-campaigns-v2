@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { setTimeout } from 'timers/promises';
 import { REDIS_KEY } from '../../common/constants';
 import { DEFAULT_START_BLOCK_CAMPAIGN } from './constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
@@ -49,7 +50,8 @@ export abstract class AbstractProcessor implements AbstractProcessorInterface {
       );
       await this.loadNextBlock();
     } else {
-      await setTimeout(async () => this.loadNextBlock(), 2000);
+      await setTimeout(2000);
+      await this.loadNextBlock();
     }
   }
 
