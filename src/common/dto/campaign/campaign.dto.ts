@@ -210,6 +210,7 @@ export class CampaignDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(512)
   @ApiProperty({ type: String, required: false })
   note: string;
 
@@ -253,6 +254,7 @@ export class CampaignDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   @ApiProperty({ type: String, required: false })
   usersLegalNotice: string;
 
@@ -317,6 +319,7 @@ export class CampaignDto {
 
   @IsOptional()
   @IsNumber()
+  @Max(300)
   @ApiProperty({ type: Number, required: false })
   frequencyAssign: number;
 
