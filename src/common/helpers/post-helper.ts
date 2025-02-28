@@ -70,22 +70,25 @@ const isFileLink = (url: string): boolean => {
 export const findPossibleLinks = (url: string): string[] => {
   try {
     if (isFileLink(url)) return [];
-    const links = [];
+    const links = new Set<string>();
     const pattern = new URL(url);
-    const path = pattern.pathname.split('/');
-    links.push(url);
-    if (url.endsWith('/')) links.push(`${url}*`);
-    links.push(`${pattern.origin}*`);
+    const pathSegments = pattern.pathname.split('/').filter(Boolean);
 
-    let dynamicUrl = pattern.origin;
+    links.add(`${pattern.origin}*`);
+    links.add(`${pattern.origin}/*`);
+    links.add(`${pattern.origin}`);
+    links.add(`${pattern.origin}/`);
 
-    for (const pathName of path) {
-      if (!pathName) continue;
-      dynamicUrl = `${dynamicUrl}/${pathName}`;
-      links.push(`${dynamicUrl}*`);
-      links.push(`${dynamicUrl}/*`);
+    let accumulatedPath = pattern.origin;
+    for (const segment of pathSegments) {
+      accumulatedPath += `/${segment}`;
+      links.add(`${accumulatedPath}`);
+      links.add(`${accumulatedPath}/`);
+      links.add(`${accumulatedPath}*`);
+      links.add(`${accumulatedPath}/*`);
     }
-    return links;
+
+    return Array.from(links);
   } catch (e) {
     return [];
   }
