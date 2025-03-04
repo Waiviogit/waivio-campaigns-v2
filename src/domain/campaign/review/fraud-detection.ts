@@ -8,8 +8,7 @@ import {
 } from '../../../common/constants';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import * as exifParser from 'exif-parser';
-
+import ExifReader from 'exifreader';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { WobjectHelperInterface } from '../../wobject/interface';
@@ -128,19 +127,18 @@ export class FraudDetection implements FraudDetectionInterface {
         const { data } = await axios.get(image, {
           responseType: 'arraybuffer',
         });
-        const parsedFile = exifParser.create(data).parse();
+        const parsedFile = await ExifReader.load(data, { async: true });
 
-        const model = _.get(parsedFile, 'tags.Model');
-        const ifNotHaveModel = _.has(parsedFile, 'tags.Orientation')
-          ? 'iPhone'
-          : 'unknown';
-        const date = _.get(parsedFile, 'tags.DateTimeOriginal');
-        const latitude = _.get(parsedFile, 'tags.GPSLatitude');
-        const longitude = _.get(parsedFile, 'tags.GPSLongitude');
+        const model = _.get(parsedFile, 'Model.description');
+        const ifNotHaveModel =
+          _.get(parsedFile, 'Orientation.description') || '';
+        const date = _.get(parsedFile, 'DateTimeOriginal.description');
+        const latitude = _.get(parsedFile, 'GPSLatitude.description');
+        const longitude = _.get(parsedFile, 'GPSLongitude.description');
         const width = _.get(
           parsedFile,
-          'tags.ImageWidth',
-          _.get(parsedFile, 'tags.ExifImageWidth'),
+          'ImageWidth.description',
+          _.get(parsedFile, 'ExifImageWidth.description'),
         );
 
         if (date || (latitude && longitude)) exifCounter++;
