@@ -144,7 +144,7 @@ export class FraudDetection implements FraudDetectionInterface {
         if (date || (latitude && longitude)) exifCounter++;
         if (model || ifNotHaveModel) models.push(model || ifNotHaveModel);
         if (date) photoDates.push(date);
-        if (width) photoWidth.push(width);
+        if (width) photoWidth.push(parseFloat(width) || 0);
         if (latitude && longitude) {
           latitudeArr.push(latitude);
           longitudeArr.push(longitude);
