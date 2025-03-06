@@ -132,7 +132,7 @@ export class FraudDetection implements FraudDetectionInterface {
         const model = _.get(parsedFile, 'Model.description');
         const ifNotHaveModel =
           _.get(parsedFile, 'Orientation.description') || '';
-        const date = _.get(parsedFile, 'DateTimeOriginal.description');
+        const date = _.get(parsedFile, 'DateTimeOriginal.description', '');
         const latitude = _.get(parsedFile, 'GPSLatitude.description');
         const longitude = _.get(parsedFile, 'GPSLongitude.description');
         const width = _.get(
@@ -140,10 +140,15 @@ export class FraudDetection implements FraudDetectionInterface {
           'ImageWidth.description',
           _.get(parsedFile, 'ExifImageWidth.description'),
         );
+        const formattedString = date.replace(
+          /^(\d{4}):(\d{2}):(\d{2})/,
+          '$1-$2-$3',
+        );
+        const timestamp = new Date(formattedString).valueOf() / 1000 || 0;
 
         if (date || (latitude && longitude)) exifCounter++;
         if (model || ifNotHaveModel) models.push(model || ifNotHaveModel);
-        if (date) photoDates.push(date);
+        if (timestamp) photoDates.push(timestamp);
         if (width) photoWidth.push(parseFloat(width) || 0);
         if (latitude && longitude) {
           latitudeArr.push(latitude);
