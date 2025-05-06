@@ -74,6 +74,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
     const campaignsWithDiffSecondary = await this.campaignRepository.find({
       filter: {
         requiredObject: authorPermlink,
+        status: CAMPAIGN_STATUS.ACTIVE,
         objects: { $ne: [authorPermlink] },
       },
       projection: { _id: 1 },
