@@ -63,13 +63,19 @@ export class ObjectRewards implements ObjectRewardsInterface {
       requiredObjects: [authorPermlink],
       userName,
     });
-    const main = rewards[0] || null;
+    let main = rewards[0] || null;
 
     const secondary = await this.getSecondaryObjectRewards({
       userName,
       objectLinks: [authorPermlink],
       host,
     });
+
+    const onlySecondary =
+      secondary?.length === 1 &&
+      main?.object?.author_permlink === secondary?.[0].object?.author_permlink;
+
+    if (onlySecondary) main = null;
 
     return {
       authorPermlink,
@@ -210,23 +216,16 @@ export class ObjectRewards implements ObjectRewardsInterface {
       userName,
     });
 
-    return _.reduce(
-      rewardsWithData,
-      (acc, r) => {
-        const requiredObject = _.find(
-          requiredObjects,
-          (o) => o?.author_permlink === r?.requiredObject,
-        );
-        if (requiredObject?.author_permlink === r?.object?.author_permlink) {
-          return acc;
-        }
-        acc.push({
-          ...r,
-          requiredObject,
-        });
-        return acc;
-      },
-      [],
-    );
+    return _.map(rewardsWithData, (v) => {
+      const requiredObject = _.find(
+        requiredObjects,
+        (o) => o?.author_permlink === v?.requiredObject,
+      );
+
+      return {
+        ...v,
+        requiredObject,
+      };
+    });
   }
 }
