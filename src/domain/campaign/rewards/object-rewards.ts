@@ -71,11 +71,19 @@ export class ObjectRewards implements ObjectRewardsInterface {
       host,
     });
 
-    const onlySecondary =
+    const campaignsWithDiffSecondary = await this.campaignRepository.find({
+      filter: {
+        requiredObject: authorPermlink,
+        objects: { $ne: [authorPermlink] },
+      },
+      projection: { _id: 1 },
+    });
+
+    const onlyOneSecondary =
       secondary?.length === 1 &&
       main?.object?.author_permlink === secondary?.[0].object?.author_permlink;
 
-    if (onlySecondary) main = null;
+    if (onlyOneSecondary && !campaignsWithDiffSecondary?.length) main = null;
 
     return {
       authorPermlink,
