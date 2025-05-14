@@ -6,6 +6,7 @@ import {
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
+  WOBJECT_PROVIDE,
 } from '../../common/constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
@@ -14,6 +15,7 @@ import {
   CampaignExpiredListenerInterface,
   CampaignHelperInterface,
 } from './interface';
+import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
 
 export class CampaignExpiredListener
   implements CampaignExpiredListenerInterface
@@ -25,9 +27,22 @@ export class CampaignExpiredListener
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(WOBJECT_PROVIDE.REPOSITORY)
+    private readonly wobjectRepository: WobjectRepositoryInterface,
   ) {}
 
   async expireCampaign(_id: string): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { _id },
+      projection: { requiredObject: 1, objects: 1 },
+    });
+
+    await this.wobjectRepository.updateCampaignsCount(
+      _id,
+      CAMPAIGN_STATUS.EXPIRED,
+      [campaign.requiredObject, ...campaign.objects],
+    );
+
     await this.campaignRepository.updateOne({
       filter: {
         _id,
