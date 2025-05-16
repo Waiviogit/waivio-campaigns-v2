@@ -606,6 +606,7 @@ export class CreateReview implements CreateReviewInterface {
       postAuthor,
       reviewPermlink,
       userReservationObject,
+      rewardInToken,
     });
   }
 

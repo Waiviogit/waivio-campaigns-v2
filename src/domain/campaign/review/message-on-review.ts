@@ -55,6 +55,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     reviewPermlink,
     postAuthor,
     botName,
+    rewardInToken,
   }: reviewMessageSuccessType): Promise<void> {
     const sponsor = await this.userRepository.findOne({
       filter: { name: campaign.guideName },
@@ -93,9 +94,11 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${campaign.reward} ${campaign.payoutToken}) from [${
-      sponsor.alias || sponsor.name
-    }](https://www.waivio.com/@${campaign.guideName})! 
+      .toString()} USD (${rewardInToken.dp(0).toNumber()} ${
+      campaign.payoutToken
+    }) from [${sponsor.alias || sponsor.name}](https://www.waivio.com/@${
+      campaign.guideName
+    })! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
 You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
 

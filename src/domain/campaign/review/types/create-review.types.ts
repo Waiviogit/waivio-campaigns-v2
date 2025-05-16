@@ -71,6 +71,7 @@ export type reviewMessageSuccessType = {
   postAuthor?: string;
   reviewPermlink: string;
   userReservationObject: string;
+  rewardInToken: BigNumber;
 };
 
 export type reviewMessageRejectType = {
