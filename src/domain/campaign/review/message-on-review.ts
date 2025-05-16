@@ -94,7 +94,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${rewardInToken.dp(0).toNumber()} ${
+      .toString()} USD (${rewardInToken.dp(0, 1).toNumber()} ${
       campaign.payoutToken
     }) from [${sponsor.alias || sponsor.name}](https://www.waivio.com/@${
       campaign.guideName
