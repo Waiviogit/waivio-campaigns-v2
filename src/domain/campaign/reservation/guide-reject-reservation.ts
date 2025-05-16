@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   CAMPAIGN_CUSTOM_JSON_ID,
+  CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
@@ -25,6 +26,8 @@ import { RejectCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
+import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -45,6 +48,8 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     private readonly campaignRedisClient: RedisClientInterface,
     @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
     private readonly messageOnReview: MessageOnReviewInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.REPOSITORY)
+    private readonly campaignPaymentRepository: CampaignPaymentRepositoryInterface,
   ) {}
 
   private async updateCampaignReview({
@@ -94,6 +99,14 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       transaction_id,
     )) as GuideRejectReservationType;
     if (!payload) return;
+    //for message
+    const payment = await this.campaignPaymentRepository.findOne({
+      filter: {
+        type: CAMPAIGN_PAYMENT.REVIEW,
+        reservationPermlink: payload.reservationPermlink,
+      },
+    });
+    const rewardInToken = new BigNumber(payment.amount).dp(0, 1).toNumber();
 
     await this.reject(payload);
     await this.campaignRedisClient.publish(
@@ -103,6 +116,7 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     await this.messageOnReview.rejectMentionMessage({
       guideName: payload.guideName,
       reservationPermlink: payload.reservationPermlink,
+      rewardInToken,
     });
   }
 

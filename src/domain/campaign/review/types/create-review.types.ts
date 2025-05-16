@@ -77,6 +77,7 @@ export type reviewMessageSuccessType = {
 export type reviewMessageRejectType = {
   guideName: string;
   reservationPermlink: string;
+  rewardInToken: number;
 };
 
 export type ParseReviewType = {

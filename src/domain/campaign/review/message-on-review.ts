@@ -4,6 +4,8 @@ import * as crypto from 'node:crypto';
 import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
 import BigNumber from 'bignumber.js';
 import {
+  CAMPAIGN_PAYMENT,
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   HIVE_PROVIDE,
   USER_PROVIDE,
@@ -15,6 +17,7 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import * as _ from 'lodash';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
+import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -125,6 +128,7 @@ You can track all of your outstanding payments and discover many more rewards [h
   async rejectMentionMessage({
     guideName,
     reservationPermlink,
+    rewardInToken,
   }: reviewMessageRejectType): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
       filter: {
@@ -169,11 +173,6 @@ You can track all of your outstanding payments and discover many more rewards [h
     }
 
     const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
-
-    const rewardInToken = new BigNumber(campaign.rewardInUSD)
-      .dividedBy(user.payoutTokenRateUSD)
-      .dp(0, 1)
-      .toNumber();
 
     const message = `Thank you for mentioning ${linksToObjects.join(', ')}${
       twoOrMorePhotos ? ' and sharing two or more photos' : ''
