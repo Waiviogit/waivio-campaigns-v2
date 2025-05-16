@@ -93,7 +93,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD from [${
+      .toString()} USD (${campaign.reward} ${campaign.payoutToken}) from [${
       sponsor.alias || sponsor.name
     }](https://www.waivio.com/@${campaign.guideName})! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
