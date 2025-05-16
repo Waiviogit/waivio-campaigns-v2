@@ -170,6 +170,11 @@ You can track all of your outstanding payments and discover many more rewards [h
 
     const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
 
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(user.payoutTokenRateUSD)
+      .dp(0, 1)
+      .toNumber();
+
     const message = `Thank you for mentioning ${linksToObjects.join(', ')}${
       twoOrMorePhotos ? ' and sharing two or more photos' : ''
     }. Unfortunately, [${
@@ -180,7 +185,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD this time.
+      .toString()} USD (${rewardInToken} ${campaign.payoutToken}) this time.
 We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
 
     const permlink = await this.getPermlinkForMessage(
