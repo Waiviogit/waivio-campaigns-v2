@@ -106,7 +106,7 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         reservationPermlink: payload.reservationPermlink,
       },
     });
-    const rewardInToken = new BigNumber(payment.amount).dp(0, 1).toNumber();
+    const reviewRewardToken = new BigNumber(payment.amount).dp(8, 1).toNumber();
 
     await this.reject(payload);
     await this.campaignRedisClient.publish(
@@ -116,7 +116,7 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     await this.messageOnReview.rejectMentionMessage({
       guideName: payload.guideName,
       reservationPermlink: payload.reservationPermlink,
-      rewardInToken,
+      reviewRewardToken,
     });
   }
 

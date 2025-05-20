@@ -58,7 +58,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     reviewPermlink,
     postAuthor,
     botName,
-    rewardInToken,
+    reviewRewardToken,
   }: reviewMessageSuccessType): Promise<void> {
     const sponsor = await this.userRepository.findOne({
       filter: { name: campaign.guideName },
@@ -97,11 +97,9 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${rewardInToken.dp(0, 1).toNumber()} ${
-      campaign.payoutToken
-    }) from [${sponsor.alias || sponsor.name}](https://www.waivio.com/@${
-      campaign.guideName
-    })! 
+      .toString()} USD (${reviewRewardToken} ${campaign.payoutToken}) from [${
+      sponsor.alias || sponsor.name
+    }](https://www.waivio.com/@${campaign.guideName})! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
 You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
 
@@ -128,7 +126,7 @@ You can track all of your outstanding payments and discover many more rewards [h
   async rejectMentionMessage({
     guideName,
     reservationPermlink,
-    rewardInToken,
+    reviewRewardToken,
   }: reviewMessageRejectType): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
       filter: {
@@ -184,7 +182,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${rewardInToken} ${campaign.payoutToken}) this time.
+      .toString()} USD (${reviewRewardToken} ${campaign.payoutToken}) this time.
 We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
 
     const permlink = await this.getPermlinkForMessage(
