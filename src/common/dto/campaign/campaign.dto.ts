@@ -163,6 +163,24 @@ export class UserRequirementsDto {
   minExpertise: number;
 }
 
+export class GiveawayRequirementsDto {
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  likePost: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  comment: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  tagInComment: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  reblog: boolean;
+}
+
 export class CampaignDto {
   @IsMongoId()
   @IsNotEmpty()
@@ -275,6 +293,12 @@ export class CampaignDto {
   @Type(() => UserRequirementsDto)
   @ApiProperty({ type: () => UserRequirementsDto })
   userRequirements: UserRequirementsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => GiveawayRequirementsDto)
+  @ApiProperty({ type: () => GiveawayRequirementsDto })
+  giveawayRequirements?: GiveawayRequirementsDto;
 
   @IsString()
   @ApiProperty({ type: String, required: true })
