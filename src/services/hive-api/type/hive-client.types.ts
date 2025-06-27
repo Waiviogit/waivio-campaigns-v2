@@ -89,5 +89,5 @@ export type ReblogToType = {
 };
 
 export type CommentStateType = {
-  content: object;
+  content: Record<string, HiveContentType>;
 };

@@ -168,6 +168,9 @@ export class Campaign {
   )
   giveawayRequirements?: GiveawayRequirements;
 
+  @Prop({ type: String })
+  giveawayPermlink?: string;
+
   @Prop(
     raw({
       minPosts: { type: Number, default: 0 },

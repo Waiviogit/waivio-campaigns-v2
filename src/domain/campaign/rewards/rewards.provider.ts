@@ -7,7 +7,8 @@ import { ObjectRewards } from './object-rewards';
 import { RewardsHelper } from './rewards-helper';
 import { GuideReservations } from './guide-reservations';
 import { UserHistory } from './user-history';
-import {UserRewards} from "./user-rewards";
+import { UserRewards } from './user-rewards';
+import { Giveaway } from './giveaway';
 
 export const RewardsAllProvider: Provider = {
   provide: REWARDS_PROVIDE.ALL,
@@ -22,6 +23,11 @@ export const RewardsMapProvider: Provider = {
 export const ObjectRewardsProvider: Provider = {
   provide: REWARDS_PROVIDE.OBJECT,
   useClass: ObjectRewards,
+};
+
+export const GiveawayProvider: Provider = {
+  provide: REWARDS_PROVIDE.GIVEAWAY,
+  useClass: Giveaway,
 };
 
 export const UserRewardsProvider: Provider = {

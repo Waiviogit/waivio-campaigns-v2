@@ -55,6 +55,7 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { UserDocumentType } from '../../../persistance/user/types';
 import {
+  CreateGiveawayPayables,
   CreateReviewInterface,
   FraudDetectionInterface,
   getSelfOrGivenTypeInterface,
@@ -348,6 +349,7 @@ export class CreateReview implements CreateReviewInterface {
 
     if (campaignsForMentions.length) {
       for (const campaignsForMention of campaignsForMentions) {
+        // @ts-ignore
         if (postImages < campaignsForMention.requirements.minPhotos) continue;
 
         await this.createMention({
@@ -512,6 +514,15 @@ export class CreateReview implements CreateReviewInterface {
     }
 
     return new BigNumber(0);
+  }
+
+  async createGiveawayPayables({
+    campaign,
+    userName,
+    post,
+  }: CreateGiveawayPayables): Promise<void> {
+
+
   }
 
   async createMention({
@@ -806,6 +817,7 @@ export class CreateReview implements CreateReviewInterface {
     const thisMonthCompletedUsers = _.filter(
       campaign.users,
       (user) =>
+        // @ts-ignore
         user.updatedAt > moment.utc().startOf('month') &&
         user.status === RESERVATION_STATUS.COMPLETED,
     );

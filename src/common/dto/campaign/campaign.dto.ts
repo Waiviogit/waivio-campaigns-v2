@@ -300,6 +300,11 @@ export class CampaignDto {
   @ApiProperty({ type: () => GiveawayRequirementsDto })
   giveawayRequirements?: GiveawayRequirementsDto;
 
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ type: String })
+  giveawayPermlink?: string;
+
   @IsString()
   @ApiProperty({ type: String, required: true })
   requiredObject: string;
