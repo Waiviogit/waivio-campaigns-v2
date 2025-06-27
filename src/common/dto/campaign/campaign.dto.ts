@@ -13,6 +13,7 @@ import {
   Max,
   Matches,
   IsMongoId,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -294,13 +295,15 @@ export class CampaignDto {
   @ApiProperty({ type: () => UserRequirementsDto })
   userRequirements: UserRequirementsDto;
 
-  @IsOptional()
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => GiveawayRequirementsDto)
   @ApiProperty({ type: () => GiveawayRequirementsDto })
   giveawayRequirements?: GiveawayRequirementsDto;
 
-  @IsOptional()
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
+  @IsNotEmpty()
   @IsString()
   @ApiProperty({ type: String })
   giveawayPermlink?: string;
