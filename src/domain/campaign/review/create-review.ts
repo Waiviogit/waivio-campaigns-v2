@@ -521,8 +521,64 @@ export class CreateReview implements CreateReviewInterface {
     userName,
     post,
   }: CreateGiveawayPayables): Promise<void> {
+    const isGuest = userName.includes('_');
 
+    const reservationPermlink = crypto.randomUUID();
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
 
+    const userReservationObject = campaign.guideName;
+    const reviewPermlink = `${post.author}/${post.permlink}`;
+
+    const campaignReviewType = {
+      ...campaign,
+      userName,
+      payoutTokenRateUSD,
+      campaignId: campaign._id,
+      userReservationObject,
+    } as never as ReviewCampaignType;
+
+    await this.campaignRepository.updateOne({
+      filter: { _id: campaign._id, status: CAMPAIGN_STATUS.ACTIVE },
+      update: {
+        $push: {
+          users: {
+            name: userName,
+            rootName: userName,
+            status: RESERVATION_STATUS.COMPLETED,
+            payoutTokenRateUSD,
+            objectPermlink: userReservationObject,
+            completedAt: moment.utc().format(),
+            reviewPermlink,
+            reservationPermlink,
+          },
+        },
+      },
+    });
+
+    const payments = await this.getCampaignPayments({
+      beneficiaries: [],
+      campaign: campaignReviewType,
+      host: '',
+      isGuest,
+      rewardInToken,
+    });
+
+    await this.createCampaignPayments({
+      payments,
+      campaign: campaignReviewType,
+      app: '',
+      botName: isGuest ? 'botName' : '',
+      reviewPermlink,
+      title: post.title,
+      reservationPermlink,
+      campaignType: CAMPAIGN_TYPE.MENTIONS,
+    });
   }
 
   async createMention({
@@ -539,9 +595,7 @@ export class CreateReview implements CreateReviewInterface {
   }: CreateMentionType): Promise<void> {
     //generate reservation permlink because it used in payments aggregation as uniq field
     const reservationPermlink = crypto.randomUUID();
-
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
-
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );

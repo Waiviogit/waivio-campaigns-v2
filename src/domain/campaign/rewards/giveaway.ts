@@ -22,6 +22,7 @@ import {
 } from '../interface/giveaway.interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
+import { parseJSON } from '../../../common/helpers';
 
 @Injectable()
 export class Giveaway implements GiveawayInterface {
@@ -58,7 +59,10 @@ export class Giveaway implements GiveawayInterface {
   private async searchComments(post: PostDocumentType): Promise<string[]> {
     const state = await this.hiveClient.getState(post.author, post.permlink);
     const comments = Object.values(state.content);
-    return comments.map((r) => r.author);
+
+    return comments.map((r) => {
+      return parseJSON(r.json_metadata)?.comment?.userId || r.author;
+    });
   }
 
   private pickMethodToSearch(
@@ -106,7 +110,11 @@ export class Giveaway implements GiveawayInterface {
     if (giveawayRequirements.tagInComment) {
       const state = await this.hiveClient.getState(post.author, post.permlink);
       const comments = Object.values(state.content);
-      const comment = _.filter(comments, (el) => el.author === winner)
+      const comment = _.filter(comments, (el) => {
+        const author =
+          parseJSON(el.json_metadata)?.comment?.userId || el.author;
+        return author === winner;
+      })
         .map((el) => el.body || '')
         .join(' ');
 
@@ -159,8 +167,8 @@ export class Giveaway implements GiveawayInterface {
     );
 
     if (participants.length === 0) return;
-
     let budget = BigNumber(campaign.budget);
+
     while (budget.gte(campaign.reward) && participants.length) {
       const winner = this.selectRandomWinner(participants);
       participants = participants.filter((p) => p !== winner);
