@@ -61,11 +61,17 @@ export class MessageOnReview implements MessageOnReviewInterface {
       filter: { name: campaign.guideName },
     });
 
+    const objectNamesMap: Record<string, string> = {};
+    const mapNames = async (el: string): Promise<void> => {
+      objectNamesMap[el] = await this.wobjectHelper.getWobjectName(el);
+    };
+    await Promise.all(campaign.agreementObjects.map(mapNames));
+
     const legalAgreement = `Important:
     ${campaign.description || ''}
-     Legal : ${campaign.agreementObjects
-       .map((o) => `https://waivio.com/object/${o}`)
-       .join('\n')}
+     Legal: ${campaign.agreementObjects
+       .map((o) => `[${objectNamesMap[o]}](https://waivio.com/object/${o})`)
+       .join(', ')}.
       ${campaign.usersLegalNotice}
     `;
 
