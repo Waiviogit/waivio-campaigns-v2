@@ -8,6 +8,7 @@ export type ReviewRequirementsType = {
 };
 
 export interface GiveawayRequirements {
+  follow: boolean;
   likePost: boolean;
   comment: boolean;
   tagInComment: boolean;

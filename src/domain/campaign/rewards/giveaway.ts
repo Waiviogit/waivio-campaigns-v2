@@ -10,6 +10,7 @@ import {
   POST_PROVIDE,
   REVIEW_PROVIDE,
   USER_PROVIDE,
+  USER_SUBSCRIPTION_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
@@ -23,6 +24,7 @@ import {
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
 import { parseJSON } from '../../../common/helpers';
+import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 
 @Injectable()
 export class Giveaway implements GiveawayInterface {
@@ -37,7 +39,13 @@ export class Giveaway implements GiveawayInterface {
     private readonly hiveClient: HiveClientInterface,
     @Inject(REVIEW_PROVIDE.CREATE)
     private readonly createReview: CreateReviewInterface,
+    @Inject(USER_SUBSCRIPTION_PROVIDE.REPOSITORY)
+    private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
   ) {}
+
+  private async searchFollowers(post: PostDocumentType): Promise<string[]> {
+    return this.userSubscriptionRepository.findUserSubscriptions(post.author);
+  }
 
   private async searchVotes(post: PostDocumentType): Promise<string[]> {
     return post.active_votes.map((v) => v.voter);
@@ -68,6 +76,7 @@ export class Giveaway implements GiveawayInterface {
   private pickMethodToSearch(
     giveawayRequirements: GiveawayRequirements,
   ): (post: PostDocumentType) => Promise<string[]> {
+    if (giveawayRequirements.follow) return this.searchFollowers;
     if (giveawayRequirements.likePost) return this.searchVotes;
     if (giveawayRequirements.reblog) return this.searchReblogs;
     return this.searchComments;
@@ -97,7 +106,13 @@ export class Giveaway implements GiveawayInterface {
       comment: true,
       tagInComment: true,
       reblog: true,
+      follow: true,
     };
+
+    if (giveawayRequirements.follow) {
+      const followers = await this.searchFollowers(post);
+      isValid.follow = followers.includes(winner);
+    }
 
     if (giveawayRequirements.likePost) {
       const votes = await this.searchVotes(post);
@@ -121,12 +136,13 @@ export class Giveaway implements GiveawayInterface {
       const mentions = (comment.match(/@([a-zA-Z0-9._-]+)/g) || []).map((m) =>
         m.slice(1),
       );
-      //we need just at least one for now
-      const mentioned = await this.userRepository.findOne({
+      //we need 2 hardcoded
+      const mentioned = await this.userRepository.find({
         filter: { name: { $in: mentions } },
         projection: { name: 1 },
+        options: { limit: 2 },
       });
-      isValid.tagInComment = !!mentioned;
+      isValid.tagInComment = mentioned.length === 2;
     }
     if (giveawayRequirements.reblog) {
       const reblogs = await this.searchReblogs(post);

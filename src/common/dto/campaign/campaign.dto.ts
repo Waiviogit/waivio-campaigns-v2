@@ -167,6 +167,10 @@ export class UserRequirementsDto {
 export class GiveawayRequirementsDto {
   @IsBoolean()
   @ApiProperty({ type: Boolean })
+  follow: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
   likePost: boolean;
 
   @IsBoolean()
