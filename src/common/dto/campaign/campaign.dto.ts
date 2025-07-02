@@ -13,6 +13,7 @@ import {
   Max,
   Matches,
   IsMongoId,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -163,6 +164,28 @@ export class UserRequirementsDto {
   minExpertise: number;
 }
 
+export class GiveawayRequirementsDto {
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  follow: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  likePost: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  comment: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  tagInComment: boolean;
+
+  @IsBoolean()
+  @ApiProperty({ type: Boolean })
+  reblog: boolean;
+}
+
 export class CampaignDto {
   @IsMongoId()
   @IsNotEmpty()
@@ -275,6 +298,19 @@ export class CampaignDto {
   @Type(() => UserRequirementsDto)
   @ApiProperty({ type: () => UserRequirementsDto })
   userRequirements: UserRequirementsDto;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => GiveawayRequirementsDto)
+  @ApiProperty({ type: () => GiveawayRequirementsDto })
+  giveawayRequirements?: GiveawayRequirementsDto;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ type: String })
+  giveawayPermlink?: string;
 
   @IsString()
   @ApiProperty({ type: String, required: true })

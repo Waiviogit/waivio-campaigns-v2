@@ -2,10 +2,12 @@ import { Inject } from '@nestjs/common';
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
   EXPIRED_CAMPAIGN_TYPE,
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
+  REWARDS_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../common/constants';
 import { RedisClientInterface } from '../../services/redis/clients/interface';
@@ -16,6 +18,7 @@ import {
   CampaignHelperInterface,
 } from './interface';
 import { WobjectRepositoryInterface } from '../../persistance/wobject/interface';
+import { GiveawayInterface } from './interface/giveaway.interface';
 
 export class CampaignExpiredListener
   implements CampaignExpiredListenerInterface
@@ -29,13 +32,19 @@ export class CampaignExpiredListener
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
+    @Inject(REWARDS_PROVIDE.GIVEAWAY)
+    private readonly giveaway: GiveawayInterface,
   ) {}
 
   async expireCampaign(_id: string): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
       filter: { _id },
-      projection: { requiredObject: 1, objects: 1 },
+      projection: { requiredObject: 1, objects: 1, type: 1 },
     });
+
+    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+      await this.giveaway.runGiveaway(_id);
+    }
 
     await this.wobjectRepository.updateCampaignsCount(
       _id,

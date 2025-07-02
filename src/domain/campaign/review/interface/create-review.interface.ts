@@ -1,5 +1,7 @@
 import { ParseReviewType } from '../types';
 import { RestoreCustomType } from '../../../../common/types';
+import { CampaignDocumentType } from '../../../../persistance/campaign/types';
+import { PostDocumentType } from '../../../../persistance/post/types';
 
 export interface CreateReviewInterface {
   parseReview({
@@ -18,6 +20,17 @@ export interface CreateReviewInterface {
     required_posting_auths,
     transaction_id,
   }: RestoreCustomType): Promise<void>;
+  createGiveawayPayables({
+    campaign,
+    userName,
+    post,
+  }: CreateGiveawayPayables): Promise<void>;
+}
+
+export interface CreateGiveawayPayables {
+  campaign: CampaignDocumentType;
+  userName: string;
+  post: PostDocumentType;
 }
 
 export interface RestoreReviewInterface {

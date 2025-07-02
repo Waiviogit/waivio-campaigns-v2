@@ -7,6 +7,14 @@ export type ReviewRequirementsType = {
   receiptPhoto: boolean;
 };
 
+export interface GiveawayRequirements {
+  follow: boolean;
+  likePost: boolean;
+  comment: boolean;
+  tagInComment: boolean;
+  reblog: boolean;
+}
+
 export type UserRequirementsType = {
   minPosts: number;
   minFollowers: number;

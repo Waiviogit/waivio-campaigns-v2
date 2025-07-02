@@ -12,6 +12,7 @@ import {
 import { configService } from '../../common/config';
 import {
   CampaignUserDocumentType,
+  GiveawayRequirements,
   ReservationTimetableType,
   ReviewRequirementsType,
   UserRequirementsType,
@@ -156,6 +157,20 @@ export class Campaign {
     }),
   )
   requirements: ReviewRequirementsType;
+
+  @Prop(
+    raw({
+      follow: { type: Boolean, default: false },
+      likePost: { type: Boolean, default: false },
+      comment: { type: Boolean, default: false },
+      tagInComment: { type: Boolean, default: false },
+      reblog: { type: Boolean, default: false },
+    }),
+  )
+  giveawayRequirements?: GiveawayRequirements;
+
+  @Prop({ type: String })
+  giveawayPermlink?: string;
 
   @Prop(
     raw({
