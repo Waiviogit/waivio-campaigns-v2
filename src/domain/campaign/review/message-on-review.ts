@@ -4,8 +4,6 @@ import * as crypto from 'node:crypto';
 import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
 import BigNumber from 'bignumber.js';
 import {
-  CAMPAIGN_PAYMENT,
-  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   HIVE_PROVIDE,
   USER_PROVIDE,
@@ -17,7 +15,6 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import * as _ from 'lodash';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
-import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -64,6 +61,20 @@ export class MessageOnReview implements MessageOnReviewInterface {
       filter: { name: campaign.guideName },
     });
 
+    const objectNamesMap: Record<string, string> = {};
+    const mapNames = async (el: string): Promise<void> => {
+      objectNamesMap[el] = await this.wobjectHelper.getWobjectName(el);
+    };
+    await Promise.all(campaign.agreementObjects.map(mapNames));
+
+    const legalAgreement = `Important:
+    ${campaign.description || ''}
+     Legal: ${campaign.agreementObjects
+       .map((o) => `[${objectNamesMap[o]}](https://waivio.com/object/${o})`)
+       .join(', ')}.
+      ${campaign.usersLegalNotice}
+    `;
+
     const linksToObjects = [];
 
     const objects = _.compact(
@@ -101,7 +112,9 @@ export class MessageOnReview implements MessageOnReviewInterface {
       sponsor.alias || sponsor.name
     }](https://www.waivio.com/@${campaign.guideName})! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
-You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
+You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!
+
+${legalAgreement}`;
 
     const permlink = await this.getPermlinkForMessage(
       botName || postAuthor,
