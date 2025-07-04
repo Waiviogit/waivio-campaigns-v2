@@ -15,6 +15,7 @@ import { BlacklistPersistenceModule } from './blacklist/blacklist.persistence.mo
 import { CampaignPostsPersistenceModule } from './campaign-posts/campaign-posts.persistence.module';
 import { HiddenPostPersistenceModule } from './hidden-post/hidden-post.persistence.module';
 import { MutedUserPersistenceModule } from './muted-user/muted-user.persistence.module';
+import { GiveawayParticipantsPersistenceModule } from './giveaway-participants/giveaway-participants.persistence.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MutedUserPersistenceModule } from './muted-user/muted-user.persistence.
     CampaignPostsPersistenceModule,
     HiddenPostPersistenceModule,
     MutedUserPersistenceModule,
+    GiveawayParticipantsPersistenceModule,
   ],
   exports: [
     BlacklistPersistenceModule,
@@ -50,6 +52,7 @@ import { MutedUserPersistenceModule } from './muted-user/muted-user.persistence.
     CampaignPostsPersistenceModule,
     HiddenPostPersistenceModule,
     MutedUserPersistenceModule,
+    GiveawayParticipantsPersistenceModule,
   ],
 })
 export class PersistenceModule {}

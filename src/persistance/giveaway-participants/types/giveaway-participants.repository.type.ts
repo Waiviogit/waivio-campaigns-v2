@@ -1,8 +1,8 @@
 import { FilterQuery, QueryOptions } from 'mongoose';
-import { WobjectSubscriptionsDocumentType } from './wobject-subscriptions.types';
+import { GiveawayParticipantsDocumentType } from './giveaway-participants.types';
 
-export type WobjectSubscriptionsFindType = {
-  filter: FilterQuery<WobjectSubscriptionsDocumentType>;
+export type GiveawayParticipantsFindType = {
+  filter: FilterQuery<GiveawayParticipantsDocumentType>;
   projection?: object | string | string[];
   options?: QueryOptions;
 };

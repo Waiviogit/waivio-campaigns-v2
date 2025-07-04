@@ -1,2 +1,2 @@
-export * from './wobject-subscriptions.repository.type';
-export * from './wobject-subscriptions.types';
+export * from './giveaway-participants.types';
+export * from './giveaway-participants.repository.type';

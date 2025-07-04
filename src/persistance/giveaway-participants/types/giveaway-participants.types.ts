@@ -1,4 +1,4 @@
 import { Document } from 'mongoose';
-import { WobjectSubscriptions } from '../giveaway-participants.schema';
+import { GiveawayParticipants } from '../giveaway-participants.schema';
 
-export type WobjectSubscriptionsDocumentType = WobjectSubscriptions & Document;
+export type GiveawayParticipantsDocumentType = GiveawayParticipants & Document;

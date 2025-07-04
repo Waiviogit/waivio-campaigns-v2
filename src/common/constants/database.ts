@@ -11,6 +11,7 @@ export const COLLECTION = Object.freeze({
   WOBJECTS: 'wobjects',
   USER_SUBSCRIPTIONS: 'subscriptions',
   WOBJECT_SUBSCRIPTIONS: 'wobjectsubscriptions',
+  GIVEAWAY_PARTICIPANTS: 'giveaway_participants',
   POSTS: 'posts',
   APPS: 'apps',
   CURRENCY_RATES: 'currencies-rates',

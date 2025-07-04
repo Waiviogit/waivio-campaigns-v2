@@ -1,40 +1,31 @@
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import * as _ from 'lodash';
-
-import { WobjectSubscriptions } from './giveaway-participants.schema';
-import { WobjectSubscriptionsRepositoryInterface } from './interface';
+import { GiveawayParticipants } from './giveaway-participants.schema';
+import { GiveawayParticipantsRepositoryInterface } from './interface';
+import { GiveawayParticipantsDocumentType } from './types/giveaway-participants.types';
+import { GiveawayParticipantsFindType } from './types/giveaway-participants.repository.type';
 
 export class GiveawayParticipantsRepository
-  implements WobjectSubscriptionsRepositoryInterface
+  implements GiveawayParticipantsRepositoryInterface
 {
   private readonly logger = new Logger(GiveawayParticipantsRepository.name);
   constructor(
-    @InjectModel(WobjectSubscriptions.name)
-    private readonly model: Model<WobjectSubscriptionsDocumentType>,
+    @InjectModel(GiveawayParticipants.name)
+    private readonly model: Model<GiveawayParticipantsDocumentType>,
   ) {}
 
   async find({
     filter,
     projection,
     options,
-  }: WobjectSubscriptionsFindType): Promise<
-    WobjectSubscriptionsDocumentType[]
+  }: GiveawayParticipantsFindType): Promise<
+    GiveawayParticipantsDocumentType[]
   > {
     try {
       return this.model.find(filter, projection, options).lean();
     } catch (error) {
       this.logger.error(error.message);
     }
-  }
-  /*
-    Domain
-     */
-  async findUserSubscriptions(objectLink: string): Promise<string[]> {
-    const subscriptions = await this.find({
-      filter: { following: objectLink },
-    });
-    return _.map(subscriptions, 'follower');
   }
 }

@@ -1,1 +1,1 @@
-export * from './wobject-subscriptions.repository.interface';
+export * from './giveaway-participants.repository.interface';

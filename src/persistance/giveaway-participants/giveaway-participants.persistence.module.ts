@@ -3,26 +3,26 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { COLLECTION, CONNECTION_MONGO } from '../../common/constants';
 
-import { WobjectSubscriptionsPersistenceProvider } from './wobject-subscriptions.provider';
 import {
-  WobjectSubscriptions,
+  GiveawayParticipants,
   GiveawayParticipantsSchema,
 } from './giveaway-participants.schema';
+import { GiveawayParticipantsPersistenceProvider } from './giveaway-participants.provider';
 
 @Module({
   imports: [
     MongooseModule.forFeature(
       [
         {
-          name: WobjectSubscriptions.name,
+          name: GiveawayParticipants.name,
           schema: GiveawayParticipantsSchema,
-          collection: COLLECTION.WOBJECT_SUBSCRIPTIONS,
+          collection: COLLECTION.GIVEAWAY_PARTICIPANTS,
         },
       ],
       CONNECTION_MONGO.WAIVIO,
     ),
   ],
-  providers: [WobjectSubscriptionsPersistenceProvider],
-  exports: [WobjectSubscriptionsPersistenceProvider],
+  providers: [GiveawayParticipantsPersistenceProvider],
+  exports: [GiveawayParticipantsPersistenceProvider],
 })
 export class GiveawayParticipantsPersistenceModule {}
