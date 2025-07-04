@@ -67,13 +67,20 @@ export class MessageOnReview implements MessageOnReviewInterface {
     };
     await Promise.all(campaign.agreementObjects.map(mapNames));
 
-    const legalAgreement = `Important:
+    const hasLegal =
+      campaign.description ||
+      campaign?.agreementObjects?.length ||
+      campaign.usersLegalNotice;
+
+    const legalAgreement = hasLegal
+      ? `Important:
     ${campaign.description || ''}
      Legal: ${campaign.agreementObjects
        .map((o) => `[${objectNamesMap[o]}](https://waivio.com/object/${o})`)
        .join(', ')}.
       ${campaign.usersLegalNotice}
-    `;
+    `
+      : '';
 
     const linksToObjects = [];
 
