@@ -6,6 +6,7 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
+  GIVEAWAY_PARTICIPANTS_PROVIDE,
   HIVE_PROVIDE,
   POST_PROVIDE,
   REVIEW_PROVIDE,
@@ -25,6 +26,7 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
 import { parseJSON } from '../../../common/helpers';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
+import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 
 type SearchParticipantsType = (post: PostDocumentType) => Promise<string[]>;
 
@@ -43,6 +45,8 @@ export class Giveaway implements GiveawayInterface {
     private readonly createReview: CreateReviewInterface,
     @Inject(USER_SUBSCRIPTION_PROVIDE.REPOSITORY)
     private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
+    @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
+    private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
   ) {}
 
   private async searchFollowers(post: PostDocumentType): Promise<string[]> {
@@ -194,7 +198,13 @@ export class Giveaway implements GiveawayInterface {
 
     let participants = await this.getParticipants(campaign, giveawayPost);
     if (participants.length === 0) return;
-    //create collection
+
+    await this.giveawayParticipantsRepository.insertMany(
+      participants.map((p) => ({
+        userName: p,
+        activationPermlink: campaign.activationPermlink,
+      })),
+    );
 
     let budget = BigNumber(campaign.budget);
 

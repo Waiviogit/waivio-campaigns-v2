@@ -28,4 +28,14 @@ export class GiveawayParticipantsRepository
       this.logger.error(error.message);
     }
   }
+
+  async insertMany(
+    docs: { userName: string; activationPermlink: string }[],
+  ): Promise<void> {
+    try {
+      await this.model.insertMany(docs);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
 }
