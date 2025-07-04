@@ -15,6 +15,7 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import * as _ from 'lodash';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
+import { CampaignDocumentType } from '../../../persistance/campaign/types';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -49,6 +50,38 @@ export class MessageOnReview implements MessageOnReviewInterface {
     );
   }
 
+  private async getLegalMessage(
+    campaign: CampaignDocumentType,
+  ): Promise<string> {
+    const hasLegal =
+      campaign.description ||
+      campaign?.agreementObjects?.length ||
+      campaign.usersLegalNotice;
+
+    if (!hasLegal) return '';
+
+    const objectNamesMap: Record<string, string> = {};
+    const mapNames = async (el: string): Promise<void> => {
+      objectNamesMap[el] = await this.wobjectHelper.getWobjectName(el);
+    };
+    await Promise.all(campaign.agreementObjects.map(mapNames));
+
+    let legalAgreement = 'Important:';
+    if (campaign.description) {
+      legalAgreement += `\n${campaign.description}`;
+    }
+    if (campaign.agreementObjects?.length) {
+      legalAgreement += `\nLegal: ${campaign.agreementObjects
+        .map((o) => `[${objectNamesMap[o]}](https://waivio.com/object/${o})`)
+        .join(', ')}.`;
+    }
+    if (campaign.usersLegalNotice) {
+      legalAgreement += `\n${campaign.usersLegalNotice}`;
+    }
+
+    return legalAgreement;
+  }
+
   async sendMessageSuccessReview({
     campaign,
     userReservationObject,
@@ -61,20 +94,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
       filter: { name: campaign.guideName },
     });
 
-    const objectNamesMap: Record<string, string> = {};
-    const mapNames = async (el: string): Promise<void> => {
-      objectNamesMap[el] = await this.wobjectHelper.getWobjectName(el);
-    };
-    await Promise.all(campaign.agreementObjects.map(mapNames));
-
-    const legalAgreement = `Important:
-    ${campaign.description || ''}
-     Legal: ${campaign.agreementObjects
-       .map((o) => `[${objectNamesMap[o]}](https://waivio.com/object/${o})`)
-       .join(', ')}.
-      ${campaign.usersLegalNotice}
-    `;
-
+    const legalAgreement = await this.getLegalMessage(campaign);
     const linksToObjects = [];
 
     const objects = _.compact(
