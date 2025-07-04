@@ -120,7 +120,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     }
     const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
 
-    const message = `Thanks for your post! Since you mentioned ${linksToObjects.join(
+    let message = `Thanks for your post! Since you mentioned ${linksToObjects.join(
       ', ',
     )}${
       twoOrMorePhotos ? ' and included two or more photos' : ''
@@ -132,9 +132,9 @@ export class MessageOnReview implements MessageOnReviewInterface {
       sponsor.alias || sponsor.name
     }](https://www.waivio.com/@${campaign.guideName})! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
-You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!
+You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
 
-${legalAgreement}`;
+    if (legalAgreement) message += `\n\n${legalAgreement}`;
 
     const permlink = await this.getPermlinkForMessage(
       botName || postAuthor,
