@@ -12,6 +12,7 @@ import {
   BLACKLIST_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
@@ -131,6 +132,7 @@ export class AssignReservation {
       filter: {
         activationPermlink,
         status: CAMPAIGN_STATUS.ACTIVE,
+        type: CAMPAIGN_TYPE.REVIEWS,
       },
     });
     if (!campaign) {
