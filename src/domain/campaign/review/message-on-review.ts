@@ -132,7 +132,7 @@ ${legalAgreement}`;
       body: message,
       author: configService.getMentionsAccount(),
       permlink,
-      key: configService.getMentionsPostingKey(),
+      key: configService.getMessagePostingKey(),
     });
   }
 
@@ -214,7 +214,7 @@ We encourage you to create and share original content to qualify for rewards in 
       body: message,
       author: configService.getMentionsAccount(),
       permlink,
-      key: configService.getMentionsPostingKey(),
+      key: configService.getMessagePostingKey(),
     });
   }
 }

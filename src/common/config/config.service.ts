@@ -93,8 +93,8 @@ class ConfigService {
   public getMentionsAccount(): string {
     return this.getValue('MENTIONS_ACCOUNT', true);
   }
-  public getMentionsPostingKey(): string {
-    return this.getValue('MENTIONS_POSTING_KEY', false);
+  public getMessagePostingKey(): string {
+    return this.getValue('SPONSORS_BOT_KEY', false);
   }
 }
 
