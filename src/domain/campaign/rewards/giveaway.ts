@@ -16,15 +16,17 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import { PostRepositoryInterface } from '../../../persistance/post/interface';
 import { PostDocumentType } from '../../../persistance/post/types';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
-import { GiveawayRequirements } from '../../../persistance/campaign/types';
 import {
-  GiveawayInterface,
-  ValidateGiveawayWinner,
-} from '../interface/giveaway.interface';
+  CampaignDocumentType,
+  GiveawayRequirements,
+} from '../../../persistance/campaign/types';
+import { GiveawayInterface } from '../interface/giveaway.interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
 import { parseJSON } from '../../../common/helpers';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
+
+type SearchParticipantsType = (post: PostDocumentType) => Promise<string[]>;
 
 @Injectable()
 export class Giveaway implements GiveawayInterface {
@@ -73,68 +75,30 @@ export class Giveaway implements GiveawayInterface {
     });
   }
 
-  private pickMethodToSearch(
-    giveawayRequirements: GiveawayRequirements,
-  ): (post: PostDocumentType) => Promise<string[]> {
-    if (giveawayRequirements.follow) return this.searchFollowers;
-    if (giveawayRequirements.likePost) return this.searchVotes;
-    if (giveawayRequirements.reblog) return this.searchReblogs;
-    return this.searchComments;
-  }
+  private async searchCommentsMentioned(
+    post: PostDocumentType,
+  ): Promise<string[]> {
+    const state = await this.hiveClient.getState(post.author, post.permlink);
+    const comments = Object.values(state.content);
 
-  private async validateWinner({
-    giveawayRequirements,
-    userRequirements,
-    winner,
-    post,
-  }: ValidateGiveawayWinner): Promise<boolean> {
-    const user = await this.userRepository.findOne({
-      filter: { name: winner },
-    });
-    if (!user) return false;
+    const participants = [];
+    const checked = [];
 
-    const isValid = {
-      followers:
-        _.get(user, 'followers_count', 0) >=
-        _.get(userRequirements, 'minFollowers', 0),
-      posts:
-        _.get(user, 'count_posts', 0) >= _.get(userRequirements, 'minPosts', 0),
-      expertise:
-        _.get(user, 'wobjects_weight', 0) >=
-        _.get(userRequirements, 'minExpertise', 0),
-      likePost: true,
-      comment: true,
-      tagInComment: true,
-      reblog: true,
-      follow: true,
-    };
+    for (const comment of comments) {
+      const author =
+        parseJSON(comment.json_metadata)?.comment?.userId || comment.author;
+      if (checked.includes(author)) continue;
 
-    if (giveawayRequirements.follow) {
-      const followers = await this.searchFollowers(post);
-      isValid.follow = followers.includes(winner);
-    }
-
-    if (giveawayRequirements.likePost) {
-      const votes = await this.searchVotes(post);
-      isValid.likePost = votes.includes(winner);
-    }
-    if (giveawayRequirements.comment) {
-      const comments = await this.searchComments(post);
-      isValid.comment = comments.includes(winner);
-    }
-    if (giveawayRequirements.tagInComment) {
-      const state = await this.hiveClient.getState(post.author, post.permlink);
-      const comments = Object.values(state.content);
-      const comment = _.filter(comments, (el) => {
+      const authorComments = _.filter(comments, (el) => {
         const author =
           parseJSON(el.json_metadata)?.comment?.userId || el.author;
-        return author === winner;
+        return author === comment.author;
       })
         .map((el) => el.body || '')
         .join(' ');
 
-      const mentions = (comment.match(/@([a-zA-Z0-9._-]+)/g) || []).map((m) =>
-        m.slice(1),
+      const mentions = (authorComments.match(/@([a-zA-Z0-9._-]+)/g) || []).map(
+        (m) => m.slice(1),
       );
       //we need 2 hardcoded
       const mentioned = await this.userRepository.find({
@@ -142,20 +106,74 @@ export class Giveaway implements GiveawayInterface {
         projection: { name: 1 },
         options: { limit: 2 },
       });
-      isValid.tagInComment = mentioned.length === 2;
-    }
-    if (giveawayRequirements.reblog) {
-      const reblogs = await this.searchReblogs(post);
-      isValid.reblog = reblogs.includes(winner);
+      const isValid = mentioned.length === 2;
+
+      if (isValid) participants.push(author);
+      checked.push(author);
     }
 
-    return _.every(Object.values(isValid));
+    return participants;
+  }
+
+  private pickMethodsToSearch(
+    giveawayRequirements: GiveawayRequirements,
+  ): SearchParticipantsType[] {
+    const funcsToCall = [];
+    if (giveawayRequirements.follow) funcsToCall.push(this.searchFollowers);
+    if (giveawayRequirements.likePost) funcsToCall.push(this.searchVotes);
+    if (giveawayRequirements.reblog) funcsToCall.push(this.searchReblogs);
+    if (giveawayRequirements.tagInComment) {
+      funcsToCall.push(this.searchCommentsMentioned);
+    } else if (giveawayRequirements.comment) {
+      funcsToCall.push(this.searchComments);
+    }
+    return funcsToCall;
   }
 
   private selectRandomWinner(participants: string[]): string {
     if (participants.length === 0) return '';
     const randomIndex = randomInt(0, participants.length);
     return participants[randomIndex];
+  }
+
+  private async getParticipants(
+    campaign: CampaignDocumentType,
+    post: PostDocumentType,
+  ): Promise<string[]> {
+    const searchMethods = this.pickMethodsToSearch(
+      campaign.giveawayRequirements,
+    );
+
+    const usersForGiveaway = await Promise.all(
+      searchMethods.map((m) => m(post)),
+    );
+    const participantGiveawayRequirenments = _.uniq(
+      _.intersection(...usersForGiveaway).filter(
+        (p) => p !== campaign.guideName,
+      ),
+    );
+
+    const filteredWithUserRequirements = await this.userRepository.find({
+      filter: {
+        name: { $in: participantGiveawayRequirenments },
+        followers_count: {
+          $gte: _.get(campaign, 'userRequirements.minFollowers', 0),
+        },
+        count_posts: {
+          $gte: _.get(campaign, 'userRequirements.minPosts', 0),
+        },
+        wobjects_weight: {
+          $gte: _.get(campaign, 'userRequirements.minExpertise', 0),
+        },
+      },
+      projection: {
+        name: 1,
+      },
+    });
+
+    const participants = filteredWithUserRequirements.map((u) => u.name);
+
+    return participants;
   }
 
   async runGiveaway(_id: string): Promise<void> {
@@ -174,28 +192,15 @@ export class Giveaway implements GiveawayInterface {
     });
     if (!giveawayPost) return;
 
-    const searchMethod = this.pickMethodToSearch(campaign.giveawayRequirements);
-
-    let participants = _.uniq(
-      (await searchMethod(giveawayPost)).filter(
-        (p) => p !== campaign.guideName,
-      ),
-    );
-
+    let participants = await this.getParticipants(campaign, giveawayPost);
     if (participants.length === 0) return;
+    //create collection
+
     let budget = BigNumber(campaign.budget);
 
     while (budget.gte(campaign.reward) && participants.length) {
       const winner = this.selectRandomWinner(participants);
       participants = participants.filter((p) => p !== winner);
-      const validWinner = await this.validateWinner({
-        winner,
-        post: giveawayPost,
-        giveawayRequirements: campaign.giveawayRequirements,
-        userRequirements: campaign.userRequirements,
-      });
-
-      if (!validWinner) continue;
       await this.createReview.createGiveawayPayables({
         campaign,
         userName: winner,
