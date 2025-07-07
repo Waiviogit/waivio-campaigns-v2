@@ -12,4 +12,5 @@ export interface GiveawayParticipantsRepositoryInterface {
   insertMany(
     docs: { userName: string; activationPermlink: string }[],
   ): Promise<void>;
+  getByNamesByActivationPermlink(activationPermlink: string): Promise<string[]>;
 }

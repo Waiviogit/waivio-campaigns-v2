@@ -38,4 +38,14 @@ export class GiveawayParticipantsRepository
       this.logger.error(error.message);
     }
   }
+
+  async getByNamesByActivationPermlink(
+    activationPermlink: string,
+  ): Promise<string[]> {
+    const users = await this.find({
+      filter: { activationPermlink },
+    });
+
+    return (users || []).map((el) => el.userName);
+  }
 }

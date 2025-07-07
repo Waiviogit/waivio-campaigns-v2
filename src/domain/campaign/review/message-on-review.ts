@@ -5,7 +5,11 @@ import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
 import BigNumber from 'bignumber.js';
 import {
   CAMPAIGN_PROVIDE,
+  CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
+  GIVEAWAY_PARTICIPANTS_PROVIDE,
   HIVE_PROVIDE,
+  RESERVATION_STATUS,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../../common/constants';
@@ -16,6 +20,7 @@ import * as _ from 'lodash';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
+import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -28,6 +33,8 @@ export class MessageOnReview implements MessageOnReviewInterface {
     private readonly userRepository: UserRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
+    private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
   ) {}
   async getPermlinkForMessage(
     author: string,
@@ -236,5 +243,80 @@ We encourage you to create and share original content to qualify for rewards in 
       permlink,
       key: configService.getMessagePostingKey(),
     });
+  }
+
+  //giveaway on post its same comment can be updated when guide reject users
+  async giveawayMessage(activationPermlink: string): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        activationPermlink,
+        type: CAMPAIGN_TYPE.GIVEAWAYS,
+        status: CAMPAIGN_STATUS.EXPIRED,
+      },
+    });
+    if (!campaign) return;
+
+    const rewardsApplicants = campaign.users.map((el) => el.name);
+    if (rewardsApplicants.length === 0) return;
+    const sponsor = await this.userRepository.findOne({
+      filter: { name: campaign.guideName },
+      projection: {
+        alias: 1,
+        name: 1,
+      },
+    });
+    const sponsorName = sponsor.alias || sponsor.name;
+
+    const winners = campaign.users
+      .filter((u) => u.status === RESERVATION_STATUS.COMPLETED)
+      .map((el) => el.name);
+
+    const permlink = `giveaway-${campaign.activationPermlink}`;
+    if (winners.length === 0) {
+      const rejectMessage = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${campaign.guideName})!
+
+Unfortunately, the sponsor has decided not to approve the results of this giveaway, and no rewards will be distributed this time.
+We understand this may be disappointing, and we truly appreciate the effort and creativity you put into your content.
+
+We encourage you to keep sharing your ideas and participating in future campaigns. There are always new opportunities to earn rewards and get recognized.
+
+You can track your activity and discover new campaigns [here](https://www.waivio.com/rewards/global).
+Thank you again for being part of the community!
+
+Keep creating and stay inspired!`;
+
+      await this.hiveClient.createComment({
+        parent_author: campaign.guideName,
+        parent_permlink: campaign.giveawayPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: rejectMessage,
+        author: configService.getGiveawayAccount(),
+        permlink,
+        key: configService.getMessagePostingKey(),
+      });
+      return;
+    }
+    //filter winners
+    const participants = (
+      await this.giveawayParticipantsRepository.getByNamesByActivationPermlink(
+        campaign.activationPermlink,
+      )
+    ).filter((el) => !winners.includes(el));
+
+    const message = `Thanks to everyone who participated in this giveaway campaign from {sponsorNameLink}!
+
+The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: @winner1, @winner2, @winner3.
+
+Each winner will receive $25 USD (amount in WAIV) as a reward. Congratulations!
+
+Big thanks to all participants for joining and supporting the campaign: @user1, @user2, @user3 ...
+
+Thank you all for joining and sharing great content!
+Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
+
+Keep creating and good luck next time!`;
   }
 }
