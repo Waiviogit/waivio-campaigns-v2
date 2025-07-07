@@ -12,4 +12,5 @@ export interface MessageOnReviewInterface {
     guideName,
     reservationPermlink,
   }: reviewMessageRejectType): Promise<void>;
+  giveawayMessage(activationPermlink: string): Promise<void>
 }

@@ -5,6 +5,7 @@ import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
+  CAMPAIGN_TYPE,
   REDIS_KEY,
   REDIS_PROVIDE,
   RESERVATION_STATUS,
@@ -99,6 +100,19 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       transaction_id,
     )) as GuideRejectReservationType;
     if (!payload) return;
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        guideName: payload.guideName,
+        users: {
+          $elemMatch: { reservationPermlink: payload.reservationPermlink },
+        },
+      },
+      projection: {
+        activationPermlink: 1,
+        type: 1,
+      },
+    });
+
     //for message
     const payment = await this.campaignPaymentRepository.findOne({
       filter: {
@@ -115,11 +129,17 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
       transaction_id,
     );
-    await this.messageOnReview.rejectMentionMessage({
-      guideName: payload.guideName,
-      reservationPermlink: payload.reservationPermlink,
-      reviewRewardToken,
-    });
+
+    if (campaign.type === CAMPAIGN_TYPE.MENTIONS) {
+      await this.messageOnReview.rejectMentionMessage({
+        guideName: payload.guideName,
+        reservationPermlink: payload.reservationPermlink,
+        reviewRewardToken,
+      });
+    }
+    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+      await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
+    }
   }
 
   async reject({

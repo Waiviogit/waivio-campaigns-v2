@@ -9,6 +9,7 @@ import {
   CAMPAIGN_TYPE,
   GIVEAWAY_PARTICIPANTS_PROVIDE,
   HIVE_PROVIDE,
+  PAYOUT_TOKEN_PRECISION,
   RESERVATION_STATUS,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
@@ -21,6 +22,7 @@ import { MessageOnReviewInterface } from './interface/message-on-review.interfac
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
+import { CampaignHelperInterface } from '../interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -35,6 +37,8 @@ export class MessageOnReview implements MessageOnReviewInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
     private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
   ) {}
   async getPermlinkForMessage(
     author: string,
@@ -305,18 +309,48 @@ Keep creating and stay inspired!`;
         campaign.activationPermlink,
       )
     ).filter((el) => !winners.includes(el));
+    const legalAgreement = await this.getLegalMessage(campaign);
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
 
-    const message = `Thanks to everyone who participated in this giveaway campaign from {sponsorNameLink}!
+    let message = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${
+      campaign.guideName
+    })!
+    The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: ${winners
+      .map((w) => `@${w}`)
+      .join(', ')}.
+      Each winner will receive $${campaign.rewardInUSD} USD (${rewardInToken} ${
+      campaign.payoutToken
+    }) as a reward. Congratulations!
+    `;
 
-The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: @winner1, @winner2, @winner3.
-
-Each winner will receive $25 USD (amount in WAIV) as a reward. Congratulations!
-
-Big thanks to all participants for joining and supporting the campaign: @user1, @user2, @user3 ...
-
-Thank you all for joining and sharing great content!
+    if (participants.length > 0) {
+      message += `Big thanks to all participants for joining and supporting the campaign: ${participants
+        .map((w) => `@${w}`)
+        .join(', ')}.`;
+    }
+    message += `Thank you all for joining and sharing great content!
 Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
 
 Keep creating and good luck next time!`;
+    if (legalAgreement) message += `\n\n${legalAgreement}`;
+
+    await this.hiveClient.createComment({
+      parent_author: campaign.guideName,
+      parent_permlink: campaign.giveawayPermlink,
+      title: '',
+      json_metadata: JSON.stringify({
+        activationPermlink: campaign.activationPermlink,
+      }),
+      body: message,
+      author: configService.getGiveawayAccount(),
+      permlink,
+      key: configService.getMessagePostingKey(),
+    });
   }
 }

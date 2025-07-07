@@ -27,6 +27,7 @@ import { CreateReviewInterface } from '../review/interface';
 import { parseJSON } from '../../../common/helpers';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
+import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 
 type SearchParticipantsType = (post: PostDocumentType) => Promise<string[]>;
 
@@ -47,6 +48,8 @@ export class Giveaway implements GiveawayInterface {
     private readonly userSubscriptionRepository: UserSubscriptionRepositoryInterface,
     @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
     private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
+    @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
+    private readonly messageOnReview: MessageOnReviewInterface,
   ) {}
 
   private async searchFollowers(post: PostDocumentType): Promise<string[]> {
@@ -224,5 +227,6 @@ export class Giveaway implements GiveawayInterface {
       filter: { _id },
       update: { status: CAMPAIGN_STATUS.EXPIRED },
     });
+    await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
   }
 }
