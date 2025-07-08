@@ -14,6 +14,10 @@ import {
   Matches,
   IsMongoId,
   ValidateIf,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+  Validate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -27,6 +31,17 @@ import {
 } from '../../constants';
 import { CampaignUserDocumentType } from '../../../persistance/campaign/types';
 import { ObjectId } from 'mongoose';
+import * as moment from 'moment-timezone';
+
+@ValidatorConstraint({ name: 'isTimezone', async: false })
+export class IsTimezoneConstraint implements ValidatorConstraintInterface {
+  validate(timezone: string, args: ValidationArguments): boolean {
+    return moment.tz.zone(timezone) !== null;
+  }
+  defaultMessage(args: ValidationArguments): string {
+    return 'Timezone ($value) is not a valid IANA timezone';
+  }
+}
 
 export class CampaignUserDto {
   @IsString()
@@ -422,4 +437,14 @@ export class CampaignDto {
     enum: Object.values(REACH_TYPE),
   })
   reach: string;
+
+  @IsOptional()
+  @IsString()
+  @Validate(IsTimezoneConstraint)
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'string: E.g., "Europe/Kyiv", "America/New_York"',
+  })
+  timezone?: string;
 }

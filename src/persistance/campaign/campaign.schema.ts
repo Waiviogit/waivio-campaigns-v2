@@ -261,6 +261,12 @@ export class Campaign {
     index: true,
   })
   reach: string;
+
+  @Prop({
+    type: String,
+    required: false,
+  })
+  timezone?: string;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
