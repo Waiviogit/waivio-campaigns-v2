@@ -196,6 +196,8 @@ export class RewardsHelper implements RewardsHelperInterface {
         userRequirements: campaign.userRequirements,
         createdAt: campaign.createdAt,
         activationPermlink: campaign.activationPermlink,
+        giveawayPermlink: campaign?.giveawayPermlink ?? '',
+        giveawayPostTitle: campaign?.giveawayPostTitle ?? '',
         reservationPermlink: user.reservationPermlink,
         reviewPermlink: user.reviewPermlink,
         ...(user.rejectionPermlink && {

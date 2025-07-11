@@ -327,6 +327,12 @@ export class CampaignDto {
   @ApiProperty({ type: String })
   giveawayPermlink?: string;
 
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ type: String })
+  giveawayPostTitle?: string;
+
   @IsString()
   @ApiProperty({ type: String, required: true })
   requiredObject: string;
