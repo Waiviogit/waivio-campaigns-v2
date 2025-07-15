@@ -334,7 +334,7 @@ Keep creating and stay inspired!`;
     if (participants.length > 0) {
       message += `Big thanks to all participants for joining and supporting the campaign: ${participants
         .map((w) => `@${w}`)
-        .join(', ')}.`;
+        .join(', ')}.\n`;
     }
     message += `Thank you all for joining and sharing great content!
 Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
