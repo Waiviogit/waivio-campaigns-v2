@@ -301,6 +301,8 @@ Keep creating and stay inspired!`;
         permlink,
         key: configService.getMessagePostingKey(),
       });
+
+      console.log('SEND MESSAGE GIVEAWAY REJECT');
       return;
     }
     //filter winners
@@ -352,5 +354,7 @@ Keep creating and good luck next time!`;
       permlink,
       key: configService.getMessagePostingKey(),
     });
+
+    console.log('SEND MESSAGE GIVEAWAY');
   }
 }

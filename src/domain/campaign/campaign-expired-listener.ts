@@ -41,8 +41,9 @@ export class CampaignExpiredListener
       filter: { _id },
       projection: { requiredObject: 1, objects: 1, type: 1 },
     });
+    if (!campaign) return;
 
-    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+    if (campaign?.type === CAMPAIGN_TYPE.GIVEAWAYS) {
       await this.giveaway.runGiveaway(_id);
     }
 
@@ -94,6 +95,7 @@ export class CampaignExpiredListener
     const [, type, id] = key.split(':');
     switch (type) {
       case EXPIRED_CAMPAIGN_TYPE.CAMPAIGN:
+        console.log(`EXPIRE ______${id}`);
         return this.expireCampaign(id);
       case EXPIRED_CAMPAIGN_TYPE.ASSIGN:
         return this.expireAssign(id);
