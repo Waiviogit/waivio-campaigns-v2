@@ -577,7 +577,7 @@ export class CreateReview implements CreateReviewInterface {
       reviewPermlink,
       title: post.title,
       reservationPermlink,
-      campaignType: CAMPAIGN_TYPE.MENTIONS,
+      campaignType: CAMPAIGN_TYPE.GIVEAWAYS,
     });
   }
 
