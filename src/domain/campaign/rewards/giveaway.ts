@@ -57,7 +57,7 @@ export class Giveaway implements GiveawayInterface {
   }
 
   private async searchVotes(post: PostDocumentType): Promise<string[]> {
-    return post.active_votes.map((v) => v.voter);
+    return post.active_votes.filter((v) => v.percent > 0).map((v) => v.voter);
   }
 
   private async searchReblogs(post: PostDocumentType): Promise<string[]> {
