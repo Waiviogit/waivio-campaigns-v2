@@ -68,7 +68,7 @@ export class CampaignActivation implements CampaignActivationInterface {
       guideName,
     );
     const limitDate = new Date();
-    limitDate.setHours(limitDate.getHours() + 1);
+    limitDate.setMinutes(limitDate.getMinutes() + 10);
 
     if (!campaign || !permlink) {
       return {
