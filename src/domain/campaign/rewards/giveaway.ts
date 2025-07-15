@@ -126,13 +126,17 @@ export class Giveaway implements GiveawayInterface {
     giveawayRequirements: GiveawayRequirements,
   ): SearchParticipantsType[] {
     const funcsToCall = [];
-    if (giveawayRequirements.follow) funcsToCall.push(this.searchFollowers);
-    if (giveawayRequirements.likePost) funcsToCall.push(this.searchVotes);
-    if (giveawayRequirements.reblog) funcsToCall.push(this.searchReblogs);
+    if (giveawayRequirements.follow) {
+      funcsToCall.push(this.searchFollowers.bind(this));
+    }
+    if (giveawayRequirements.likePost)
+      funcsToCall.push(this.searchVotes.bind(this));
+    if (giveawayRequirements.reblog)
+      funcsToCall.push(this.searchReblogs.bind(this));
     if (giveawayRequirements.tagInComment) {
-      funcsToCall.push(this.searchCommentsMentioned);
+      funcsToCall.push(this.searchCommentsMentioned.bind(this));
     } else if (giveawayRequirements.comment) {
-      funcsToCall.push(this.searchComments);
+      funcsToCall.push(this.searchComments.bind(this));
     }
     return funcsToCall;
   }
