@@ -158,9 +158,15 @@ export class Giveaway implements GiveawayInterface {
     const usersForGiveaway = await Promise.all(
       searchMethods.map((m) => m(post)),
     );
+    const usersToFilter = [
+      ...(campaign.blacklistUsers || []),
+      'spaminator',
+      'letusbuyhive',
+    ];
+
     const participantGiveawayRequirenments = _.uniq(
       _.intersection(...usersForGiveaway).filter(
-        (p) => p !== campaign.guideName,
+        (p) => p !== campaign.guideName && !usersToFilter.includes(p),
       ),
     );
 
