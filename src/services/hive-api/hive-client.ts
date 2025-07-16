@@ -103,6 +103,7 @@ export class HiveClient implements HiveClientInterface {
       );
       return true;
     } catch (error) {
+      this.logger.error(error.message);
       return false;
     }
   }

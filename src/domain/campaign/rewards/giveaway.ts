@@ -64,7 +64,7 @@ export class Giveaway implements GiveawayInterface {
     //`${post.author}/${post.author}`, in permlink is reblog
     const reblogs = await this.postRepository.find({
       filter: {
-        permlink: `${post.author}/${post.author}`,
+        permlink: `${post.author}/${post.permlink}`,
       },
       projection: {
         author: 1,

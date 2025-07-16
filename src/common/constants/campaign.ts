@@ -15,6 +15,10 @@ export const EXPIRED_CAMPAIGN_TYPE = Object.freeze({
   ASSIGN: 'assign',
 });
 
+export const EXPIRED_MESSAGE_TYPE = Object.freeze({
+  GIVEAWAY: 'giveaway_message',
+});
+
 export const REWARDS_TAB = Object.freeze({
   ALL: 'all',
   ELIGIBLE: 'eligible',

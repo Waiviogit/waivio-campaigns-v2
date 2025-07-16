@@ -7,9 +7,12 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
+  EXPIRED_MESSAGE_TYPE,
   GIVEAWAY_PARTICIPANTS_PROVIDE,
   HIVE_PROVIDE,
   PAYOUT_TOKEN_PRECISION,
+  REDIS_KEY,
+  REDIS_PROVIDE,
   RESERVATION_STATUS,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
@@ -23,10 +26,13 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import { CampaignHelperInterface } from '../interface';
+import { RedisClientInterface } from '../../../services/redis/clients/interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
   constructor(
+    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
+    private readonly campaignRedisClient: RedisClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
     @Inject(WOBJECT_PROVIDE.HELPER)
@@ -289,7 +295,7 @@ Thank you again for being part of the community!
 
 Keep creating and stay inspired!`;
 
-      await this.hiveClient.createComment({
+      const messageIsSent = await this.hiveClient.createComment({
         parent_author: campaign.guideName,
         parent_permlink: campaign.giveawayPermlink,
         title: '',
@@ -301,6 +307,9 @@ Keep creating and stay inspired!`;
         permlink,
         key: configService.getMessagePostingKey(),
       });
+      if (!messageIsSent) {
+        await this.setExpireTTLGiveaway(campaign.activationPermlink);
+      }
 
       console.log('SEND MESSAGE GIVEAWAY REJECT');
       return;
@@ -342,7 +351,7 @@ Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. 
 Keep creating and good luck next time!`;
     if (legalAgreement) message += `\n\n${legalAgreement}`;
 
-    await this.hiveClient.createComment({
+    const messageIsSent = await this.hiveClient.createComment({
       parent_author: campaign.guideName,
       parent_permlink: campaign.giveawayPermlink,
       title: '',
@@ -354,7 +363,31 @@ Keep creating and good luck next time!`;
       permlink,
       key: configService.getMessagePostingKey(),
     });
+    if (!messageIsSent) {
+      await this.setExpireTTLGiveaway(campaign.activationPermlink);
+    }
 
-    console.log('SEND MESSAGE GIVEAWAY');
+    console.log(`SEND MESSAGE GIVEAWAY ${messageIsSent}`);
+  }
+
+  private async setExpireTTLGiveaway(
+    activationPermlink: string,
+  ): Promise<void> {
+    const expire = 60;
+    await this.campaignRedisClient.setex(
+      `${REDIS_KEY.GIVEAWAY_MESSAGE_EXPIRE}${activationPermlink}`,
+      expire,
+      '',
+    );
+  }
+
+  async listener(key: string): Promise<void> {
+    const [, type, id] = key.split(':');
+    switch (type) {
+      case EXPIRED_MESSAGE_TYPE.GIVEAWAY:
+        return this.giveawayMessage(id);
+      default:
+        return;
+    }
   }
 }
