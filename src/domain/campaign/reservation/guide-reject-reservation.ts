@@ -112,6 +112,7 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         type: 1,
       },
     });
+    if (!campaign) return;
 
     //for message
     const payment = await this.campaignPaymentRepository.findOne({
