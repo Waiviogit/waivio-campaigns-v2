@@ -665,21 +665,13 @@ export class CreateReview implements CreateReviewInterface {
       reservationPermlink,
     });
 
-    const payment = await this.campaignPaymentRepository.findOne({
-      filter: {
-        type: CAMPAIGN_PAYMENT.REVIEW,
-        reservationPermlink,
-      },
-    });
-    const reviewRewardToken = new BigNumber(payment.amount).dp(8, 1).toNumber();
-
     await this.messageOnReview.sendMessageSuccessReview({
       campaign,
       botName,
       postAuthor,
       reviewPermlink,
       userReservationObject,
-      reviewRewardToken,
+      reservationPermlink,
     });
   }
 

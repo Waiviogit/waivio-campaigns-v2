@@ -114,33 +114,21 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
     });
     if (!campaign) return;
 
-    //for message
-    const payment = await this.campaignPaymentRepository.findOne({
-      filter: {
-        type: CAMPAIGN_PAYMENT.REVIEW,
+    if (campaign.type === CAMPAIGN_TYPE.MENTIONS) {
+      await this.messageOnReview.rejectMentionMessage({
+        guideName: payload.guideName,
         reservationPermlink: payload.reservationPermlink,
-      },
-    });
-    const reviewRewardToken = new BigNumber(payment?.amount || 0)
-      .dp(8, 1)
-      .toNumber();
+      });
+    }
+    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+      await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
+    }
 
     await this.reject(payload);
     await this.campaignRedisClient.publish(
       REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
       transaction_id,
     );
-
-    if (campaign.type === CAMPAIGN_TYPE.MENTIONS) {
-      await this.messageOnReview.rejectMentionMessage({
-        guideName: payload.guideName,
-        reservationPermlink: payload.reservationPermlink,
-        reviewRewardToken,
-      });
-    }
-    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
-      await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
-    }
   }
 
   async reject({

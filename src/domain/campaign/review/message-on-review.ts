@@ -4,6 +4,7 @@ import * as crypto from 'node:crypto';
 import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
 import BigNumber from 'bignumber.js';
 import {
+  CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
@@ -27,6 +28,7 @@ import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import { CampaignHelperInterface } from '../interface';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
+import { PaymentReportInterface } from '../../campaign-payment/interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -45,6 +47,8 @@ export class MessageOnReview implements MessageOnReviewInterface {
     private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(CAMPAIGN_PAYMENT_PROVIDE.PAYMENT_REPORT)
+    private readonly paymentReport: PaymentReportInterface,
   ) {}
   async getPermlinkForMessage(
     author: string,
@@ -105,7 +109,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     reviewPermlink,
     postAuthor,
     botName,
-    reviewRewardToken,
+    reservationPermlink,
   }: reviewMessageSuccessType): Promise<void> {
     const sponsor = await this.userRepository.findOne({
       filter: { name: campaign.guideName },
@@ -117,6 +121,16 @@ export class MessageOnReview implements MessageOnReviewInterface {
     const objects = _.compact(
       _.uniq([campaign.requiredObject, userReservationObject]),
     );
+
+    const { rewardTokenAmount = 0 } = await this.paymentReport.getSingleReport({
+      guideName: campaign.guideName,
+      userName: postAuthor,
+      reviewPermlink,
+      reservationPermlink,
+      host: configService.getAppHost(),
+      payoutToken: campaign.payoutToken,
+    });
+
     for (const object of objects) {
       if (object.startsWith('@')) {
         const acc = await this.userRepository.findOne({
@@ -145,7 +159,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${reviewRewardToken} ${campaign.payoutToken}) from [${
+      .toString()} USD (${rewardTokenAmount} ${campaign.payoutToken}) from [${
       sponsor.alias || sponsor.name
     }](https://www.waivio.com/@${campaign.guideName})! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
@@ -176,7 +190,6 @@ You can track all of your outstanding payments and discover many more rewards [h
   async rejectMentionMessage({
     guideName,
     reservationPermlink,
-    reviewRewardToken,
   }: reviewMessageRejectType): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
       filter: {
@@ -192,6 +205,15 @@ You can track all of your outstanding payments and discover many more rewards [h
       (user) => user.reservationPermlink === reservationPermlink,
     );
     if (!user) return;
+
+    const { rewardTokenAmount = 0 } = await this.paymentReport.getSingleReport({
+      guideName: campaign.guideName,
+      userName: user.name,
+      reviewPermlink: user.reviewPermlink,
+      reservationPermlink,
+      host: configService.getAppHost(),
+      payoutToken: campaign.payoutToken,
+    });
 
     const sponsor = await this.userRepository.findOne({
       filter: { name: campaign.guideName },
@@ -232,7 +254,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${reviewRewardToken} ${campaign.payoutToken}) this time.
+      .toString()} USD (${rewardTokenAmount} ${campaign.payoutToken}) this time.
 We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
 
     const permlink = await this.getPermlinkForMessage(

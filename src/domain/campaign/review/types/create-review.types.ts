@@ -71,13 +71,12 @@ export type reviewMessageSuccessType = {
   postAuthor?: string;
   reviewPermlink: string;
   userReservationObject: string;
-  reviewRewardToken: number;
+  reservationPermlink: string;
 };
 
 export type reviewMessageRejectType = {
   guideName: string;
   reservationPermlink: string;
-  reviewRewardToken: number;
 };
 
 export type ParseReviewType = {
