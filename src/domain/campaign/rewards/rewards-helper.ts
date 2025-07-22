@@ -150,6 +150,10 @@ export class RewardsHelper implements RewardsHelperInterface {
       }),
     ]);
 
+    const guides = await this.userRepository.findCampaignsUsers(
+      campaigns.map((el) => el.guideName),
+    );
+
     for (const campaign of campaigns) {
       const user = _.get(campaign, 'users');
       if (!user) continue;
@@ -177,9 +181,12 @@ export class RewardsHelper implements RewardsHelperInterface {
         (el) => (el.guideName = campaign.guideName),
       );
 
+      const guideInfo = guides.find((el) => el.name === campaign.guideName);
+
       rewards.push({
         _id: campaign._id,
         payout,
+        guideInfo,
         totalPayed: _.get(payment, 'payed', 0),
         campaignName: campaign.name,
         payoutToken: campaign.payoutToken,
