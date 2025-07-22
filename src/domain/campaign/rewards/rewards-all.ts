@@ -695,6 +695,8 @@ export class RewardsAll implements RewardsAllInterface {
               activationPermlink: 1,
               qualifiedPayoutToken: 1,
               type: 1,
+              giveawayPermlink: 1,
+              giveawayPostTitle: 1,
             },
           },
           {
