@@ -14,8 +14,6 @@ import {
   REWARDS_TAB,
   CAMPAIGN_PAYMENT_PROVIDE,
   TOKEN_WAIV,
-  REDIS_PROVIDE,
-  REDIS_KEY,
   REWARDS_PROVIDE,
   WOBJECT_STATUS,
   WOBJECT_SUBSCRIPTION_PROVIDE,
@@ -26,7 +24,6 @@ import { CampaignRepositoryInterface } from '../../../persistance/campaign/inter
 import {
   CanReserveParamType,
   CanReserveType,
-  ExpertiseVariablesType,
   GetEligiblePipeType,
   GetPrimaryObjectRewards,
   GetReservedType,
@@ -56,7 +53,6 @@ import { configService } from '../../../common/config';
 import { GuidePaymentsQueryInterface } from '../../campaign-payment/interface';
 import { AddDataOnRewardsByObjectType } from '../../campaign-payment/types';
 import { PipelineStage } from 'mongoose';
-import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
@@ -74,8 +70,6 @@ export class RewardsAll implements RewardsAllInterface {
     private readonly appRepository: AppRepositoryInterface,
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
-    @Inject(REDIS_PROVIDE.BLOCK_CLIENT)
-    private readonly redisBlockClient: RedisClientInterface,
     @Inject(REWARDS_PROVIDE.HELPER)
     private readonly rewardsHelper: RewardsHelperInterface,
     @Inject(WOBJECT_SUBSCRIPTION_PROVIDE.REPOSITORY)
@@ -847,26 +841,6 @@ export class RewardsAll implements RewardsAllInterface {
     return sponsors[0];
   }
 
-  async getExpertiseVariables(): Promise<ExpertiseVariablesType> {
-    const rewardFund = await this.redisBlockClient.hGetAll(
-      REDIS_KEY.REWARD_FUND,
-    );
-    const median = await this.redisBlockClient.hGetAll(
-      REDIS_KEY.MEDIAN_HISTORY,
-    );
-    const recentClaims = parseFloat(_.get(rewardFund, 'recent_claims', '0'));
-    const rewardBalance = parseFloat(_.get(rewardFund, 'reward_balance', '0'));
-
-    const rate =
-      parseFloat(_.get(median, 'base', '0')) /
-      parseFloat(_.get(median, 'quote', '0'));
-
-    return {
-      rewardBalanceTimesRate: rewardBalance * rate,
-      claims: recentClaims / 1000000,
-    };
-  }
-
   async getEligiblePipe({
     userName,
     user,
@@ -880,20 +854,9 @@ export class RewardsAll implements RewardsAllInterface {
 
     const mutedNames = mutedList.map((el) => el.userName);
 
-    const { rewardBalanceTimesRate, claims } =
-      await this.getExpertiseVariables();
-
     return [
       {
         $addFields: {
-          requiredExpertise: {
-            $divide: [
-              {
-                $multiply: ['$userRequirements.minExpertise', claims],
-              },
-              rewardBalanceTimesRate,
-            ],
-          },
           blacklist: {
             $setDifference: ['$blacklistUsers', '$whitelistUsers'],
           },
@@ -985,7 +948,10 @@ export class RewardsAll implements RewardsAllInterface {
             ],
           },
           expertise: {
-            $gte: [user?.wobjects_weight ?? 0, '$requiredExpertise'],
+            $gte: [
+              user?.wobjects_weight ?? 0,
+              '$userRequirements.minExpertise',
+            ],
           },
           notAssigned: {
             $cond: [{ $in: ['$requiredObject', assignedObjects] }, false, true],
