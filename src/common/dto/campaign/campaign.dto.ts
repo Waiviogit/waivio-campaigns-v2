@@ -453,4 +453,26 @@ export class CampaignDto {
     description: 'string: E.g., "Europe/Kyiv", "America/New_York"',
   })
   timezone?: string;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'RRULE (Recurrence Rule)',
+  })
+  recurrenceRule?: string;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @IsNumber()
+  @Min(1)
+  @ApiProperty({ type: Number, required: false })
+  durationDays?: number;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @IsNumber()
+  @Min(1)
+  @ApiProperty({ type: Number, required: false })
+  winnersNumber?: number;
 }

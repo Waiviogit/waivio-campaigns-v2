@@ -78,6 +78,7 @@ export const CAMPAIGN_TYPE = Object.freeze({
   REVIEWS: 'reviews',
   MENTIONS: 'mentions',
   GIVEAWAYS: 'giveaways',
+  GIVEAWAYS_OBJECT: 'giveaways_object',
 });
 
 export const SUPPORTED_CURRENCY = Object.freeze({

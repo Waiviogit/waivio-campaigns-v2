@@ -270,6 +270,24 @@ export class Campaign {
     required: false,
   })
   timezone?: string;
+
+  @Prop({
+    type: String,
+    required: false,
+  })
+  recurrenceRule?: string;
+
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  durationDays?: number;
+
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  winnersNumber?: number;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
