@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { randomInt } from 'crypto';
+
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
@@ -28,6 +28,7 @@ import { parseJSON } from '../../../common/helpers';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
+import { selectRandomWinner } from '../../../common/helpers/randomHelper';
 
 type SearchParticipantsType = (post: PostDocumentType) => Promise<string[]>;
 
@@ -141,12 +142,6 @@ export class Giveaway implements GiveawayInterface {
     return funcsToCall;
   }
 
-  private selectRandomWinner(participants: string[]): string {
-    if (participants.length === 0) return '';
-    const randomIndex = randomInt(0, participants.length);
-    return participants[randomIndex];
-  }
-
   private async getParticipants(
     campaign: CampaignDocumentType,
     post: PostDocumentType,
@@ -223,7 +218,7 @@ export class Giveaway implements GiveawayInterface {
     let budget = BigNumber(campaign.budget);
 
     while (budget.gte(campaign.reward) && participants.length) {
-      const winner = this.selectRandomWinner(participants);
+      const winner = selectRandomWinner(participants);
       console.log('winner', winner);
       participants = participants.filter((p) => p !== winner);
       await this.createReview.createGiveawayPayables({

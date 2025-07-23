@@ -69,7 +69,7 @@ export class CreateCampaign implements CreateCampaignInterface {
       if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
         await this.giveawayObject.setNextRecurrentEvent(
           campaign.recurrenceRule,
-          createdCampaign._id,
+          createdCampaign._id.toString(),
         );
       }
     }

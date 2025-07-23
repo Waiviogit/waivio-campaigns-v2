@@ -1,25 +1,53 @@
 import { Inject, Injectable } from '@nestjs/common';
+import * as moment from 'moment';
 import {
+  CAMPAIGN_PROVIDE,
+  CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
+  GIVEAWAY_PARTICIPANTS_PROVIDE,
+  POST_PROVIDE,
   RECURRENT_TYPE,
   REDIS_KEY,
   REDIS_PROVIDE,
+  USER_PROVIDE,
 } from '../../../common/constants';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { rrulestr } from 'rrule';
 import { GiveawayObjectInterface } from './interface/giveaway-object.interface';
+import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
+import { PostRepositoryInterface } from '../../../persistance/post/interface';
+import { CampaignDocumentType } from '../../../persistance/campaign/types';
+import BigNumber from 'bignumber.js';
+import { selectRandomWinner } from '../../../common/helpers/randomHelper';
+import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
+import { CampaignHelperInterface } from '../interface';
+import { UserRepositoryInterface } from '../../../persistance/user/interface';
 
 @Injectable()
 export class GiveawayObject implements GiveawayObjectInterface {
   constructor(
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,
+    @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
+    private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(POST_PROVIDE.REPOSITORY)
+    private readonly postRepository: PostRepositoryInterface,
+    @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
+    private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(USER_PROVIDE.REPOSITORY)
+    private readonly userRepository: UserRepositoryInterface,
   ) {}
   async setNextRecurrentEvent(rruleString: string, _id: string): Promise<void> {
     const rruleObject = rrulestr(rruleString);
     const now = new Date();
     const next = rruleObject.after(now, true);
     if (!next) {
-      //todo setex expire
+      await this.campaignHelper.setExpireTTLCampaign(
+        new Date(now.getTime() + 5 * 1000),
+        _id,
+      );
       return;
     }
     const expire = Math.max(
@@ -32,7 +60,74 @@ export class GiveawayObject implements GiveawayObjectInterface {
       '',
     );
   }
-  async startGiveaway(_id: string): Promise<void> {}
+
+  async getParticipants(campaign: CampaignDocumentType): Promise<string[]> {
+    const participants = [];
+
+    const dateFrom = moment().subtract(campaign.durationDays, 'd').toDate();
+
+    const posts = await this.postRepository.find({
+      filter: {
+        createdAt: { $gte: dateFrom },
+        'wobjects.author_permlink': { $in: campaign.objects },
+      },
+      projection: {
+        author: 1,
+        permlink: 1,
+      },
+    });
+
+    
+
+    return participants;
+  }
+  async startGiveaway(_id: string): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        _id,
+        status: CAMPAIGN_STATUS.ACTIVE,
+        type: CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
+      },
+    });
+    if (!campaign) return;
+    if (!campaign.recurrenceRule) return;
+
+    const rruleObject = rrulestr(campaign.recurrenceRule);
+    const now = new Date();
+    // Use a window of ±1 day and range ±1 minute
+    const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const occurrences = rruleObject.between(windowStart, windowEnd, true);
+    const isInRange = occurrences.some(
+      (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
+    );
+    if (!isInRange) return;
+
+    let participants = await this.getParticipants(campaign);
+
+    await this.giveawayParticipantsRepository.insertMany(
+      participants.map((p) => ({
+        userName: p,
+        activationPermlink: campaign.activationPermlink,
+      })),
+    );
+
+    let budget = BigNumber(campaign.budget);
+    let winnersCount = 0;
+
+    while (
+      budget.gte(campaign.reward) &&
+      participants.length &&
+      winnersCount < campaign.winnersNumber
+    ) {
+      const winner = selectRandomWinner(participants);
+      winnersCount++;
+      console.log('winner', winner);
+      participants = participants.filter((p) => p !== winner);
+
+      budget = budget.minus(campaign.reward);
+    }
+  }
 
   async listener(key: string): Promise<void> {
     const [, type, id] = key.split(':');
