@@ -62,10 +62,8 @@ export class GiveawayObject implements GiveawayObjectInterface {
   }
 
   async getParticipants(campaign: CampaignDocumentType): Promise<string[]> {
-    const participants = [];
-
+    // Get posts within campaign duration and objects
     const dateFrom = moment().subtract(campaign.durationDays, 'd').toDate();
-
     const posts = await this.postRepository.find({
       filter: {
         createdAt: { $gte: dateFrom },
@@ -77,10 +75,79 @@ export class GiveawayObject implements GiveawayObjectInterface {
       },
     });
 
-    
+    // Unique authors
+    const authors = [...new Set(posts.map((p) => p.author))];
+    if (!authors.length) return [];
 
-    return participants;
+    // Fetch user data for all authors
+    const users = await this.userRepository.find({
+      filter: { name: { $in: authors } },
+      projection: {
+        name: 1,
+        count_posts: 1,
+        followers_count: 1,
+        wobjects_weight: 1,
+      },
+    });
+    const userMap = new Map(users.map((u) => [u.name, u]));
+
+    // Blacklist/whitelist logic
+    const blacklist = (campaign.blacklistUsers || []).filter(
+      (u: string) => !(campaign.whitelistUsers || []).includes(u),
+    );
+
+    // Already assigned/completed users
+    type CampaignUser = { name: string; status: string; updatedAt?: Date };
+    const assignedOrCompleted = new Set(
+      ((campaign.users || []) as CampaignUser[])
+        .filter((u) => ['assigned', 'completed'].includes(u.status))
+        .map((u) => u.name),
+    );
+
+    // Frequency logic: map of userName -> last completed date
+    const completedMap = new Map();
+    ((campaign.users || []) as CampaignUser[]).forEach((u) => {
+      if (u.status === 'completed') {
+        if (
+          !completedMap.has(u.name) ||
+          completedMap.get(u.name) < u.updatedAt
+        ) {
+          completedMap.set(u.name, u.updatedAt);
+        }
+      }
+    });
+
+    const now = moment.utc();
+    const eligible: string[] = [];
+    for (const author of authors) {
+      const user = userMap.get(author);
+      if (!user) continue;
+      // Requirements
+      if (
+        (campaign.userRequirements?.minPosts &&
+          user.count_posts < campaign.userRequirements.minPosts) ||
+        (campaign.userRequirements?.minFollowers &&
+          user.followers_count < campaign.userRequirements.minFollowers) ||
+        (campaign.userRequirements?.minExpertise &&
+          user.wobjects_weight < campaign.userRequirements.minExpertise)
+      ) {
+        continue;
+      }
+      // Blacklist
+      if (blacklist.includes(author)) continue;
+      // Already assigned/completed
+      if (assignedOrCompleted.has(author)) continue;
+      // Frequency
+      if (campaign.frequencyAssign && completedMap.has(author)) {
+        const lastCompleted = moment(completedMap.get(author));
+        const daysPassed = now.diff(lastCompleted, 'days');
+        if (daysPassed < campaign.frequencyAssign) continue;
+      }
+      eligible.push(author);
+    }
+    return eligible;
   }
+
   async startGiveaway(_id: string): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
       filter: {
@@ -127,6 +194,8 @@ export class GiveawayObject implements GiveawayObjectInterface {
 
       budget = budget.minus(campaign.reward);
     }
+
+    await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
   }
 
   async listener(key: string): Promise<void> {
