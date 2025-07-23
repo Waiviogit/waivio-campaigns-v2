@@ -3,6 +3,7 @@ export const REDIS_KEY = Object.freeze({
   LAST_BLOCK_ENGINE: 'campaign_v2_engine_block',
   CAMPAIGN_EXPIRE: 'expire:campaign:',
   GIVEAWAY_MESSAGE_EXPIRE: 'expire:giveaway_message:',
+  GIVEAWAY_OBJECT_RECURRENT: 'expire:giveaway_object_recurrent:',
   ASSIGN_EXPIRE: 'expire:assign:',
   CAMPAIGN_PAYMENT_EXPIRE: 'expire:campaignPayment:',
   CAMPAIGN_SUSPEND_WARNING: 'expire:suspendedWarning:',
