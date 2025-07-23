@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   CAMPAIGN_CUSTOM_JSON_ID,
-  CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
@@ -28,7 +27,6 @@ import { parserValidator } from '../../hive-parser/validators';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 import { CampaignPaymentRepositoryInterface } from '../../../persistance/campaign-payment/interface';
-import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class GuideRejectReservation implements GuideRejectReservationInterface {
@@ -120,11 +118,11 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         reservationPermlink: payload.reservationPermlink,
       });
     }
+    await this.reject(payload);
     if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
       await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
     }
 
-    await this.reject(payload);
     await this.campaignRedisClient.publish(
       REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,
       transaction_id,
