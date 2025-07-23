@@ -122,7 +122,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
       _.uniq([campaign.requiredObject, userReservationObject]),
     );
 
-    const { rewardTokenAmount = 0 } = await this.paymentReport.getSingleReport({
+    const report = await this.paymentReport.getSingleReport({
       guideName: campaign.guideName,
       userName: postAuthor,
       reviewPermlink,
@@ -130,6 +130,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
       host: configService.getAppHost(),
       payoutToken: campaign.payoutToken,
     });
+    if (!report) return;
 
     for (const object of objects) {
       if (object.startsWith('@')) {
@@ -159,9 +160,11 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${rewardTokenAmount} ${campaign.payoutToken}) from [${
-      sponsor.alias || sponsor.name
-    }](https://www.waivio.com/@${campaign.guideName})! 
+      .toString()} USD (${report.rewardTokenAmount} ${
+      campaign.payoutToken
+    }) from [${sponsor.alias || sponsor.name}](https://www.waivio.com/@${
+      campaign.guideName
+    })! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
 You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
 
@@ -206,7 +209,7 @@ You can track all of your outstanding payments and discover many more rewards [h
     );
     if (!user) return;
 
-    const { rewardTokenAmount = 0 } = await this.paymentReport.getSingleReport({
+    const report = await this.paymentReport.getSingleReport({
       guideName: campaign.guideName,
       userName: user.name,
       reviewPermlink: user.reviewPermlink,
@@ -214,6 +217,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       host: configService.getAppHost(),
       payoutToken: campaign.payoutToken,
     });
+    if (!report) return;
 
     const sponsor = await this.userRepository.findOne({
       filter: { name: campaign.guideName },
@@ -254,7 +258,9 @@ You can track all of your outstanding payments and discover many more rewards [h
       campaign.rewardInUSD,
     )
       .dp(2)
-      .toString()} USD (${rewardTokenAmount} ${campaign.payoutToken}) this time.
+      .toString()} USD (${report.rewardTokenAmount} ${
+      campaign.payoutToken
+    }) this time.
 We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
 
     const permlink = await this.getPermlinkForMessage(
