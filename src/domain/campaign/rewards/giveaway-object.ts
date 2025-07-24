@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { setTimeout } from 'timers/promises';
 import * as moment from 'moment';
 import {
   CAMPAIGN_PROVIDE,
@@ -186,6 +187,8 @@ export class GiveawayObject implements GiveawayObjectInterface {
     let budget = BigNumber(campaign.budget);
     let winnersCount = 0;
 
+    const messages = [];
+
     while (
       budget.gte(campaign.reward) &&
       participants.length &&
@@ -209,6 +212,7 @@ export class GiveawayObject implements GiveawayObjectInterface {
         userName: winner,
         post: lastPost,
       });
+      messages.push({ author: winner, permlink: lastPost.permlink });
       winnersCount++;
       console.log('winner', winner);
       participants = participants.filter((p) => p !== winner);
@@ -217,6 +221,13 @@ export class GiveawayObject implements GiveawayObjectInterface {
     }
 
     await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+
+    if (!messages.length) return;
+
+    for (const message of messages) {
+      //messages allowed 1 per 3 sec
+      await setTimeout(5000);
+    }
   }
 
   async listener(key: string): Promise<void> {

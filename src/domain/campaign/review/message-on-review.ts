@@ -283,6 +283,10 @@ We encourage you to create and share original content to qualify for rewards in 
     });
   }
 
+  async giveawayObjectMessage() {
+    // remember giveaway date to create permlink
+  }
+
   //giveaway on post its same comment can be updated when guide reject users
   async giveawayMessage(activationPermlink: string): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
