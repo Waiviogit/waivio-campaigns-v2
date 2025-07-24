@@ -421,12 +421,18 @@ export class CreateReview implements CreateReviewInterface {
     if (!rejectedUser) return;
     const havePost = !!rejectedUser.reviewPermlink;
     if (havePost) {
+      const postCondition =
+        campaign.type === CAMPAIGN_TYPE.GIVEAWAYS
+          ? { author: campaign.guideName, permlink: campaign.giveawayPermlink }
+          : {
+              author: rejectedUser.name,
+              permlink: rejectedUser.reviewPermlink,
+            };
+
       const post = await this.postRepository.findOne({
-        filter: {
-          author: rejectedUser.name,
-          permlink: rejectedUser.reviewPermlink,
-        },
+        filter: postCondition,
       });
+
       if (!post) return;
       const reviewCampaign: ReviewCampaignType = {
         userId: rejectedUser._id,
@@ -480,6 +486,14 @@ export class CreateReview implements CreateReviewInterface {
           images: _.get(parseJSON(post.json_metadata), 'image', []),
           postAuthor: rejectedUser.name,
           postMentions: [rejectedUser.objectPermlink],
+        });
+      }
+
+      if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+        await this.createGiveawayPayables({
+          campaign,
+          userName: rejectedUser.name,
+          post,
         });
       }
     }
