@@ -489,7 +489,11 @@ export class CreateReview implements CreateReviewInterface {
         });
       }
 
-      if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+      if (
+        [CAMPAIGN_TYPE.GIVEAWAYS, CAMPAIGN_TYPE.GIVEAWAYS_OBJECT].includes(
+          campaign.type as 'giveaways' | 'giveaways_object',
+        )
+      ) {
         await this.createGiveawayPayables({
           campaign,
           userName: rejectedUser.name,
