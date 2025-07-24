@@ -157,6 +157,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               guideName: 1,
               currency: 1,
               commissionAgreement: 1,
+              giveawayRequirements: 1,
               remaining: {
                 $cond: [
                   { $eq: ['$status', 'active'] },
@@ -269,6 +270,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               guideName: 1,
               currency: 1,
               commissionAgreement: 1,
+              giveawayRequirements: 1,
               remaining: {
                 $cond: [
                   { $eq: ['$status', 'active'] },
