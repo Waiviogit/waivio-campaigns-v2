@@ -189,10 +189,14 @@ export class Giveaway implements GiveawayInterface {
   }
 
   async runGiveaway(_id: string): Promise<void> {
-    const campaign = await this.campaignRepository.findOne({ filter: { _id } });
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        _id,
+        type: CAMPAIGN_TYPE.GIVEAWAYS,
+        status: CAMPAIGN_STATUS.ACTIVE,
+      },
+    });
     if (!campaign) return;
-    if (campaign.type !== CAMPAIGN_TYPE.GIVEAWAYS) return;
-    if (campaign.status !== CAMPAIGN_STATUS.ACTIVE) return;
     if (!campaign.giveawayPermlink) return;
     if (!campaign.giveawayRequirements) return;
 

@@ -9,6 +9,7 @@ import {
   RECURRENT_TYPE,
   REDIS_KEY,
   REDIS_PROVIDE,
+  REVIEW_PROVIDE,
   USER_PROVIDE,
 } from '../../../common/constants';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
@@ -22,6 +23,7 @@ import { selectRandomWinner } from '../../../common/helpers/randomHelper';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import { CampaignHelperInterface } from '../interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
+import { CreateReviewInterface } from '../review/interface';
 
 @Injectable()
 export class GiveawayObject implements GiveawayObjectInterface {
@@ -38,6 +40,8 @@ export class GiveawayObject implements GiveawayObjectInterface {
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
+    @Inject(REVIEW_PROVIDE.CREATE)
+    private readonly createReview: CreateReviewInterface,
   ) {}
   async setNextRecurrentEvent(rruleString: string, _id: string): Promise<void> {
     const rruleObject = rrulestr(rruleString);
@@ -188,6 +192,23 @@ export class GiveawayObject implements GiveawayObjectInterface {
       winnersCount < campaign.winnersNumber
     ) {
       const winner = selectRandomWinner(participants);
+      const lastPost = await this.postRepository.findOne({
+        filter: {
+          author: winner,
+          'wobjects.author_permlink': { $in: campaign.objects },
+        },
+        options: {
+          sort: {
+            _id: -1,
+          },
+        },
+      });
+      if (!lastPost) continue;
+      await this.createReview.createGiveawayPayables({
+        campaign,
+        userName: winner,
+        post: lastPost,
+      });
       winnersCount++;
       console.log('winner', winner);
       participants = participants.filter((p) => p !== winner);
