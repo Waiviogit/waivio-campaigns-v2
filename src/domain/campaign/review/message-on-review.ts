@@ -314,7 +314,9 @@ We encourage you to create and share original content to qualify for rewards in 
     The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: ${winners
       .map((w) => `@${w}`)
       .join(', ')}.
-      Each winner will receive $${rewardInUSD} USD (${rewardInToken} ${payoutToken}) as a reward. Congratulations!
+      Each winner will receive $${new BigNumber(rewardInUSD)
+        .dp(2)
+        .toString()}} USD (${rewardInToken} ${payoutToken}) as a reward. Congratulations!
     `;
 
     if (participants.length > 0) {
@@ -344,7 +346,9 @@ Keep creating and good luck next time!`;
 
 You’ve been selected as one of the winners in the giveaway campaign by [${sponsorName}](https://www.waivio.com/@${guideName})!
 
-As a reward, you’ll receive ${rewardInUSD} USD (${rewardInToken} ${payoutToken}), well deserved!
+As a reward, you’ll receive ${new BigNumber(rewardInUSD)
+      .dp(2)
+      .toString()}} USD (${rewardInToken} ${payoutToken}), well deserved!
 
 Thanks again for participating and sharing great content.
 Stay tuned for more campaigns and opportunities to earn. You can explore active giveaways and track your rewards [here](https://www.waivio.com/rewards/global).
