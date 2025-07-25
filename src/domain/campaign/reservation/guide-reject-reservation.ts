@@ -180,7 +180,7 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         break;
     }
     await this.campaignSuspend.checkGuideForUnblock(guideName);
-    await this.campaignPostsRepository.delete({
+    await this.campaignPostsRepository.deleteOne({
       filter: { author: user.name, permlink: user.reviewPermlink },
     });
   }

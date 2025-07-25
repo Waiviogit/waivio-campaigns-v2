@@ -19,13 +19,6 @@ import { BlacklistDocumentType } from './types';
             schema.pre<BlacklistDocumentType>('save', function () {
               this.whiteList = [this.user];
             });
-            schema.post('findOne', async function (doc) {
-              if (doc && doc.followLists) {
-                doc.followLists = await this.model
-                  .find({ user: { $in: doc.followLists } })
-                  .lean();
-              }
-            });
             return schema;
           },
         },

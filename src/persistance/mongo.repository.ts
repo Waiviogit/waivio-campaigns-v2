@@ -10,6 +10,11 @@ import {
 } from 'mongoose';
 import { AggregateType } from './campaign/types';
 
+export type DeleteResultType = {
+  acknowledged: boolean;
+  deletedCount: number;
+};
+
 export type FindType<T> = {
   filter: FilterQuery<T>;
   projection?: object | string | string[];
@@ -27,27 +32,38 @@ export type FindOneAndDeleteType<T> = {
   options?: QueryOptions;
 };
 
-export interface MongoRepositoryInterface<T> {
-  find(params: FindType<T>): Promise<T[]>;
-  findOne(params: FindType<T>): Promise<T | null>;
-  create(params: T): Promise<T | null>;
-  findOneAndUpdate(params: UpdateType<T>): Promise<T | null>;
-  updateOne(params: UpdateType<T>): Promise<UpdateWriteOpResult | null>;
-  updateMany(params: UpdateType<T>): Promise<UpdateWriteOpResult | null>;
-  findOneAndDelete(params: FindOneAndDeleteType<T>): Promise<T | null>;
+export interface MongoRepositoryInterface<
+  TDocument,
+  TCreate = Partial<TDocument>,
+> {
+  find(params: FindType<TDocument>): Promise<TDocument[]>;
+  findOne(params: FindType<TDocument>): Promise<TDocument | null>;
+  create(params: TCreate): Promise<TDocument | null>;
+  findOneAndUpdate(params: UpdateType<TDocument>): Promise<TDocument | null>;
+  updateOne(params: UpdateType<TDocument>): Promise<UpdateWriteOpResult | null>;
+  updateMany(
+    params: UpdateType<TDocument>,
+  ): Promise<UpdateWriteOpResult | null>;
+  findOneAndDelete(
+    params: FindOneAndDeleteType<TDocument>,
+  ): Promise<TDocument | null>;
   aggregate({ pipeline }: AggregateType): Promise<Aggregate<Array<never>>>;
+  deleteOne(params: FindOneAndDeleteType<TDocument>): Promise<DeleteResultType>;
+  deleteMany(
+    params: FindOneAndDeleteType<TDocument>,
+  ): Promise<DeleteResultType>;
 }
 
 @Injectable()
-export abstract class MongoRepository<T>
-  implements MongoRepositoryInterface<T>
+export abstract class MongoRepository<TDocument, TCreate = Partial<TDocument>>
+  implements MongoRepositoryInterface<TDocument, TCreate>
 {
   protected constructor(
-    protected readonly model: Model<T>,
+    protected readonly model: Model<TDocument>,
     protected readonly logger: Logger,
   ) {}
 
-  async find(params: FindType<T>): Promise<T[]> {
+  async find(params: FindType<TDocument>): Promise<TDocument[]> {
     try {
       return this.model
         .find(params.filter, params.projection, params.options)
@@ -58,7 +74,7 @@ export abstract class MongoRepository<T>
     }
   }
 
-  async findOne(params: FindType<T>): Promise<T | null> {
+  async findOne(params: FindType<TDocument>): Promise<TDocument | null> {
     try {
       return this.model
         .findOne(params.filter, params.projection, params.options)
@@ -69,7 +85,9 @@ export abstract class MongoRepository<T>
     }
   }
 
-  async findOneAndUpdate(params: UpdateType<T>): Promise<T | null> {
+  async findOneAndUpdate(
+    params: UpdateType<TDocument>,
+  ): Promise<TDocument | null> {
     try {
       return this.model
         .findOneAndUpdate(params.filter, params.update, params.options)
@@ -80,7 +98,9 @@ export abstract class MongoRepository<T>
     }
   }
 
-  async updateOne(params: UpdateType<T>): Promise<UpdateWriteOpResult | null> {
+  async updateOne(
+    params: UpdateType<TDocument>,
+  ): Promise<UpdateWriteOpResult | null> {
     try {
       return this.model.updateOne(params.filter, params.update, params.options);
     } catch (error) {
@@ -89,7 +109,9 @@ export abstract class MongoRepository<T>
     }
   }
 
-  async updateMany(params: UpdateType<T>): Promise<UpdateWriteOpResult | null> {
+  async updateMany(
+    params: UpdateType<TDocument>,
+  ): Promise<UpdateWriteOpResult | null> {
     try {
       return this.model.updateMany(
         params.filter,
@@ -102,7 +124,9 @@ export abstract class MongoRepository<T>
     }
   }
 
-  async findOneAndDelete(params: FindOneAndDeleteType<T>): Promise<T | null> {
+  async findOneAndDelete(
+    params: FindOneAndDeleteType<TDocument>,
+  ): Promise<TDocument | null> {
     try {
       return this.model.findOneAndDelete(params.filter, params.options).lean();
     } catch (error) {
@@ -111,7 +135,27 @@ export abstract class MongoRepository<T>
     }
   }
 
-  async create(data: T): Promise<T | null> {
+  async deleteOne(
+    params: FindOneAndDeleteType<TDocument>,
+  ): Promise<DeleteResultType> {
+    try {
+      return this.model.deleteOne(params.filter, params.options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async deleteMany(
+    params: FindOneAndDeleteType<TDocument>,
+  ): Promise<DeleteResultType> {
+    try {
+      return this.model.deleteMany(params.filter, params.options);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async create(data: TCreate): Promise<TDocument | null> {
     try {
       return this.model.create(data);
     } catch (error) {

@@ -14,7 +14,7 @@ export class WobjectSubscriptionsRepository
 {
   constructor(
     @InjectModel(WobjectSubscriptions.name)
-    readonly model: Model<WobjectSubscriptionsDocumentType>,
+    protected readonly model: Model<WobjectSubscriptionsDocumentType>,
   ) {
     super(model, new Logger(WobjectSubscriptions.name));
   }

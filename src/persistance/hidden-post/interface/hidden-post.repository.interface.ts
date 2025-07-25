@@ -1,15 +1,5 @@
-import { HiddenPostDocumentType, HiddenPostFindOneType } from '../types';
+import { HiddenPostDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface HiddenPostRepositoryInterface {
-  find({
-    filter,
-    projection,
-    options,
-  }: HiddenPostFindOneType): Promise<HiddenPostDocumentType[]>;
-
-  findOne({
-    filter,
-    projection,
-    options,
-  }: HiddenPostFindOneType): Promise<HiddenPostDocumentType>;
-}
+export type HiddenPostRepositoryInterface =
+  MongoRepositoryInterface<HiddenPostDocumentType>;

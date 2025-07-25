@@ -1,7 +1,7 @@
 import {
   GiveawayParticipantsDocumentType,
-  GiveawayParticipantsFindType,
 } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
 export interface GetGiveawayMessageInterface {
   guideName: string;
@@ -19,14 +19,10 @@ export interface GetGiveawayPersonalMessageInterface
   userName: string;
 }
 
-export interface GiveawayParticipantsRepositoryInterface {
-  find({
-    filter,
-    projection,
-    options,
-  }: GiveawayParticipantsFindType): Promise<GiveawayParticipantsDocumentType[]>;
+export interface GiveawayParticipantsRepositoryInterface
+  extends MongoRepositoryInterface<GiveawayParticipantsDocumentType> {
   insertMany(
-    docs: { userName: string; activationPermlink: string }[],
+    docs: { userName: string; activationPermlink: string; eventId?: string }[],
   ): Promise<void>;
   getByNamesByActivationPermlink(activationPermlink: string): Promise<string[]>;
   getByNamesByActivationPermlinkEventId(

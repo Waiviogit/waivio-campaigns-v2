@@ -4,33 +4,21 @@ import { Model } from 'mongoose';
 import { GiveawayParticipants } from './giveaway-participants.schema';
 import { GiveawayParticipantsRepositoryInterface } from './interface';
 import { GiveawayParticipantsDocumentType } from './types/giveaway-participants.types';
-import { GiveawayParticipantsFindType } from './types/giveaway-participants.repository.type';
+import { MongoRepository } from '../mongo.repository';
 
 export class GiveawayParticipantsRepository
+  extends MongoRepository<GiveawayParticipantsDocumentType>
   implements GiveawayParticipantsRepositoryInterface
 {
-  private readonly logger = new Logger(GiveawayParticipantsRepository.name);
   constructor(
     @InjectModel(GiveawayParticipants.name)
-    private readonly model: Model<GiveawayParticipantsDocumentType>,
-  ) {}
-
-  async find({
-    filter,
-    projection,
-    options,
-  }: GiveawayParticipantsFindType): Promise<
-    GiveawayParticipantsDocumentType[]
-  > {
-    try {
-      return this.model.find(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+    protected readonly model: Model<GiveawayParticipantsDocumentType>,
+  ) {
+    super(model, new Logger(GiveawayParticipantsRepository.name));
   }
 
   async insertMany(
-    docs: { userName: string; activationPermlink: string }[],
+    docs: { userName: string; activationPermlink: string; eventId?: string }[],
   ): Promise<void> {
     try {
       await this.model.insertMany(docs);

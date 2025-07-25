@@ -1,13 +1,7 @@
-import {
-  UserSubscriptionsDocumentType,
-  UserSubscriptionsFindType,
-} from '../types';
+import { UserSubscriptionsDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface UserSubscriptionRepositoryInterface {
-  find({
-    filter,
-    projection,
-    options,
-  }: UserSubscriptionsFindType): Promise<UserSubscriptionsDocumentType[]>;
+export interface UserSubscriptionRepositoryInterface
+  extends MongoRepositoryInterface<UserSubscriptionsDocumentType> {
   findUserSubscriptions(userName: string): Promise<string[]>;
 }
