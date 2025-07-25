@@ -88,6 +88,9 @@ export class CampaignUser {
   @Prop({ type: String })
   messagesPermlink?: string;
 
+  @Prop({ type: String })
+  eventId?: string;
+
   createdAt: Date;
 }
 

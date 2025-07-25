@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { setTimeout } from 'timers/promises';
 import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
 import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
@@ -25,7 +26,11 @@ import * as _ from 'lodash';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
-import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
+import {
+  GetGiveawayMessageInterface,
+  GetGiveawayPersonalMessageInterface,
+  GiveawayParticipantsRepositoryInterface,
+} from '../../../persistance/giveaway-participants/interface';
 import { CampaignHelperInterface } from '../interface';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { PaymentReportInterface } from '../../campaign-payment/interface';
@@ -283,8 +288,72 @@ We encourage you to create and share original content to qualify for rewards in 
     });
   }
 
-  async giveawayObjectMessage() {
-    // remember giveaway date to create permlink
+  async getSponsorName(guideName: string): Promise<string> {
+    const sponsor = await this.userRepository.findOne({
+      filter: { name: guideName },
+      projection: {
+        alias: 1,
+        name: 1,
+      },
+    });
+    if (!sponsor) return guideName;
+    return sponsor.alias || sponsor.name;
+  }
+
+  getGiveawayUsualMessage({
+    guideName,
+    sponsorName,
+    payoutToken,
+    legalAgreement,
+    rewardInToken,
+    rewardInUSD,
+    winners,
+    participants,
+  }: GetGiveawayMessageInterface): string {
+    let message = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${guideName})!
+    The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: ${winners
+      .map((w) => `@${w}`)
+      .join(', ')}.
+      Each winner will receive $${rewardInUSD} USD (${rewardInToken} ${payoutToken}) as a reward. Congratulations!
+    `;
+
+    if (participants.length > 0) {
+      message += `Big thanks to all participants for joining and supporting the campaign: ${participants
+        .map((w) => `@${w}`)
+        .join(', ')}.\n`;
+    }
+    message += `Thank you all for joining and sharing great content!
+Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
+
+Keep creating and good luck next time!`;
+    if (legalAgreement) message += `\n\n${legalAgreement}`;
+
+    return message;
+  }
+
+  getPersonalGiveawayMessage({
+    sponsorName,
+    guideName,
+    rewardInUSD,
+    rewardInToken,
+    payoutToken,
+    legalAgreement,
+    userName,
+  }: GetGiveawayPersonalMessageInterface): string {
+    let message = `Congratulations @${userName}!
+
+You’ve been selected as one of the winners in the giveaway campaign by [${sponsorName}](https://www.waivio.com/@${guideName})!
+
+As a reward, you’ll receive ${rewardInUSD} USD (${rewardInToken} ${payoutToken}), well deserved!
+
+Thanks again for participating and sharing great content.
+Stay tuned for more campaigns and opportunities to earn. You can explore active giveaways and track your rewards [here](https://www.waivio.com/rewards/global).
+
+Keep creating and good luck in the next one!`;
+
+    if (legalAgreement) message += `\n\n${legalAgreement}`;
+
+    return message;
   }
 
   //giveaway on post its same comment can be updated when guide reject users
@@ -300,14 +369,7 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const rewardsApplicants = campaign.users.map((el) => el.name);
     if (rewardsApplicants.length === 0) return;
-    const sponsor = await this.userRepository.findOne({
-      filter: { name: campaign.guideName },
-      projection: {
-        alias: 1,
-        name: 1,
-      },
-    });
-    const sponsorName = sponsor.alias || sponsor.name;
+    const sponsorName = await this.getSponsorName(campaign.guideName);
 
     const winners = campaign.users
       .filter((u) => u.status === RESERVATION_STATUS.COMPLETED)
@@ -359,29 +421,19 @@ Keep creating and stay inspired!`;
     );
     const rewardInToken = new BigNumber(campaign.rewardInUSD)
       .dividedBy(payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision);
+      .decimalPlaces(tokenPrecision)
+      .toNumber();
 
-    let message = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${
-      campaign.guideName
-    })!
-    The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: ${winners
-      .map((w) => `@${w}`)
-      .join(', ')}.
-      Each winner will receive $${campaign.rewardInUSD} USD (${rewardInToken} ${
-      campaign.payoutToken
-    }) as a reward. Congratulations!
-    `;
-
-    if (participants.length > 0) {
-      message += `Big thanks to all participants for joining and supporting the campaign: ${participants
-        .map((w) => `@${w}`)
-        .join(', ')}.\n`;
-    }
-    message += `Thank you all for joining and sharing great content!
-Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
-
-Keep creating and good luck next time!`;
-    if (legalAgreement) message += `\n\n${legalAgreement}`;
+    const message = this.getGiveawayUsualMessage({
+      guideName: campaign.guideName,
+      sponsorName,
+      payoutToken: campaign.payoutToken,
+      legalAgreement,
+      rewardInToken,
+      rewardInUSD: campaign.rewardInUSD,
+      winners,
+      participants,
+    });
 
     const messageIsSent = await this.hiveClient.createComment({
       parent_author: campaign.guideName,
@@ -400,6 +452,86 @@ Keep creating and good luck next time!`;
     }
 
     console.log(`SEND MESSAGE GIVEAWAY ${messageIsSent}`);
+  }
+
+  async giveawayObjectWinMessage(_id: string, eventId: string): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        _id,
+        type: CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
+      },
+    });
+    if (!campaign) return;
+    const usersCompleted = campaign.users.filter(
+      (u) =>
+        u?.eventId === eventId && u.status === RESERVATION_STATUS.COMPLETED,
+    );
+    if (!usersCompleted?.length) return;
+    const participants = (
+      await this.giveawayParticipantsRepository.getByNamesByActivationPermlinkEventId(
+        campaign.activationPermlink,
+        eventId,
+      )
+    ).filter((el) => !usersCompleted.map((u) => u.name).includes(el));
+
+    const sponsorName = await this.getSponsorName(campaign.guideName);
+    const legalAgreement = await this.getLegalMessage(campaign);
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision)
+      .toNumber();
+
+    for (const [index, user] of usersCompleted.entries()) {
+      const permlink = `${user.name}-${eventId}`;
+
+      const message =
+        index === 0
+          ? this.getGiveawayUsualMessage({
+              guideName: campaign.guideName,
+              sponsorName,
+              payoutToken: campaign.payoutToken,
+              legalAgreement,
+              rewardInToken,
+              rewardInUSD: campaign.rewardInUSD,
+              winners: usersCompleted.map((el) => el.name),
+              participants,
+            })
+          : this.getPersonalGiveawayMessage({
+              guideName: campaign.guideName,
+              sponsorName,
+              payoutToken: campaign.payoutToken,
+              legalAgreement,
+              rewardInToken,
+              rewardInUSD: campaign.rewardInUSD,
+              userName: user.name,
+            });
+
+      const existComment = await this.hiveClient.getContent(
+        configService.getMentionsAccount(),
+        permlink,
+      );
+      if (existComment?.body === message) continue;
+
+      await this.hiveClient.createComment({
+        parent_author: user.rootName,
+        parent_permlink: user.reviewPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: message,
+        author: configService.getMentionsAccount(),
+        permlink: permlink,
+        key: configService.getMessagePostingKey(),
+      });
+
+      //we can comment once in 3 seconds with 1 account
+      await setTimeout(5 * 1000);
+    }
   }
 
   private async setExpireTTLGiveaway(

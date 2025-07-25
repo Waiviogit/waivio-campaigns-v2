@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { setTimeout } from 'timers/promises';
 import * as moment from 'moment';
 import {
   CAMPAIGN_PROVIDE,
@@ -25,6 +24,8 @@ import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/gi
 import { CampaignHelperInterface } from '../interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
+import crypto from 'node:crypto';
+import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 
 @Injectable()
 export class GiveawayObject implements GiveawayObjectInterface {
@@ -43,6 +44,8 @@ export class GiveawayObject implements GiveawayObjectInterface {
     private readonly userRepository: UserRepositoryInterface,
     @Inject(REVIEW_PROVIDE.CREATE)
     private readonly createReview: CreateReviewInterface,
+    @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
+    private readonly messageOnReview: MessageOnReviewInterface,
   ) {}
   async setNextRecurrentEvent(rruleString: string, _id: string): Promise<void> {
     const rruleObject = rrulestr(rruleString);
@@ -176,18 +179,18 @@ export class GiveawayObject implements GiveawayObjectInterface {
     if (!isInRange) return;
 
     let participants = await this.getParticipants(campaign);
+    const eventId = crypto.randomUUID();
 
     await this.giveawayParticipantsRepository.insertMany(
       participants.map((p) => ({
         userName: p,
         activationPermlink: campaign.activationPermlink,
+        eventId,
       })),
     );
 
     let budget = BigNumber(campaign.budget);
     let winnersCount = 0;
-
-    const messages = [];
 
     while (
       budget.gte(campaign.reward) &&
@@ -211,23 +214,16 @@ export class GiveawayObject implements GiveawayObjectInterface {
         campaign,
         userName: winner,
         post: lastPost,
+        eventId,
       });
-      messages.push({ author: winner, permlink: lastPost.permlink });
       winnersCount++;
-      console.log('winner', winner);
       participants = participants.filter((p) => p !== winner);
 
       budget = budget.minus(campaign.reward);
     }
 
     await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
-
-    if (!messages.length) return;
-
-    for (const message of messages) {
-      //messages allowed 1 per 3 sec
-      await setTimeout(5000);
-    }
+    this.messageOnReview.giveawayObjectWinMessage(_id, eventId);
   }
 
   async listener(key: string): Promise<void> {

@@ -561,6 +561,7 @@ export class CreateReview implements CreateReviewInterface {
     campaign,
     userName,
     post,
+    eventId,
   }: CreateGiveawayPayables): Promise<void> {
     const isGuest = userName.includes('_');
 
@@ -598,6 +599,7 @@ export class CreateReview implements CreateReviewInterface {
             completedAt: moment.utc().format(),
             reviewPermlink,
             reservationPermlink,
+            ...(eventId && { eventId }),
           },
         },
       },

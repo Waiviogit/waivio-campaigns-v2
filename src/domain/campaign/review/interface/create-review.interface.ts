@@ -31,6 +31,7 @@ export interface CreateGiveawayPayables {
   campaign: CampaignDocumentType;
   userName: string;
   post: PostDocumentType;
+  eventId?: string;
 }
 
 export interface RestoreReviewInterface {

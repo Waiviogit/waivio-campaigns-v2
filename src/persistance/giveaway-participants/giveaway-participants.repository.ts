@@ -48,4 +48,15 @@ export class GiveawayParticipantsRepository
 
     return (users || []).map((el) => el.userName);
   }
+
+  async getByNamesByActivationPermlinkEventId(
+    activationPermlink: string,
+    eventId: string,
+  ): Promise<string[]> {
+    const users = await this.find({
+      filter: { activationPermlink, eventId },
+    });
+
+    return (users || []).map((el) => el.userName);
+  }
 }
