@@ -534,6 +534,61 @@ Keep creating and stay inspired!`;
     }
   }
 
+  async rejectMessageObjectGiveaway(
+    activationPermlink: string,
+    reservationPermlink: string,
+  ): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        activationPermlink,
+        type: CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
+      },
+    });
+    if (!campaign) return;
+    const user = campaign.users.find(
+      (u) => u.reservationPermlink === reservationPermlink,
+    );
+    if (!user) return;
+
+    const sponsorName = await this.getSponsorName(campaign.guideName);
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision)
+      .toNumber();
+
+    const message = `Thank you for participating in giveaway. Unfortunately, [${sponsorName}](https://www.waivio.com/@${
+      campaign.guideName
+    }) has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${new BigNumber(
+      campaign.rewardInUSD,
+    )
+      .dp(2)
+      .toString()} USD (${rewardInToken} ${campaign.payoutToken}) this time.
+We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
+
+    const permlink = `${user.name}-${user.eventId}`;
+
+    await this.hiveClient.createComment({
+      parent_author: user.rootName,
+      parent_permlink: user.reviewPermlink,
+      title: '',
+      json_metadata: JSON.stringify({
+        activationPermlink: campaign.activationPermlink,
+      }),
+      body: message,
+      author: configService.getMentionsAccount(),
+      permlink: permlink,
+      key: configService.getMessagePostingKey(),
+    });
+
+    await setTimeout(5 * 1000);
+
+    this.giveawayObjectWinMessage(campaign._id.toString(), user.eventId);
+  }
+
   private async setExpireTTLGiveaway(
     activationPermlink: string,
   ): Promise<void> {

@@ -119,8 +119,15 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
       });
     }
     await this.reject(payload);
+    //need to be here because of completion status
     if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
-      await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
+      this.messageOnReview.giveawayMessage(campaign.activationPermlink);
+    }
+    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
+      this.messageOnReview.rejectMessageObjectGiveaway(
+        campaign.activationPermlink,
+        payload.reservationPermlink,
+      );
     }
 
     await this.campaignRedisClient.publish(
