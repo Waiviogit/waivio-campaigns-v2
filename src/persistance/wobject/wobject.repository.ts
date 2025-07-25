@@ -1,75 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, UpdateWriteOpResult } from 'mongoose';
+import { Model } from 'mongoose';
 import * as _ from 'lodash';
 
 import { Wobject } from './wobject.schema';
-import {
-  WobjectDocumentType,
-  WobjectFindType,
-  WobjectUpdateType,
-} from './types';
+import { WobjectDocumentType } from './types';
 import { WobjectRepositoryInterface } from './interface';
 import { CAMPAIGN_STATUS, WOBJECT_STATUS } from '../../common/constants';
+import { MongoRepository } from '../mongo.repository';
 
 @Injectable()
-export class WobjectRepository implements WobjectRepositoryInterface {
-  private readonly logger = new Logger(WobjectRepository.name);
+export class WobjectRepository
+  extends MongoRepository<WobjectDocumentType>
+  implements WobjectRepositoryInterface
+{
   constructor(
     @InjectModel(Wobject.name)
-    private readonly model: Model<WobjectDocumentType>,
-  ) {}
-
-  async findOne({
-    filter,
-    projection,
-    options,
-  }: WobjectFindType): Promise<WobjectDocumentType> {
-    try {
-      return this.model.findOne(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+    readonly model: Model<WobjectDocumentType>,
+  ) {
+    super(model, new Logger(WobjectRepository.name));
   }
 
-  async find({
-    filter,
-    projection,
-    options,
-  }: WobjectFindType): Promise<WobjectDocumentType[]> {
-    try {
-      return this.model.find(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-
-  async updateOne({
-    filter,
-    update,
-    options,
-  }: WobjectUpdateType): Promise<UpdateWriteOpResult> {
-    try {
-      return this.model.updateOne(filter, update, options);
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-
-  async updateMany({
-    filter,
-    update,
-    options,
-  }: WobjectUpdateType): Promise<UpdateWriteOpResult> {
-    try {
-      return this.model.updateMany(filter, update, options);
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-  /*
-  Domain
-   */
   async findUnavailableByLink(
     author_permlink: string,
   ): Promise<WobjectDocumentType> {
