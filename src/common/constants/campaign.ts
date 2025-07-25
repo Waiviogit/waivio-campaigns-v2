@@ -8,16 +8,20 @@ export const CAMPAIGN_STATUS = Object.freeze({
   REACHED_LIMIT: 'reachedLimit',
   ON_HOLD: 'onHold',
   SUSPENDED: 'suspended',
-});
+} as const);
 
 export const EXPIRED_CAMPAIGN_TYPE = Object.freeze({
   CAMPAIGN: 'campaign',
   ASSIGN: 'assign',
-});
+} as const);
 
 export const EXPIRED_MESSAGE_TYPE = Object.freeze({
   GIVEAWAY: 'giveaway_message',
-});
+} as const);
+
+export const RECURRENT_TYPE = Object.freeze({
+  GIVEAWAY_OBJECT: 'giveaway_object_recurrent',
+} as const);
 
 export const REWARDS_TAB = Object.freeze({
   ALL: 'all',
@@ -37,7 +41,7 @@ export const CAMPAIGN_SORTS = Object.freeze({
   LAST_ACTION: 'lastAction',
   LATEST: 'latest',
   INQUIRY_DATE: 'inquiryDate',
-});
+} as const);
 
 export const ACTIVE_CAMPAIGN_STATUSES = [
   CAMPAIGN_STATUS.ACTIVE,
@@ -61,24 +65,25 @@ export const RESERVATION_STATUS = Object.freeze({
   UNASSIGNED: 'unassigned',
   REJECTED: 'rejected',
   EXPIRED: 'expired',
-});
+} as const);
 
 export const REACH_TYPE = Object.freeze({
   LOCAL: 'local',
   GLOBAL: 'global',
-});
+} as const);
 
 export const CONVERSATION_STATUS = Object.freeze({
   ALL: 'all',
   CLOSE: 'close',
   OPEN: 'open',
-});
+} as const);
 
 export const CAMPAIGN_TYPE = Object.freeze({
   REVIEWS: 'reviews',
   MENTIONS: 'mentions',
   GIVEAWAYS: 'giveaways',
-});
+  GIVEAWAYS_OBJECT: 'giveaways_object',
+} as const);
 
 export const SUPPORTED_CURRENCY = Object.freeze({
   USD: 'USD',
@@ -92,7 +97,7 @@ export const SUPPORTED_CURRENCY = Object.freeze({
   RUB: 'RUB',
   UAH: 'UAH',
   CHF: 'CHF',
-});
+} as const);
 
 export const PAYOUT_TOKEN = Object.freeze({
   HIVE: 'HIVE',

@@ -32,6 +32,7 @@ import {
 import { CampaignUserDocumentType } from '../../../persistance/campaign/types';
 import { ObjectId } from 'mongoose';
 import * as moment from 'moment-timezone';
+import { RRule } from 'rrule';
 
 @ValidatorConstraint({ name: 'isTimezone', async: false })
 export class IsTimezoneConstraint implements ValidatorConstraintInterface {
@@ -40,6 +41,22 @@ export class IsTimezoneConstraint implements ValidatorConstraintInterface {
   }
   defaultMessage(args: ValidationArguments): string {
     return 'Timezone ($value) is not a valid IANA timezone';
+  }
+}
+
+@ValidatorConstraint({ name: 'isRRule', async: false })
+class IsRRuleConstraint implements ValidatorConstraintInterface {
+  validate(value: string): boolean {
+    if (typeof value !== 'string') return false;
+    try {
+      RRule.fromString(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  defaultMessage(): string {
+    return 'recurrenceRule must be a valid RRULE string';
   }
 }
 
@@ -453,4 +470,27 @@ export class CampaignDto {
     description: 'string: E.g., "Europe/Kyiv", "America/New_York"',
   })
   timezone?: string;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @IsNotEmpty()
+  @IsString()
+  @Validate(IsRRuleConstraint)
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'RRULE (Recurrence Rule)',
+  })
+  recurrenceRule?: string;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @IsNumber()
+  @Min(1)
+  @ApiProperty({ type: Number, required: false })
+  durationDays?: number;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @IsNumber()
+  @Min(1)
+  @ApiProperty({ type: Number, required: false })
+  winnersNumber?: number;
 }

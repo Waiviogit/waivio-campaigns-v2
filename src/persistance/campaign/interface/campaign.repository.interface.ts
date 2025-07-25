@@ -1,52 +1,14 @@
 import {
   ActivateCampaignType,
-  AggregateType,
   CampaignDocumentType,
-  CampaignFindOneAndDeleteType,
-  CampaignFindType,
-  CampaignUpdateType,
-  CreateCampaignType,
   DeleteCampaignType,
   findCampaignByStatusGuideNameActivation,
   UpdateCampaignType,
 } from '../types';
-import { Aggregate, UpdateWriteOpResult } from 'mongoose';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface CampaignRepositoryInterface {
-  create(campaign: CreateCampaignType): Promise<CampaignDocumentType>;
-  find({
-    filter,
-    projection,
-    options,
-  }: CampaignFindType): Promise<CampaignDocumentType[]>;
-  findOne({
-    filter,
-    projection,
-    options,
-  }: CampaignFindType): Promise<CampaignDocumentType>;
-  findOneAndUpdate({
-    filter,
-    update,
-    options,
-  }: CampaignUpdateType): Promise<CampaignDocumentType>;
-  findOneAndDelete({
-    filter,
-    options,
-  }: CampaignFindOneAndDeleteType): Promise<CampaignDocumentType>;
-  updateOne({
-    filter,
-    update,
-    options,
-  }: CampaignUpdateType): Promise<UpdateWriteOpResult>;
-  aggregate({ pipeline }: AggregateType): Promise<Aggregate<Array<never>>>;
-  updateMany({
-    filter,
-    update,
-    options,
-  }: CampaignUpdateType): Promise<UpdateWriteOpResult>;
-  /*
-Domain
- */
+export interface CampaignRepositoryInterface
+  extends MongoRepositoryInterface<CampaignDocumentType> {
   findOneSuspended(guideName: string): Promise<CampaignDocumentType>;
   findActiveByActivationLink(
     activationPermlink: string,

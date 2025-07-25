@@ -85,6 +85,7 @@ import { RestoreCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { AppDocumentType } from '../../../persistance/app/types';
+import { PostDocumentType } from '../../../persistance/post/types';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -488,7 +489,11 @@ export class CreateReview implements CreateReviewInterface {
         });
       }
 
-      if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+      if (
+        [CAMPAIGN_TYPE.GIVEAWAYS, CAMPAIGN_TYPE.GIVEAWAYS_OBJECT].includes(
+          campaign.type as 'giveaways' | 'giveaways_object',
+        )
+      ) {
         await this.createGiveawayPayables({
           campaign,
           userName: rejectedUser.name,
@@ -530,10 +535,33 @@ export class CreateReview implements CreateReviewInterface {
     return new BigNumber(0);
   }
 
+  private getGiveawayReviewPermlink(
+    campaignType: string,
+    post: PostDocumentType,
+  ): string {
+    if (campaignType === CAMPAIGN_TYPE.GIVEAWAYS) {
+      return `${post.author}/${post.permlink}`;
+    }
+    return post.permlink;
+  }
+
+  private getGiveawayBotName(
+    campaignType: string,
+    post: PostDocumentType,
+    isGuest: boolean,
+  ): string {
+    if (campaignType === CAMPAIGN_TYPE.GIVEAWAYS) {
+      return isGuest ? 'botName' : '';
+    }
+
+    return isGuest ? post.root_author : '';
+  }
+
   async createGiveawayPayables({
     campaign,
     userName,
     post,
+    eventId,
   }: CreateGiveawayPayables): Promise<void> {
     const isGuest = userName.includes('_');
 
@@ -547,7 +575,8 @@ export class CreateReview implements CreateReviewInterface {
       .decimalPlaces(tokenPrecision);
 
     const userReservationObject = campaign.guideName;
-    const reviewPermlink = `${post.author}/${post.permlink}`;
+
+    const reviewPermlink = this.getGiveawayReviewPermlink(campaign.type, post);
 
     const campaignReviewType = {
       ...campaign,
@@ -570,6 +599,7 @@ export class CreateReview implements CreateReviewInterface {
             completedAt: moment.utc().format(),
             reviewPermlink,
             reservationPermlink,
+            ...(eventId && { eventId }),
           },
         },
       },
@@ -587,11 +617,11 @@ export class CreateReview implements CreateReviewInterface {
       payments,
       campaign: campaignReviewType,
       app: '',
-      botName: isGuest ? 'botName' : '',
+      botName: this.getGiveawayBotName(campaign.type, post, isGuest),
       reviewPermlink,
       title: post.title,
       reservationPermlink,
-      campaignType: CAMPAIGN_TYPE.GIVEAWAYS,
+      campaignType: campaign.type,
     });
   }
 

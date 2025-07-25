@@ -1,16 +1,7 @@
-import {
-  WobjectSubscriptionsDocumentType,
-  WobjectSubscriptionsFindType,
-} from '../types';
+import { WobjectSubscriptionsDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface WobjectSubscriptionsRepositoryInterface {
-  find({
-    filter,
-    projection,
-    options,
-  }: WobjectSubscriptionsFindType): Promise<WobjectSubscriptionsDocumentType[]>;
-  /*
-Domain
- */
+export interface WobjectSubscriptionsRepositoryInterface
+  extends MongoRepositoryInterface<WobjectSubscriptionsDocumentType> {
   findUserSubscriptions(objectLink: string): Promise<string[]>;
 }

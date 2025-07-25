@@ -1,7 +1,5 @@
-import { VoteSponsor } from '../sponsors-bot.schema';
-import {SponsorsBotDocumentType, VoteSponsorType} from './sponsors-bot.types';
-import {FilterQuery, QueryOptions} from "mongoose";
-
+import { SponsorsBotDocumentType, VoteSponsorType } from './sponsors-bot.types';
+import { FilterQuery, QueryOptions } from 'mongoose';
 
 export type CreateSponsorBotType = {
   botName: string;

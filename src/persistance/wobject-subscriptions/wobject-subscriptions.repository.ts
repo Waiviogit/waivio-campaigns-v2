@@ -1,40 +1,24 @@
-import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as _ from 'lodash';
 
-import {
-  WobjectSubscriptionsDocumentType,
-  WobjectSubscriptionsFindType,
-} from './types';
+import { WobjectSubscriptionsDocumentType } from './types';
 import { WobjectSubscriptions } from './wobject-subscriptions.schema';
+import { MongoRepository } from '../mongo.repository';
 import { WobjectSubscriptionsRepositoryInterface } from './interface';
+import { Logger } from '@nestjs/common';
 
 export class WobjectSubscriptionsRepository
+  extends MongoRepository<WobjectSubscriptionsDocumentType>
   implements WobjectSubscriptionsRepositoryInterface
 {
-  private readonly logger = new Logger(WobjectSubscriptionsRepository.name);
   constructor(
     @InjectModel(WobjectSubscriptions.name)
-    private readonly model: Model<WobjectSubscriptionsDocumentType>,
-  ) {}
-
-  async find({
-    filter,
-    projection,
-    options,
-  }: WobjectSubscriptionsFindType): Promise<
-    WobjectSubscriptionsDocumentType[]
-  > {
-    try {
-      return this.model.find(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+    protected readonly model: Model<WobjectSubscriptionsDocumentType>,
+  ) {
+    super(model, new Logger(WobjectSubscriptions.name));
   }
-  /*
-    Domain
-     */
+
   async findUserSubscriptions(objectLink: string): Promise<string[]> {
     const subscriptions = await this.find({
       filter: { following: objectLink },

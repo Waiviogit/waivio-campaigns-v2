@@ -5,35 +5,20 @@ import * as _ from 'lodash';
 
 import { UserSubscriptions } from './user-subscriptions.schema';
 
-import {
-  UserSubscriptionsDocumentType,
-  UserSubscriptionsFindType,
-} from './types';
+import { UserSubscriptionsDocumentType } from './types';
 import { UserSubscriptionRepositoryInterface } from './interface';
+import { MongoRepository } from '../mongo.repository';
 
 export class UserSubscriptionsRepository
+  extends MongoRepository<UserSubscriptionsDocumentType>
   implements UserSubscriptionRepositoryInterface
 {
-  private readonly logger = new Logger(UserSubscriptionsRepository.name);
   constructor(
     @InjectModel(UserSubscriptions.name)
-    private readonly model: Model<UserSubscriptionsDocumentType>,
-  ) {}
-
-  async find({
-    filter,
-    projection,
-    options,
-  }: UserSubscriptionsFindType): Promise<UserSubscriptionsDocumentType[]> {
-    try {
-      return this.model.find(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+    protected readonly model: Model<UserSubscriptionsDocumentType>,
+  ) {
+    super(model, new Logger(UserSubscriptionsRepository.name));
   }
-  /*
-  Domain
-   */
   async findUserSubscriptions(userName: string): Promise<string[]> {
     const subscriptions = await this.find({ filter: { following: userName } });
     return _.map(subscriptions, 'follower');

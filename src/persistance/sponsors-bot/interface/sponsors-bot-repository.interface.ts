@@ -1,4 +1,5 @@
 import {
+  CreateSponsorBotType,
   GetRequestSponsorBotType,
   GetSponsorsBotType,
   RemoveSponsorBotRuleType,
@@ -8,8 +9,17 @@ import {
   SponsorsBotFindType,
   UpdateSponsorsStatusType,
 } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
 export interface SponsorsBotRepositoryInterface {
+  create({
+    botName,
+    sponsor,
+    votingPercent,
+    enabled,
+    note,
+    expiredAt,
+  }: CreateSponsorBotType): Promise<boolean>;
   setSponsorsBot(data: SetMatchBotType): Promise<boolean>;
   removeRule({ botName, sponsor }: RemoveSponsorBotRuleType): Promise<boolean>;
   getSponsorsBot({

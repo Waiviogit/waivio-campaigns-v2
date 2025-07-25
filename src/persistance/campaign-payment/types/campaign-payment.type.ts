@@ -7,13 +7,3 @@ export type CampaignPaymentBeneficiariesType = {
 };
 
 export type CampaignPaymentDocumentType = CampaignPayment & Document;
-
-export type CreateCampaignPaymentType = Omit<
-  CampaignPayment,
-  '_id' | 'createdAt'
->;
-
-export type DeleteResultType = {
-  acknowledged: boolean;
-  deletedCount: number;
-};

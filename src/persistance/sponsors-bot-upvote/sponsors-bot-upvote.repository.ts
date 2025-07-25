@@ -9,22 +9,23 @@ import {
   SponsorsBotUpvoteDocumentType,
   UpdateStatusDataType,
   UpdateStatusType,
-  UpdateUpvotesType,
-  UpvotesFindType,
 } from './type';
 import { SponsorsBotUpvote } from './sponsors-bot-upvote.schema';
 import { SponsorsBotUpvoteRepositoryInterface } from './interface';
 import { COLLECTION } from '../../common/constants';
+import { MongoRepository } from '../mongo.repository';
 
 @Injectable()
 export class SponsorsBotUpvoteRepository
+  extends MongoRepository<SponsorsBotUpvoteDocumentType>
   implements SponsorsBotUpvoteRepositoryInterface
 {
-  private readonly logger = new Logger(SponsorsBotUpvoteRepository.name);
   constructor(
     @InjectModel(SponsorsBotUpvote.name)
-    private readonly model: Model<SponsorsBotUpvoteDocumentType>,
-  ) {}
+    protected readonly model: Model<SponsorsBotUpvoteDocumentType>,
+  ) {
+    super(model, new Logger(SponsorsBotUpvoteRepository.name));
+  }
 
   async create(
     upvote: CreateUpvoteType,
@@ -139,42 +140,6 @@ export class SponsorsBotUpvoteRepository
       return !!result.modifiedCount;
     } catch (error) {
       return false;
-    }
-  }
-
-  async updateMany({
-    filter,
-    update,
-    options,
-  }: UpdateUpvotesType): Promise<UpdateWriteOpResult> {
-    try {
-      return this.model.updateMany(filter, update, options);
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-
-  async findOne({
-    filter,
-    projection,
-    options,
-  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType> {
-    try {
-      return this.model.findOne(filter, projection, options);
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-
-  async find({
-    filter,
-    projection,
-    options,
-  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType[]> {
-    try {
-      return this.model.find(filter, projection, options);
-    } catch (error) {
-      this.logger.error(error.message);
     }
   }
 }

@@ -1,27 +1,10 @@
-import {
-  BlacklistDocumentType,
-  BlacklistFindOneType,
-  BlacklistFindOneTypeOut,
-  BlacklistUpdateType,
-} from '../types';
-import { UpdateWriteOpResult } from 'mongoose';
+import { BlacklistDocumentType, BlacklistFindOneTypeOut } from '../types';
 
-export interface BlacklistRepositoryInterface {
-  findOne({
-    filter,
-    projection,
-    options,
-  }: BlacklistFindOneType): Promise<BlacklistFindOneTypeOut>;
+import { FindType, MongoRepositoryInterface } from '../../mongo.repository';
 
-  updateOne({
-    filter,
-    update,
-    options,
-  }: BlacklistUpdateType): Promise<UpdateWriteOpResult>;
-
-  find({
-    filter,
-    projection,
-    options,
-  }: BlacklistFindOneType): Promise<BlacklistDocumentType[]>;
+export interface BlacklistRepositoryInterface
+  extends MongoRepositoryInterface<BlacklistDocumentType> {
+  findOne(
+    params: FindType<BlacklistDocumentType>,
+  ): Promise<BlacklistFindOneTypeOut>;
 }

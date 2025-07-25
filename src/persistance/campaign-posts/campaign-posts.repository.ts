@@ -4,40 +4,18 @@ import { Model } from 'mongoose';
 
 import { CampaignPost } from './campaign-posts.schema';
 import { CampaignPostsDocumentType } from './types';
-import {
-  CampaignPostCreateInterface,
-  CampaignPostDeleteInterface,
-  CampaignPostsRepositoryInterface,
-} from './interface';
-import { DeleteResultType } from '../types/mongo';
+import { CampaignPostsRepositoryInterface } from './interface';
+
+import { MongoRepository } from '../mongo.repository';
 
 export class CampaignPostsRepository
+  extends MongoRepository<CampaignPostsDocumentType>
   implements CampaignPostsRepositoryInterface
 {
-  private readonly logger = new Logger(CampaignPostsRepository.name);
   constructor(
     @InjectModel(CampaignPost.name)
-    private readonly model: Model<CampaignPostsDocumentType>,
-  ) {}
-
-  async create(
-    doc: CampaignPostCreateInterface,
-  ): Promise<CampaignPostsDocumentType> {
-    try {
-      return this.model.create(doc);
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-
-  async delete({
-    filter,
-    options,
-  }: CampaignPostDeleteInterface): Promise<DeleteResultType> {
-    try {
-      return this.model.deleteOne(filter, options);
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+    protected readonly model: Model<CampaignPostsDocumentType>,
+  ) {
+    super(model, new Logger(CampaignPostsRepository.name));
   }
 }

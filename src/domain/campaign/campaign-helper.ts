@@ -53,9 +53,13 @@ export class CampaignHelper implements CampaignHelperInterface {
     private readonly hiveClient: HiveClientInterface,
   ) {}
 
-  async setExpireTTLCampaign(expiredAt: Date, _id: ObjectId): Promise<void> {
+  async setExpireTTLCampaign(
+    expiredAt: Date,
+    _id: ObjectId | string,
+  ): Promise<void> {
     const expire = moment.utc(expiredAt).unix() - moment.utc().unix();
     if (expire < 0) return;
+
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.CAMPAIGN_EXPIRE}${_id.toString()}`,
       expire,

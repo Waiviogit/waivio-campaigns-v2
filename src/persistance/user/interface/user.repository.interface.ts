@@ -1,17 +1,8 @@
-import { UserCampaignType, UserDocumentType, UserFindOneType } from '../types';
+import { UserCampaignType, UserDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface UserRepositoryInterface {
-  findOne({
-    filter,
-    projection,
-    options,
-  }: UserFindOneType): Promise<UserDocumentType>;
-
-  find({
-    filter,
-    projection,
-    options,
-  }: UserFindOneType): Promise<UserDocumentType[]>;
+export interface UserRepositoryInterface
+  extends MongoRepositoryInterface<UserDocumentType> {
   findByNames(names: string[]): Promise<string[]>;
   findCampaignsUsers(names: string[]): Promise<UserCampaignType[]>;
 }

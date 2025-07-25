@@ -136,4 +136,5 @@ export const REWARDS_PROVIDE = Object.freeze({
   GUIDE_RESERVATIONS: 'GuideReservations',
   USER_HISTORY: 'UserHistoryRewards',
   GIVEAWAY: 'Giveaway',
+  GIVEAWAY_OBJECT: 'GiveawayObject',
 });
