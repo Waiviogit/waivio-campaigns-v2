@@ -1,29 +1,6 @@
-import {
-  FilterQuery,
-  PipelineStage,
-  QueryOptions,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
-import { CampaignDocumentType } from './campaign.types';
+import { PipelineStage } from 'mongoose';
+
 import { Campaign } from '../campaign.schema';
-
-export type CampaignFindType = {
-  filter: FilterQuery<CampaignDocumentType>;
-  projection?: object | string | string[];
-  options?: QueryOptions;
-};
-
-export type CampaignUpdateType = {
-  filter: FilterQuery<CampaignDocumentType>;
-  update: UpdateWithAggregationPipeline | UpdateQuery<CampaignDocumentType>;
-  options?: QueryOptions;
-};
-
-export type CampaignFindOneAndDeleteType = {
-  filter: FilterQuery<CampaignDocumentType>;
-  options?: QueryOptions;
-};
 
 export type ActivateCampaignType = {
   _id: string;

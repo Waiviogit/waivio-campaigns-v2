@@ -3,39 +3,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as _ from 'lodash';
 import { User } from './user.schema';
-import { UserCampaignType, UserDocumentType, UserFindOneType } from './types';
+import { UserCampaignType, UserDocumentType } from './types';
 import { UserRepositoryInterface } from './interface';
+import { MongoRepository } from '../mongo.repository';
 
 @Injectable()
-export class UserRepository implements UserRepositoryInterface {
-  private readonly logger = new Logger(UserRepository.name);
+export class UserRepository
+  extends MongoRepository<UserDocumentType>
+  implements UserRepositoryInterface
+{
   constructor(
     @InjectModel(User.name)
-    private readonly model: Model<UserDocumentType>,
-  ) {}
-
-  async findOne({
-    filter,
-    projection,
-    options,
-  }: UserFindOneType): Promise<UserDocumentType> {
-    try {
-      return this.model.findOne(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
-  }
-
-  async find({
-    filter,
-    projection,
-    options,
-  }: UserFindOneType): Promise<UserDocumentType[]> {
-    try {
-      return this.model.find(filter, projection, options).lean();
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+    protected readonly model: Model<UserDocumentType>,
+  ) {
+    super(model, new Logger(UserRepository.name));
   }
 
   async findByNames(names: string[]): Promise<string[]> {

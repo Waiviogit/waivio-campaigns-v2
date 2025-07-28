@@ -7,6 +7,9 @@ export class GiveawayParticipants {
 
   @Prop({ type: String, required: true })
   userName: string;
+
+  @Prop({ type: String, required: false })
+  eventId?: string;
 }
 
 export const GiveawayParticipantsSchema =

@@ -3,12 +3,12 @@ import {
   GetUpvoteType,
   SponsorsBotUpvoteDocumentType,
   UpdateStatusType,
-  UpdateUpvotesType,
-  UpvotesFindType,
 } from '../type';
-import { UpdateWriteOpResult } from 'mongoose';
 
-export interface SponsorsBotUpvoteRepositoryInterface {
+import { MongoRepositoryInterface } from '../../mongo.repository';
+
+export interface SponsorsBotUpvoteRepositoryInterface
+  extends MongoRepositoryInterface<SponsorsBotUpvoteDocumentType> {
   create(upvote: CreateUpvoteType): Promise<SponsorsBotUpvoteDocumentType>;
   getUpvotes(): Promise<GetUpvoteType[]>;
   updateStatus({
@@ -17,19 +17,4 @@ export interface SponsorsBotUpvoteRepositoryInterface {
     currentVote,
     voteWeight,
   }: UpdateStatusType): Promise<boolean>;
-  updateMany({
-    filter,
-    update,
-    options,
-  }: UpdateUpvotesType): Promise<UpdateWriteOpResult>;
-  findOne({
-    filter,
-    projection,
-    options,
-  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType>;
-  find({
-    filter,
-    projection,
-    options,
-  }: UpvotesFindType): Promise<SponsorsBotUpvoteDocumentType[]>;
 }

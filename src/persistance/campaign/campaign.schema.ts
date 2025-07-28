@@ -88,6 +88,9 @@ export class CampaignUser {
   @Prop({ type: String })
   messagesPermlink?: string;
 
+  @Prop({ type: String })
+  eventId?: string;
+
   createdAt: Date;
 }
 
@@ -270,6 +273,24 @@ export class Campaign {
     required: false,
   })
   timezone?: string;
+
+  @Prop({
+    type: String,
+    required: false,
+  })
+  recurrenceRule?: string;
+
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  durationDays?: number;
+
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  winnersNumber?: number;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);

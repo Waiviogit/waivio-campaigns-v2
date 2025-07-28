@@ -13,5 +13,10 @@ export interface MessageOnReviewInterface {
     reservationPermlink,
   }: reviewMessageRejectType): Promise<void>;
   giveawayMessage(activationPermlink: string): Promise<void>;
+  giveawayObjectWinMessage(_id: string, eventId: string): Promise<void>;
+  rejectMessageObjectGiveaway(
+    activationPermlink: string,
+    reservationPermlink: string,
+  ): Promise<void>;
   listener(key: string): Promise<void>;
 }

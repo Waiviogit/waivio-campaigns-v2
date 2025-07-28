@@ -1,6 +1,11 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import { BLACKLIST_PROVIDE, CAMPAIGN_PROVIDE } from '../../common/constants';
+import {
+  BLACKLIST_PROVIDE,
+  CAMPAIGN_PROVIDE,
+  CAMPAIGN_TYPE,
+  REWARDS_PROVIDE,
+} from '../../common/constants';
 import { CreateCampaignInterface } from './interface';
 import { CampaignHelperInterface } from './interface';
 import {
@@ -8,6 +13,7 @@ import {
   CreateCampaignType,
 } from '../../persistance/campaign/types';
 import { BlacklistHelperInterface } from '../blacklist/interface';
+import { GiveawayObjectInterface } from './rewards/interface/giveaway-object.interface';
 
 const MIN_CAMPAIGN_REWARD_USD = 0.5;
 
@@ -20,6 +26,8 @@ export class CreateCampaign implements CreateCampaignInterface {
     private readonly blacklistHelper: BlacklistHelperInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
+    private readonly giveawayObject: GiveawayObjectInterface,
   ) {}
 
   async create(
@@ -58,6 +66,12 @@ export class CreateCampaign implements CreateCampaignInterface {
         createdCampaign.expiredAt,
         createdCampaign._id,
       );
+      if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
+        await this.giveawayObject.setNextRecurrentEvent(
+          campaign.recurrenceRule,
+          createdCampaign._id.toString(),
+        );
+      }
     }
     return createdCampaign;
   }

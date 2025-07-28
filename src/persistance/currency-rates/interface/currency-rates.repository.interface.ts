@@ -1,15 +1,5 @@
-import { CurrencyRatesDocumentType, CurrencyRatesFindType } from '../types';
+import { CurrencyRatesDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface CurrencyRatesRepositoryInterface {
-  findOne({
-    filter,
-    projection,
-    options,
-  }: CurrencyRatesFindType): Promise<CurrencyRatesDocumentType>;
-
-  find({
-    filter,
-    projection,
-    options,
-  }: CurrencyRatesFindType): Promise<CurrencyRatesDocumentType[]>;
-}
+export type CurrencyRatesRepositoryInterface =
+  MongoRepositoryInterface<CurrencyRatesDocumentType>;

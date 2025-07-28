@@ -1,15 +1,5 @@
-import { PostDocumentType, PostFindType } from '../types';
+import { PostDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface PostRepositoryInterface {
-  findOne({
-    filter,
-    projection,
-    options,
-  }: PostFindType): Promise<PostDocumentType>;
-
-  find({
-    filter,
-    projection,
-    options,
-  }: PostFindType): Promise<PostDocumentType[]>;
-}
+export type PostRepositoryInterface =
+  MongoRepositoryInterface<PostDocumentType>;

@@ -1,9 +1,5 @@
-import { MutedUserDocumentType, MutedUserFindOneType } from '../types';
+import { MutedUserDocumentType } from '../types';
+import { MongoRepositoryInterface } from '../../mongo.repository';
 
-export interface MutedUserRepositoryInterface {
-  find({
-    filter,
-    projection,
-    options,
-  }: MutedUserFindOneType): Promise<MutedUserDocumentType[]>;
-}
+export type MutedUserRepositoryInterface =
+  MongoRepositoryInterface<MutedUserDocumentType>;
