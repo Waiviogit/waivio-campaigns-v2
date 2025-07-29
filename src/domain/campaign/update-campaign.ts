@@ -33,6 +33,7 @@ export class UpdateCampaign implements UpdateCampaignInterface {
       await this.campaignHelper.setExpireTTLCampaign(
         updatedCampaign.expiredAt,
         updatedCampaign._id,
+        campaign.timezone,
       );
     }
     return updatedCampaign;

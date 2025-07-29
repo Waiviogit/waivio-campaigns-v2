@@ -36,6 +36,7 @@ import { HiveEngineClientInterface } from '../../services/hive-engine-api/interf
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 import { configService } from '../../common/config';
 import { HiveClientInterface } from '../../services/hive-api/interface';
+import { castToUTC } from '../../common/helpers';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -57,8 +58,10 @@ export class CampaignHelper implements CampaignHelperInterface {
   async setExpireTTLCampaign(
     expiredAt: Date,
     _id: ObjectId | string,
+    timezone?: string,
   ): Promise<void> {
-    const expire = moment.utc(expiredAt).unix() - moment.utc().unix();
+    const utcDate = castToUTC({ date: expiredAt, timezone });
+    const expire = moment.utc(utcDate).unix() - moment.utc().unix();
     if (expire < 0) return;
 
     await this.campaignRedisClient.setex(
