@@ -1,73 +1,241 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Waivio Campaigns Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A comprehensive campaign management service for the Waivio platform, built with NestJS and designed to handle various types of marketing campaigns including reviews, giveaways, and contests.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+### Campaign Management
+- **Campaign Creation & Management**: Create, update, and delete campaigns with comprehensive validation
+- **Campaign Types**: Support for Reviews, Giveaways, and Contests
+- **Campaign Status Management**: Pending, Active, Suspended, and Expired states
+- **Budget & Reward Management**: Flexible reward systems with USD conversion
+- **Reservation System**: Time-based campaign reservations with scheduling
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Blockchain Integration
+- **Hive Blockchain Integration**: Full integration with Hive blockchain for campaign activation/deactivation
+- **Hive Engine Support**: Token operations and market data integration
+- **Real-time Processing**: Hive and Engine block processors for live updates
+- **Smart Contract Integration**: Automated campaign execution on blockchain
 
-## Installation
+### Advanced Features
+- **Fraud Detection**: Built-in fraud detection and prevention mechanisms
+- **Blacklist/Whitelist Management**: User filtering capabilities
+- **Sponsors Bot**: Automated upvoting and engagement management
+- **Payment Processing**: Integrated payment system with multiple token support
+- **Notification System**: Real-time notifications for campaign events
+- **Currency Conversion**: Multi-currency support with real-time rates
 
-```bash
-$ npm install
+### Technical Features
+- **RESTful API**: Comprehensive API with Swagger documentation
+- **Real-time Processing**: Event-driven architecture with Redis
+- **Scheduled Jobs**: Automated tasks for campaign management
+- **Multi-database Support**: MongoDB with separate databases for different data types
+- **Caching**: Redis-based caching for performance optimization
+
+## 🏗️ Architecture
+
+The service follows a clean architecture pattern with clear separation of concerns:
+
+```
+src/
+├── api/                 # API layer (controllers, guards, pipes)
+├── common/             # Shared utilities, constants, configs
+├── database/           # Database connection management
+├── domain/             # Business logic layer
+├── persistance/        # Data access layer (repositories, schemas)
+├── services/           # External service integrations
+└── main.ts            # Application entry point
 ```
 
-## Running the app
+### Key Components
+
+- **API Controllers**: Handle HTTP requests for campaign operations
+- **Domain Services**: Core business logic for campaign management
+- **Processors**: Real-time blockchain data processing
+- **Repositories**: Data access layer with MongoDB
+- **External Services**: Hive API, Redis, and other integrations
+
+## 🛠️ Technology Stack
+
+- **Framework**: NestJS 8.x
+- **Language**: TypeScript
+- **Database**: MongoDB with Mongoose ODM
+- **Cache**: Redis
+- **Blockchain**: Hive & Hive Engine integration
+- **Documentation**: Swagger/OpenAPI
+- **Testing**: Jest
+- **Containerization**: Docker
+
+## 📋 Prerequisites
+
+- Node.js 20.10+
+- MongoDB 4.4+
+- Redis 6.0+
+- Docker (optional)
+
+## 🚀 Quick Start
+
+### Environment Setup
+
+Create environment files in the `env/` directory:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# env/development.env
+NODE_ENV=development
+PORT=3000
+MONGO_HOST=localhost
+MONGO_PORT=27017
+WAIVIO_DB=waivio
+CURRENCIES_DB=currencies
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB_BLOCKS=0
+API_KEY=your_api_key
+HIVE_AUTH=your_hive_auth_key
 ```
 
-## Test
+### Installation
 
 ```bash
-# unit tests
-$ npm run test
+# Install dependencies
+npm install
 
-# e2e tests
-$ npm run test:e2e
+# Development
+npm run start:dev
 
-# test coverage
-$ npm run test:cov
+# Production build
+npm run build
+npm run start:prod
+
+# Docker
+docker-compose up --build
 ```
 
-## Support
+### API Documentation
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Once running, access the Swagger documentation at:
+```
+http://localhost:3000/campaigns-v2/docs
+```
 
-## Stay in touch
+## 📚 API Endpoints
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Campaign Management
+- `POST /campaigns-v2/campaign` - Create new campaign
+- `PATCH /campaigns-v2/campaign` - Update campaign
+- `DELETE /campaigns-v2/campaign` - Delete campaign
+- `GET /campaigns-v2/campaign/:id` - Get campaign by ID
+- `POST /campaigns-v2/campaign/activate` - Validate campaign activation
+- `POST /campaigns-v2/campaign/deactivate` - Validate campaign deactivation
 
-## License
+### Campaign Operations
+- `GET /campaigns-v2/campaigns/manager/:guideName` - Get active campaigns for guide
+- `GET /campaigns-v2/campaigns/balance/:guideName` - Get guide balance
+- `GET /campaigns-v2/campaigns/history/:guideName` - Get campaign history
 
-Nest is [MIT licensed](LICENSE).
+### Additional Endpoints
+- `GET /campaigns-v2/campaign/details/:campaignId/:object` - Get campaign details
+- Various reservation, review, and reward management endpoints
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NODE_ENV` | Environment (development/production/test) | Yes |
+| `PORT` | API server port | Yes |
+| `MONGO_HOST` | MongoDB host | Yes |
+| `MONGO_PORT` | MongoDB port | Yes |
+| `WAIVIO_DB` | Main database name | Yes |
+| `CURRENCIES_DB` | Currencies database name | Yes |
+| `REDIS_HOST` | Redis host | Yes |
+| `REDIS_PORT` | Redis port | Yes |
+| `REDIS_DB_BLOCKS` | Redis database for blocks | Yes |
+| `API_KEY` | API authentication key | Yes |
+| `HIVE_AUTH` | Hive authentication key | Yes |
+
+### Database Connections
+
+The service uses multiple MongoDB connections:
+- **Waivio Database**: Main application data
+- **Currencies Database**: Currency rates and financial data
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+
+# Test in watch mode
+npm run test:watch
+```
+
+## 📦 Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Or build manually
+docker build -t waivio-campaigns .
+docker run -p 3000:3000 waivio-campaigns
+```
+
+## 🔄 Scheduled Jobs
+
+The service includes several automated jobs:
+
+- **Daily at Midnight**: Campaign suspension checks
+- **Every 30 Minutes**: Sponsor bot upvote execution
+- **Daily at 6 PM**: Campaign reward recalculation
+- **Monthly at Noon**: Limit-based campaign activation
+
+## 🔐 Security
+
+- **Authentication**: Hive-based authentication system
+- **Authorization**: Role-based access control
+- **Input Validation**: Comprehensive request validation
+- **Rate Limiting**: Built-in rate limiting mechanisms
+- **CORS**: Configurable CORS settings
+
+## 📊 Monitoring
+
+- **Logging**: Structured logging with configurable levels
+- **Health Checks**: Built-in health check endpoints
+- **Metrics**: Performance monitoring capabilities
+- **Error Handling**: Comprehensive error handling and reporting
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Check the API documentation at `/campaigns-v2/docs`
+- Review the test files for usage examples
+- Open an issue for bugs or feature requests
+
+## 🔗 Related Services
+
+This service is part of the larger Waivio ecosystem and integrates with:
+- Waivio Frontend
+- Hive Blockchain
+- Hive Engine
+- Other Waivio microservices

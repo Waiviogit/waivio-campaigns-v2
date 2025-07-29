@@ -1,9 +1,9 @@
 {
   "name": "waivio-campaigns",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
+  "description": "A comprehensive campaign management service for the Waivio platform, built with NestJS. Handles various types of marketing campaigns including reviews, giveaways, and contests with full Hive blockchain integration, real-time processing, and automated campaign management.",
+  "author": "Waivio Team",
+  "private": false,
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
