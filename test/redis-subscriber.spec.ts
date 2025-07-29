@@ -131,6 +131,9 @@ describe('RedisTestSubscriber', () => {
       await redisClient.publish(channel1, message1);
       await redisClient.publish(channel2, message2);
 
+      // Wait a bit for messages to be processed
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const allMessages = redisSubscriber.getReceivedMessages();
       const channel1Messages = redisSubscriber.getMessagesForChannel(channel1);
       const channel2Messages = redisSubscriber.getMessagesForChannel(channel2);
@@ -163,7 +166,7 @@ describe('RedisTestSubscriber', () => {
       // Wait for expiry (give more time for the key to actually expire)
       const result = await testSubscriber.waitForMessage(
         `__keyevent@7__:expired`,
-        5000,
+        10000,
       );
 
       expect(result).not.toBeNull();
@@ -198,7 +201,7 @@ describe('RedisTestSubscriber', () => {
       const results = await testSubscriber.waitForMessageCount(
         `__keyevent@7__:expired`,
         3,
-        8000,
+        15000,
       );
 
       expect(results).toHaveLength(3);

@@ -49,7 +49,7 @@ export class RedisTestClient implements OnModuleInit, RedisClientInterface {
 
   async setex(key: string, expire: number, value: string): Promise<string> {
     try {
-      return await this.client.SETEX(key, expire, value);
+      return await this.client.setEx(key, expire, value);
     } catch (error) {
       this.logger.error(
         `Error setting key ${key} with expiry: ${error.message}`,

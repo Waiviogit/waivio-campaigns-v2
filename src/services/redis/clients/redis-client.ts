@@ -40,7 +40,7 @@ export abstract class RedisClient
 
   async setex(key: string, expire: number, value: string): Promise<string> {
     try {
-      return this.client.SETEX(key, expire, value);
+      return this.client.setEx(key, expire, value);
     } catch (error) {
       this.logger.error(error.message);
     }
