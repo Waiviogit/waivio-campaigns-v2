@@ -11,6 +11,7 @@ import { RedisExpireSubscriber } from './redis-subscriber';
 import { CampaignExpiredListenerInterface } from '../../../domain/campaign/interface';
 import { MessageOnReviewInterface } from '../../../domain/campaign/review/interface/message-on-review.interface';
 import { GiveawayObjectInterface } from '../../../domain/campaign/rewards/interface/giveaway-object.interface';
+import { ContestInterface } from '../../../domain/campaign/rewards/interface/contest.interface';
 
 @Injectable()
 export class RedisCampaignSubscriber extends RedisExpireSubscriber {
@@ -23,6 +24,8 @@ export class RedisCampaignSubscriber extends RedisExpireSubscriber {
     private readonly messageExpireListener: MessageOnReviewInterface,
     @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
     private readonly giveawayObject: GiveawayObjectInterface,
+    @Inject(REWARDS_PROVIDE.CONTEST)
+    private readonly contest: ContestInterface,
   ) {
     super(
       configService.getRedisCampaignsConfig(),
@@ -35,5 +38,6 @@ export class RedisCampaignSubscriber extends RedisExpireSubscriber {
     await this.campaignExpiredListener.listener(key);
     await this.messageExpireListener.listener(key);
     await this.giveawayObject.listener(key);
+    await this.contest.listener(key);
   }
 }

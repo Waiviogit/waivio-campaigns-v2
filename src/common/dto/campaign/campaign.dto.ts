@@ -196,6 +196,19 @@ export class UserRequirementsDto {
   minExpertise: number;
 }
 
+export class ContestRewardDto {
+  @IsNumber()
+  @Min(1)
+  @ApiProperty({ type: Number })
+  place: number;
+
+  @IsNumber()
+  @Min(0.001)
+  @Max(50000)
+  @ApiProperty({ type: Number })
+  reward: number;
+}
+
 export class GiveawayRequirementsDto {
   @IsBoolean()
   @ApiProperty({ type: Boolean })
@@ -268,6 +281,13 @@ export class CampaignDto {
   @MaxLength(512)
   @ApiProperty({ type: String, required: false })
   note: string;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS)
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  @ApiProperty({ type: [String], required: false })
+  contestJudges?: string[];
 
   @IsOptional()
   @IsString()
@@ -349,6 +369,14 @@ export class CampaignDto {
   @IsString()
   @ApiProperty({ type: String })
   giveawayPostTitle?: string;
+
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS)
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContestRewardDto)
+  @ApiProperty({ type: () => [ContestRewardDto] })
+  contestRewards?: ContestRewardDto[];
 
   @IsString()
   @ApiProperty({ type: String, required: true })
@@ -471,7 +499,9 @@ export class CampaignDto {
   })
   timezone?: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @ValidateIf((o) =>
+    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS].includes(o.type),
+  )
   @IsNotEmpty()
   @IsString()
   @Validate(IsRRuleConstraint)
@@ -482,13 +512,17 @@ export class CampaignDto {
   })
   recurrenceRule?: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @ValidateIf((o) =>
+    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS].includes(o.type),
+  )
   @IsNumber()
   @Min(1)
   @ApiProperty({ type: Number, required: false })
   durationDays?: number;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT)
+  @ValidateIf((o) =>
+    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS].includes(o.type),
+  )
   @IsNumber()
   @Min(1)
   @ApiProperty({ type: Number, required: false })

@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
   CURRENCY_RATES_PROVIDE,
   ENGINE_MARKETPOOLS,
   HIVE_ENGINE_PROVIDE,
@@ -309,6 +310,8 @@ export class CampaignHelper implements CampaignHelperInterface {
       projection: {
         currency: 1,
         reward: 1,
+        type: 1,
+        contestRewards: 1,
       },
     });
     if (_.isEmpty(campaigns)) return;
@@ -324,9 +327,33 @@ export class CampaignHelper implements CampaignHelperInterface {
       const rewardInUSD = new BigNumber(campaign.reward)
         .div(currentRate)
         .toNumber();
+
+      const updateData: {
+        $set: {
+          rewardInUSD: number;
+          contestRewards?: Array<{
+            place: number;
+            reward: number;
+            rewardInUSD: number;
+          }>;
+        };
+      } = { $set: { rewardInUSD } };
+
+      // Handle contest rewards if campaign is contest type
+      if (
+        campaign.type === CAMPAIGN_TYPE.CONTESTS &&
+        campaign.contestRewards?.length
+      ) {
+        const updatedContestRewards = campaign.contestRewards.map((reward) => ({
+          ...reward,
+          rewardInUSD: new BigNumber(reward.reward).div(currentRate).toNumber(),
+        }));
+        updateData.$set.contestRewards = updatedContestRewards;
+      }
+
       await this.campaignRepository.updateOne({
         filter: { _id: campaign._id },
-        update: { $set: { rewardInUSD } },
+        update: updateData,
       });
     }
   }
