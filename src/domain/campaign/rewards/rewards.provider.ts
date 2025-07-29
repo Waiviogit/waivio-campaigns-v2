@@ -9,7 +9,8 @@ import { GuideReservations } from './guide-reservations';
 import { UserHistory } from './user-history';
 import { UserRewards } from './user-rewards';
 import { Giveaway } from './giveaway';
-import {GiveawayObject} from "./giveaway-object";
+import { GiveawayObject } from './giveaway-object';
+import { Contest } from './contest';
 
 export const RewardsAllProvider: Provider = {
   provide: REWARDS_PROVIDE.ALL,
@@ -54,4 +55,9 @@ export const GuideReservationsProvider: Provider = {
 export const UserHistoryProvider: Provider = {
   provide: REWARDS_PROVIDE.USER_HISTORY,
   useClass: UserHistory,
+};
+
+export const ContestProvider: Provider = {
+  provide: REWARDS_PROVIDE.CONTEST,
+  useClass: Contest,
 };

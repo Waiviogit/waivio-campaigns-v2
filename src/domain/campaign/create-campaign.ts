@@ -14,6 +14,7 @@ import {
 } from '../../persistance/campaign/types';
 import { BlacklistHelperInterface } from '../blacklist/interface';
 import { GiveawayObjectInterface } from './rewards/interface/giveaway-object.interface';
+import { ContestInterface } from './rewards/interface/contest.interface';
 
 const MIN_CAMPAIGN_REWARD_USD = 0.5;
 
@@ -28,6 +29,8 @@ export class CreateCampaign implements CreateCampaignInterface {
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
     private readonly giveawayObject: GiveawayObjectInterface,
+    @Inject(REWARDS_PROVIDE.CONTEST)
+    private readonly contest: ContestInterface,
   ) {}
 
   async create(
@@ -45,7 +48,34 @@ export class CreateCampaign implements CreateCampaignInterface {
       );
     }
 
-    if (campaign.reward > campaign.budget) {
+    if (campaign.type === CAMPAIGN_TYPE.CONTESTS) {
+      // For contests, calculate rewardInUSD for each contest reward and validate total
+      const contestRewardsWithUSD = await Promise.all(
+        campaign.contestRewards?.map(async (reward) => ({
+          ...reward,
+          rewardInUSD: await this.campaignHelper.getCurrencyInUSD(
+            campaign.currency,
+            reward.reward,
+          ),
+        })) || [],
+      );
+
+      const totalRewards = contestRewardsWithUSD.reduce(
+        (sum, reward) => sum + reward.rewardInUSD,
+        0,
+      );
+      if (totalRewards > campaign.budget) {
+        throw new HttpException(
+          `Total contest rewards ($${totalRewards.toFixed(
+            2,
+          )}) exceed budget ($${campaign.budget})`,
+          422,
+        );
+      }
+
+      // Update campaign with calculated rewardInUSD values
+      campaign.contestRewards = contestRewardsWithUSD;
+    } else if (campaign.reward > campaign.budget) {
       throw new HttpException(`Reward more than budget`, 422);
     }
 
@@ -68,6 +98,12 @@ export class CreateCampaign implements CreateCampaignInterface {
       );
       if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
         await this.giveawayObject.setNextRecurrentEvent(
+          campaign.recurrenceRule,
+          createdCampaign._id.toString(),
+        );
+      }
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS) {
+        await this.contest.setNextRecurrentEvent(
           campaign.recurrenceRule,
           createdCampaign._id.toString(),
         );

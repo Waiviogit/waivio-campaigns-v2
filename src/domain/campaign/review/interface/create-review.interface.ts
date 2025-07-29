@@ -25,6 +25,14 @@ export interface CreateReviewInterface {
     userName,
     post,
   }: CreateGiveawayPayables): Promise<void>;
+  createContestPayables({
+    campaign,
+    userName,
+    post,
+    eventId,
+    place,
+    rewardInUSD,
+  }: CreateContestPayables): Promise<void>;
 }
 
 export interface CreateGiveawayPayables {
@@ -32,6 +40,15 @@ export interface CreateGiveawayPayables {
   userName: string;
   post: PostDocumentType;
   eventId?: string;
+}
+
+export interface CreateContestPayables {
+  campaign: CampaignDocumentType;
+  userName: string;
+  post: PostDocumentType;
+  eventId: string;
+  place: number;
+  rewardInUSD: number;
 }
 
 export interface RestoreReviewInterface {

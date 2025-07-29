@@ -4,3 +4,4 @@ export * from './rewards-map.interface';
 export * from './rewards-helper.interface';
 export * from './guide-reservations.interface';
 export * from './user-history.interface';
+export * from './contest.interface';

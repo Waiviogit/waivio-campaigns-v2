@@ -29,6 +29,7 @@ import {
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
 import {
+  ContestProvider,
   GiveawayObjectProvider,
   GiveawayProvider,
   GuideReservationsProvider,
@@ -82,6 +83,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CampaignMessagesProvider,
     GiveawayProvider,
     GiveawayObjectProvider,
+    ContestProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -112,6 +114,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     CampaignMessagesProvider,
     GiveawayProvider,
     GiveawayObjectProvider,
+    ContestProvider,
   ],
 })
 export class CampaignModule {}

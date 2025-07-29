@@ -2,7 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { setTimeout } from 'timers/promises';
 import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
-import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
+import {
+  reviewMessageRejectType,
+  reviewMessageSuccessType,
+  ContestWinnerType,
+} from './types';
 import BigNumber from 'bignumber.js';
 import {
   CAMPAIGN_PAYMENT_PROVIDE,
@@ -535,6 +539,74 @@ Keep creating and stay inspired!`;
 
       //we can comment once in 3 seconds with 1 account
       await setTimeout(5 * 1000);
+    }
+  }
+
+  async contestWinMessage(
+    _id: string,
+    eventId: string,
+    winners: ContestWinnerType[],
+  ): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        _id,
+        status: CAMPAIGN_STATUS.ACTIVE,
+        type: CAMPAIGN_TYPE.CONTESTS,
+      },
+    });
+    if (!campaign) return;
+
+    const sponsorName = await this.getSponsorName(campaign.guideName);
+    const legalAgreement = await this.getLegalMessage(campaign);
+
+    // Post under each winner's post
+    for (const winner of winners) {
+      const permlink = `contest-winner-${eventId}-${winner.place}`;
+
+      const winnerMessage = `🎉 **Congratulations @${winner.post.author}!** 🎉
+
+You've won **${winner.place}${this.getOrdinalSuffix(
+        winner.place,
+      )} place** in the contest "${
+        campaign.name
+      }" by [${sponsorName}](https://www.waivio.com/@${campaign.guideName})!
+
+**Your Reward:** $${winner.reward} USD
+**Vote Percentage:** ${winner.votePercentage.toFixed(1)}%
+
+${legalAgreement ? `\n**Legal Notice:**\n${legalAgreement}` : ''}
+
+*Your reward will be processed shortly. Keep creating amazing content!*`;
+
+      await this.hiveClient.createComment({
+        parent_author: winner.post.author,
+        parent_permlink: winner.post.permlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: winnerMessage,
+        author: configService.getMentionsAccount(),
+        permlink,
+        key: configService.getMessagePostingKey(),
+      });
+
+      // Wait 5 seconds between comments to avoid rate limiting
+      await setTimeout(5 * 1000);
+    }
+  }
+
+  private getOrdinalSuffix(num: number): string {
+    if (num >= 11 && num <= 13) return 'th';
+    switch (num % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
     }
   }
 
