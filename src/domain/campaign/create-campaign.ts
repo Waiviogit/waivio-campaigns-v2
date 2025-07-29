@@ -65,6 +65,7 @@ export class CreateCampaign implements CreateCampaignInterface {
       await this.campaignHelper.setExpireTTLCampaign(
         createdCampaign.expiredAt,
         createdCampaign._id,
+        campaign.timezone,
       );
       if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
         await this.giveawayObject.setNextRecurrentEvent(
