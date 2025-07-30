@@ -30,4 +30,4 @@ export class MongoTestHelper {
   static getConnection() {
     return mongoose.connection;
   }
-} 
+}

@@ -154,10 +154,10 @@ export type ExpertiseVariablesType = {
 };
 
 export type GetJudgeRewardsMainType = {
-  skip: number;
-  limit: number;
+  skip?: number;
+  limit?: number;
   host: string;
-  sort: string;
+  sort?: string;
   judgeName: string;
   sponsors?: string[];
   type?: string[];

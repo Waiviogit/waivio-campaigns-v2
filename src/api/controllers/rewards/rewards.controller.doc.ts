@@ -235,4 +235,40 @@ export class RewardsControllerDoc {
       }),
     );
   }
+
+  static getJudgeRewards(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get judge rewards main',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsAllMainOutDto,
+      }),
+    );
+  }
+
+  static getJudgeSponsors(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get judge sponsors filters',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardSponsorsDto,
+      }),
+    );
+  }
+
+  static getJudgeRewardsByObject(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get judge rewards by object',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: RewardsByObjectOutDto,
+      }),
+    );
+  }
 }

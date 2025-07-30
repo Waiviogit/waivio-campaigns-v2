@@ -9,3 +9,4 @@ export * from './user-history-in.dto';
 export * from './guide-messages-in.dto';
 export * from './user-followings-in.dto';
 export * from './rewards-user.dto';
+export * from './judge-rewards-in.dto';

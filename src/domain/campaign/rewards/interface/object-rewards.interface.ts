@@ -1,5 +1,5 @@
 import { ObjectRewardsType } from '../types/object-rewards.types';
-import {UserRewardsType} from "../types/user-rewards.types";
+import { UserRewardsType } from '../types/user-rewards.types';
 
 export interface ObjectRewardsInterface {
   getObjectRewards(

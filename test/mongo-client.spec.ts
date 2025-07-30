@@ -37,4 +37,4 @@ describe('MongoTestHelper', () => {
     const count = await TestModel.countDocuments();
     expect(count).toBe(0);
   });
-}); 
+});

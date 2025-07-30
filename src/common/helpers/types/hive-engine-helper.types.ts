@@ -1,5 +1,5 @@
 export type CalculateManaType = {
-    votingPower: number;
-    downvotingPower: number;
-    lastVoteTimestamp: number;
+  votingPower: number;
+  downvotingPower: number;
+  lastVoteTimestamp: number;
 };
