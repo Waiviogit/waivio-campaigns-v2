@@ -14,6 +14,7 @@ import {
 } from '../../persistance/campaign/types';
 import { BlacklistHelperInterface } from '../blacklist/interface';
 import { GiveawayObjectInterface } from './rewards/interface/giveaway-object.interface';
+import { castToUTC } from '../../common/helpers';
 
 const MIN_CAMPAIGN_REWARD_USD = 0.5;
 
@@ -53,19 +54,24 @@ export class CreateCampaign implements CreateCampaignInterface {
       campaign.guideName,
     );
 
+    const utcEndDate = castToUTC({
+      date: campaign.expiredAt,
+      timezone: campaign.timezone,
+    });
+
     const createdCampaign = await this.campaignRepository.create({
       ...campaign,
       rewardInUSD,
-      stoppedAt: campaign.expiredAt,
       blacklistUsers: blacklist,
       whitelistUsers: whitelist,
+      stoppedAt: utcEndDate,
+      expiredAt: utcEndDate,
     });
 
     if (createdCampaign) {
       await this.campaignHelper.setExpireTTLCampaign(
         createdCampaign.expiredAt,
         createdCampaign._id,
-        campaign.timezone,
       );
       if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
         await this.giveawayObject.setNextRecurrentEvent(

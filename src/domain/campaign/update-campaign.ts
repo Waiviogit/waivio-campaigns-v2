@@ -8,6 +8,7 @@ import {
   CampaignDocumentType,
   UpdateCampaignType,
 } from '../../persistance/campaign/types';
+import { castToUTC } from '../../common/helpers';
 
 @Injectable()
 export class UpdateCampaign implements UpdateCampaignInterface {
@@ -25,15 +26,25 @@ export class UpdateCampaign implements UpdateCampaignInterface {
         campaign.reward,
       );
     }
+
     const updatedCampaign = await this.campaignRepository.updateCampaign({
       ...campaign,
-      ...(campaign.expiredAt && { stoppedAt: campaign.expiredAt }),
+      ...(campaign.expiredAt && {
+        stoppedAt: castToUTC({
+          date: campaign.expiredAt,
+          timezone: campaign.timezone,
+        }),
+        expiredAt: castToUTC({
+          date: campaign.expiredAt,
+          timezone: campaign.timezone,
+        }),
+      }),
     });
+
     if (updatedCampaign) {
       await this.campaignHelper.setExpireTTLCampaign(
         updatedCampaign.expiredAt,
         updatedCampaign._id,
-        campaign.timezone,
       );
     }
     return updatedCampaign;

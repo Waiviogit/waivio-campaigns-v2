@@ -7,7 +7,7 @@ import {
 } from '../types';
 
 export interface CampaignHelperInterface {
-  setExpireTTLCampaign(expiredAt: Date, _id: ObjectId | string, timezone?: string): Promise<void>;
+  setExpireTTLCampaign(expiredAt: Date, _id: ObjectId | string): Promise<void>;
   deleteCampaignKey(key: string): Promise<void>;
   getCompletedUsersInSameCampaigns({
     guideName,
