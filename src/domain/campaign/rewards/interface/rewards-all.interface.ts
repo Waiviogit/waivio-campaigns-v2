@@ -107,6 +107,12 @@ export interface GetSponsorsAllInterface {
   reach?: string;
 }
 
+export interface GetSponsorsJudgeInterface extends GetSponsorsAllInterface {
+  requiredObject?: string;
+  reach?: string;
+  judgeName: string;
+}
+
 export interface GetReservedFiltersInterface {
   userName: string;
 }
