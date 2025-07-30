@@ -1,4 +1,5 @@
-import * as moment from 'moment-timezone';
+import * as momentTZ from 'moment-timezone';
+import * as moment from 'moment';
 
 export interface TimezoneDateObject {
   date: Date;
@@ -9,10 +10,11 @@ export function castToUTC(obj: TimezoneDateObject): Date {
   const { date, timezone } = obj;
 
   if (timezone) {
-    // If timezone is provided, parse the date in that timezone and convert to UTC
-    return moment.tz(date, timezone).utc().toDate();
-  } else {
-    // If no timezone, treat as local time and convert to UTC
-    return moment(date).utc().toDate();
+    return momentTZ
+      .tz(moment(date).format('YYYY-MM-DD HH:mm:ss'), timezone)
+      .utc()
+      .toDate();
   }
+
+  return momentTZ(moment(date).format('YYYY-MM-DD HH:mm:ss')).utc().toDate();
 }

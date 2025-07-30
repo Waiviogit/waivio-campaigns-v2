@@ -58,10 +58,8 @@ export class CampaignHelper implements CampaignHelperInterface {
   async setExpireTTLCampaign(
     expiredAt: Date,
     _id: ObjectId | string,
-    timezone?: string,
   ): Promise<void> {
-    const utcDate = castToUTC({ date: expiredAt, timezone });
-    const expire = moment.utc(utcDate).unix() - moment.utc().unix();
+    const expire = moment.utc(expiredAt).unix() - moment.utc().unix();
     if (expire < 0) return;
 
     await this.campaignRedisClient.setex(
