@@ -551,7 +551,7 @@ Keep creating and stay inspired!`;
       filter: {
         _id,
         status: CAMPAIGN_STATUS.ACTIVE,
-        type: CAMPAIGN_TYPE.CONTESTS,
+        type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
       },
     });
     if (!campaign) return;

@@ -59,7 +59,7 @@ export class Contest implements ContestInterface {
       Math.floor((next.getTime() - now.getTime()) / 1000),
     );
     await this.campaignRedisClient.setex(
-      `${REDIS_KEY.CONTEST_RECURRENT}${_id}`,
+      `${REDIS_KEY.CONTEST_OBJECT_RECURRENT}${_id}`,
       expire,
       '',
     );
@@ -216,7 +216,7 @@ export class Contest implements ContestInterface {
       filter: {
         _id,
         status: CAMPAIGN_STATUS.ACTIVE,
-        type: CAMPAIGN_TYPE.CONTESTS,
+        type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
       },
     });
     if (!campaign) return;
@@ -324,7 +324,7 @@ export class Contest implements ContestInterface {
   async listener(key: string): Promise<void> {
     const [, type, id] = key.split(':');
     switch (type) {
-      case RECURRENT_TYPE.CONTEST:
+      case RECURRENT_TYPE.CONTEST_OBJECT:
         return this.startContest(id);
       default:
         return;

@@ -49,7 +49,7 @@ export class CreateCampaign implements CreateCampaignInterface {
       );
     }
 
-    if (campaign.type === CAMPAIGN_TYPE.CONTESTS) {
+    if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
       // For contests, calculate rewardInUSD for each contest reward and validate total
       const contestRewardsWithUSD = await Promise.all(
         campaign.contestRewards?.map(async (reward) => ({
@@ -109,7 +109,7 @@ export class CreateCampaign implements CreateCampaignInterface {
           createdCampaign._id.toString(),
         );
       }
-      if (campaign.type === CAMPAIGN_TYPE.CONTESTS) {
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
         await this.contest.setNextRecurrentEvent(
           campaign.recurrenceRule,
           createdCampaign._id.toString(),

@@ -342,7 +342,7 @@ export class CampaignHelper implements CampaignHelperInterface {
 
       // Handle contest rewards if campaign is contest type
       if (
-        campaign.type === CAMPAIGN_TYPE.CONTESTS &&
+        campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT &&
         campaign.contestRewards?.length
       ) {
         const updatedContestRewards = campaign.contestRewards.map((reward) => ({

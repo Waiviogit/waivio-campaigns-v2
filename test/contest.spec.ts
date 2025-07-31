@@ -39,7 +39,7 @@ describe('Contest', () => {
     _id: 'campaign-id',
     guideName: 'test-guide',
     name: 'Test Contest',
-    type: CAMPAIGN_TYPE.CONTESTS,
+    type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
     status: CAMPAIGN_STATUS.ACTIVE,
     durationDays: 7,
     objects: ['object1', 'object2'],
@@ -481,7 +481,7 @@ describe('Contest', () => {
         filter: {
           _id: 'campaign-id',
           status: CAMPAIGN_STATUS.ACTIVE,
-          type: CAMPAIGN_TYPE.CONTESTS,
+          type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
         },
       });
       expect(mockCreateReview.createContestPayables).toHaveBeenCalled();

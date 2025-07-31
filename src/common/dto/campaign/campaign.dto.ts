@@ -282,7 +282,7 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   note: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS)
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS_OBJECT)
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
@@ -370,7 +370,7 @@ export class CampaignDto {
   @ApiProperty({ type: String })
   giveawayPostTitle?: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS)
+  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS_OBJECT)
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
@@ -500,7 +500,7 @@ export class CampaignDto {
   timezone?: string;
 
   @ValidateIf((o) =>
-    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS].includes(o.type),
+    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT].includes(o.type),
   )
   @IsNotEmpty()
   @IsString()
@@ -513,7 +513,7 @@ export class CampaignDto {
   recurrenceRule?: string;
 
   @ValidateIf((o) =>
-    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS].includes(o.type),
+    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT].includes(o.type),
   )
   @IsNumber()
   @Min(1)
@@ -521,7 +521,7 @@ export class CampaignDto {
   durationDays?: number;
 
   @ValidateIf((o) =>
-    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS].includes(o.type),
+    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT].includes(o.type),
   )
   @IsNumber()
   @Min(1)

@@ -502,7 +502,7 @@ export class CreateReview implements CreateReviewInterface {
         });
       }
 
-      if (campaign.type === CAMPAIGN_TYPE.CONTESTS) {
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
         // For contests, we need to find the original contest reward for this user
         const contestUser = campaign.users.find(
           (u) => u.name === rejectedUser.name && u.eventId,
