@@ -8,7 +8,6 @@ import { CampaignRepositoryInterface } from './interface';
 import {
   ActivateCampaignType,
   CampaignDocumentType,
-  CreateCampaignType,
   CreateCampaignRepositoryType,
   DeleteCampaignType,
   findCampaignByStatusGuideNameActivation,
