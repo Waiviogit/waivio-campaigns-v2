@@ -4,6 +4,7 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
+  GIVEAWAY_PARTICIPANTS_PROVIDE,
   POST_PROVIDE,
   REDIS_KEY,
   REDIS_PROVIDE,
@@ -34,6 +35,7 @@ describe('Contest', () => {
   let mockUserRepository: any;
   let mockCreateReview: any;
   let mockMessageOnReview: any;
+  let mockGiveawayParticipantsRepository: any;
 
   const mockCampaign = {
     _id: 'campaign-id',
@@ -156,6 +158,17 @@ describe('Contest', () => {
       contestWinMessage: jest.fn(),
     };
 
+    mockGiveawayParticipantsRepository = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      find: jest.fn(),
+      insertMany: jest.fn(),
+      getByNamesByActivationPermlink: jest.fn(),
+      getByNamesByActivationPermlinkEventId: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         Contest,
@@ -187,6 +200,10 @@ describe('Contest', () => {
           provide: REVIEW_PROVIDE.MESSAGE_ON_REVIEW,
           useValue: mockMessageOnReview,
         },
+        {
+          provide: GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY,
+          useValue: mockGiveawayParticipantsRepository,
+        },
       ],
     }).compile();
 
@@ -215,7 +232,7 @@ describe('Contest', () => {
       await contest.setNextRecurrentEvent(rruleString, _id);
 
       expect(mockCampaignRedisClient.setex).toHaveBeenCalledWith(
-        `${REDIS_KEY.CONTEST_RECURRENT}${_id}`,
+        `${REDIS_KEY.CONTEST_OBJECT_RECURRENT}${_id}`,
         expect.any(Number),
         '',
       );
@@ -467,6 +484,7 @@ describe('Contest', () => {
       jest.spyOn(contest, 'setNextRecurrentEvent').mockResolvedValue();
       mockCreateReview.createContestPayables.mockResolvedValue();
       mockMessageOnReview.contestWinMessage.mockResolvedValue();
+      mockGiveawayParticipantsRepository.insertMany.mockResolvedValue();
 
       // Mock rrule to return a date within the window
       const mockRrule = {
@@ -484,6 +502,15 @@ describe('Contest', () => {
           type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
         },
       });
+      expect(
+        mockGiveawayParticipantsRepository.insertMany,
+      ).toHaveBeenCalledWith([
+        {
+          userName: 'test-author',
+          activationPermlink: mockCampaign.activationPermlink,
+          eventId: 'test-uuid',
+        },
+      ]);
       expect(mockCreateReview.createContestPayables).toHaveBeenCalled();
       expect(mockMessageOnReview.contestWinMessage).toHaveBeenCalled();
     });
@@ -532,6 +559,9 @@ describe('Contest', () => {
 
       await contest.startContest('campaign-id');
 
+      expect(
+        mockGiveawayParticipantsRepository.insertMany,
+      ).not.toHaveBeenCalled();
       expect(mockCreateReview.createContestPayables).not.toHaveBeenCalled();
     });
 
@@ -551,6 +581,7 @@ describe('Contest', () => {
       jest.spyOn(contest, 'setNextRecurrentEvent').mockResolvedValue();
       mockCreateReview.createContestPayables.mockResolvedValue();
       mockMessageOnReview.contestWinMessage.mockResolvedValue();
+      mockGiveawayParticipantsRepository.insertMany.mockResolvedValue();
       const mockRrule = {
         between: jest.fn().mockReturnValue([new Date()]),
       };
@@ -559,13 +590,27 @@ describe('Contest', () => {
 
       await contest.startContest('campaign-id');
 
+      expect(
+        mockGiveawayParticipantsRepository.insertMany,
+      ).toHaveBeenCalledWith([
+        {
+          userName: 'author1',
+          activationPermlink: mockCampaign.activationPermlink,
+          eventId: 'test-uuid',
+        },
+        {
+          userName: 'author2',
+          activationPermlink: mockCampaign.activationPermlink,
+          eventId: 'test-uuid',
+        },
+      ]);
       expect(mockCreateReview.createContestPayables).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('listener', () => {
     it('should handle contest recurrent type', async () => {
-      const key = `${REDIS_KEY.CONTEST_RECURRENT}campaign-id`;
+      const key = `expire:contest_recurrent:campaign-id`;
       jest.spyOn(contest, 'startContest').mockResolvedValue();
 
       await contest.listener(key);

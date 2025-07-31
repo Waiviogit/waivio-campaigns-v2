@@ -4,6 +4,7 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
+  GIVEAWAY_PARTICIPANTS_PROVIDE,
   POST_PROVIDE,
   RECURRENT_TYPE,
   REDIS_KEY,
@@ -21,6 +22,7 @@ import { PostDocumentType } from '../../../persistance/post/types';
 import { CampaignHelperInterface } from '../interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
+import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 
@@ -41,6 +43,8 @@ export class Contest implements ContestInterface {
     private readonly createReview: CreateReviewInterface,
     @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
     private readonly messageOnReview: MessageOnReviewInterface,
+    @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
+    private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
   ) {}
 
   async setNextRecurrentEvent(rruleString: string, _id: string): Promise<void> {
@@ -303,6 +307,20 @@ export class Contest implements ContestInterface {
           votePercentage: postData.votePercentage,
         });
       }
+    }
+
+    // Get all participants from posts
+    const allParticipants = [...new Set(posts.map((post) => post.author))];
+
+    // Add participants to giveaway participants collection
+    if (allParticipants.length > 0) {
+      await this.giveawayParticipantsRepository.insertMany(
+        allParticipants.map((userName) => ({
+          userName,
+          activationPermlink: campaign.activationPermlink,
+          eventId,
+        })),
+      );
     }
 
     // Create payables for winners
