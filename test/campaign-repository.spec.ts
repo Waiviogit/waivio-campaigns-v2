@@ -10,7 +10,7 @@ import {
   REACH_TYPE,
 } from '../src/common/constants';
 import { configService } from '../src/common/config';
-import { CampaignDocumentType } from '../src/persistance/campaign/types';
+import { CampaignDocumentType, CreateCampaignRepositoryType } from '../src/persistance/campaign/types';
 
 describe('CampaignRepository (Integration)', () => {
   let module: TestingModule;
@@ -53,22 +53,25 @@ describe('CampaignRepository (Integration)', () => {
   });
 
   const createTestCampaign = (
-    overrides: Partial<CampaignDocumentType> = {},
-  ): Partial<CampaignDocumentType> => ({
+    overrides: Partial<CreateCampaignRepositoryType> = {},
+  ): CreateCampaignRepositoryType => ({
     guideName: 'test-guide',
     name: 'Test Campaign',
     description: 'Test campaign description',
+    note: 'Test note',
+    compensationAccount: 'test-account',
     type: CAMPAIGN_TYPE.REVIEWS,
-    status: CAMPAIGN_STATUS.PENDING,
     budget: 100,
     reward: 10,
     rewardInUSD: 10,
+    countReservationDays: 1,
+    agreementObjects: ['test-agreement'],
+    usersLegalNotice: 'Test legal notice',
+    commissionAgreement: 0.05,
     requiredObject: 'test-object',
     objects: ['test-object'],
-    users: [],
     expiredAt: new Date(Date.now() + 86400000), // 24 hours from now
     reach: REACH_TYPE.LOCAL,
-    campaignServer: 'test-server',
     requirements: {
       minPhotos: 1,
       receiptPhoto: false,
@@ -108,10 +111,14 @@ describe('CampaignRepository (Integration)', () => {
     });
 
     it('should find one suspended campaign', async () => {
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update the campaign to suspended status for testing
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         status: CAMPAIGN_STATUS.SUSPENDED,
       });
-      await campaignRepository.create(campaignData);
 
       const found = await campaignRepository.findOneSuspended('test-guide');
       expect(found).toBeDefined();
@@ -120,9 +127,7 @@ describe('CampaignRepository (Integration)', () => {
     });
 
     it('should find one pending campaign', async () => {
-      const campaignData = createTestCampaign({
-        status: CAMPAIGN_STATUS.PENDING,
-      });
+      const campaignData = createTestCampaign();
       const created = await campaignRepository.create(campaignData);
 
       const found = await campaignRepository.findOnePending(
@@ -136,11 +141,15 @@ describe('CampaignRepository (Integration)', () => {
 
     it('should find active campaign by activation link', async () => {
       const activationPermlink = 'test-activation-link';
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update the campaign to active status with activation link
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         status: CAMPAIGN_STATUS.ACTIVE,
         activationPermlink,
       });
-      await campaignRepository.create(campaignData);
 
       const found = await campaignRepository.findActiveByActivationLink(
         activationPermlink,
@@ -153,9 +162,7 @@ describe('CampaignRepository (Integration)', () => {
 
   describe('Campaign Activation', () => {
     it('should activate a pending campaign', async () => {
-      const campaignData = createTestCampaign({
-        status: CAMPAIGN_STATUS.PENDING,
-      });
+      const campaignData = createTestCampaign();
       const created = await campaignRepository.create(campaignData);
       const activationPermlink = 'new-activation-link';
 
@@ -172,10 +179,14 @@ describe('CampaignRepository (Integration)', () => {
     });
 
     it('should not activate campaign with wrong status', async () => {
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update the campaign to suspended status
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         status: CAMPAIGN_STATUS.SUSPENDED,
       });
-      const created = await campaignRepository.create(campaignData);
 
       const result = await campaignRepository.activateCampaign({
         _id: created._id.toString(),
@@ -190,9 +201,7 @@ describe('CampaignRepository (Integration)', () => {
 
   describe('Campaign Updates', () => {
     it('should update a pending campaign', async () => {
-      const campaignData = createTestCampaign({
-        status: CAMPAIGN_STATUS.PENDING,
-      });
+      const campaignData = createTestCampaign();
       const created = await campaignRepository.create(campaignData);
 
       const updateData = {
@@ -210,10 +219,14 @@ describe('CampaignRepository (Integration)', () => {
     });
 
     it('should not update non-pending campaign', async () => {
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update the campaign to active status
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         status: CAMPAIGN_STATUS.ACTIVE,
       });
-      const created = await campaignRepository.create(campaignData);
 
       const updateData = {
         _id: created._id.toString(),
@@ -227,9 +240,7 @@ describe('CampaignRepository (Integration)', () => {
 
   describe('Campaign Deletion', () => {
     it('should delete a pending campaign', async () => {
-      const campaignData = createTestCampaign({
-        status: CAMPAIGN_STATUS.PENDING,
-      });
+      const campaignData = createTestCampaign();
       const created = await campaignRepository.create(campaignData);
 
       const deleted = await campaignRepository.deleteCampaignById({
@@ -247,10 +258,14 @@ describe('CampaignRepository (Integration)', () => {
     });
 
     it('should not delete non-pending campaign', async () => {
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update the campaign to active status
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         status: CAMPAIGN_STATUS.ACTIVE,
       });
-      const created = await campaignRepository.create(campaignData);
 
       const result = await campaignRepository.deleteCampaignById({
         _id: created._id.toString(),
@@ -263,11 +278,15 @@ describe('CampaignRepository (Integration)', () => {
   describe('Complex Queries', () => {
     it('should find campaign by status, guide name, and activation link', async () => {
       const activationPermlink = 'test-activation-link';
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update the campaign to active status with activation link
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         status: CAMPAIGN_STATUS.ACTIVE,
         activationPermlink,
       });
-      await campaignRepository.create(campaignData);
 
       const found =
         await campaignRepository.findCampaignByStatusGuideNameActivation({
@@ -300,18 +319,26 @@ describe('CampaignRepository (Integration)', () => {
     it('should handle multiple campaigns with same guide name', async () => {
       // Create campaigns with different names to avoid conflicts
       const campaign1 = createTestCampaign({
-        status: CAMPAIGN_STATUS.PENDING,
         name: 'Campaign 1',
         guideName: 'test-guide-1',
       });
       const campaign2 = createTestCampaign({
-        status: CAMPAIGN_STATUS.SUSPENDED,
         name: 'Campaign 2',
         guideName: 'test-guide-2',
       });
 
-      await campaignRepository.create(campaign1);
-      await campaignRepository.create(campaign2);
+      const created1 = await campaignRepository.create(campaign1);
+      const created2 = await campaignRepository.create(campaign2);
+      
+      // Update campaigns to different statuses
+      await campaignRepository.updateCampaign({
+        _id: created1._id,
+        status: CAMPAIGN_STATUS.PENDING,
+      });
+      await campaignRepository.updateCampaign({
+        _id: created2._id,
+        status: CAMPAIGN_STATUS.SUSPENDED,
+      });
 
       const suspended = await campaignRepository.findOneSuspended(
         'test-guide-2',
@@ -322,7 +349,12 @@ describe('CampaignRepository (Integration)', () => {
     });
 
     it('should handle campaigns with users array', async () => {
-      const campaignData = createTestCampaign({
+      const campaignData = createTestCampaign();
+      const created = await campaignRepository.create(campaignData);
+      
+      // Update campaign to add users
+      await campaignRepository.updateCampaign({
+        _id: created._id,
         users: [
           {
             name: 'Test User',
@@ -334,9 +366,9 @@ describe('CampaignRepository (Integration)', () => {
         ],
       });
 
-      const created = await campaignRepository.create(campaignData);
-      expect(created.users).toHaveLength(1);
-      expect(created.users[0].name).toBe('Test User');
+      const updated = await campaignRepository.findCampaignById(created._id.toString());
+      expect(updated!.users).toHaveLength(1);
+      expect(updated!.users[0].name).toBe('Test User');
     });
   });
 });

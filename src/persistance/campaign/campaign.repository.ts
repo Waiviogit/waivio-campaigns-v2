@@ -8,6 +8,8 @@ import { CampaignRepositoryInterface } from './interface';
 import {
   ActivateCampaignType,
   CampaignDocumentType,
+  CreateCampaignType,
+  CreateCampaignRepositoryType,
   DeleteCampaignType,
   findCampaignByStatusGuideNameActivation,
   UpdateCampaignType,
@@ -17,7 +19,7 @@ import { MongoRepository } from '../mongo.repository';
 
 @Injectable()
 export class CampaignRepository
-  extends MongoRepository<CampaignDocumentType>
+  extends MongoRepository<CampaignDocumentType, CreateCampaignRepositoryType>
   implements CampaignRepositoryInterface
 {
   constructor(

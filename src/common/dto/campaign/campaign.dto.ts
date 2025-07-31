@@ -196,7 +196,7 @@ export class UserRequirementsDto {
   minExpertise: number;
 }
 
-export class ContestRewardDto {
+export class ContestRewardInputDto {
   @IsNumber()
   @Min(1)
   @ApiProperty({ type: Number })
@@ -374,9 +374,9 @@ export class CampaignDto {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ContestRewardDto)
-  @ApiProperty({ type: () => [ContestRewardDto] })
-  contestRewards?: ContestRewardDto[];
+  @Type(() => ContestRewardInputDto)
+  @ApiProperty({ type: () => [ContestRewardInputDto] })
+  contestRewards?: ContestRewardInputDto[];
 
   @IsString()
   @ApiProperty({ type: String, required: true })
