@@ -10,6 +10,10 @@ const config: Config.InitialOptions = {
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
-  setupFiles: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  testTimeout: 30000,
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/../src/$1',
+  },
 };
 export default config;

@@ -27,6 +27,20 @@ export class UpdateCampaign implements UpdateCampaignInterface {
       );
     }
 
+    // Handle contest rewards if they exist in the update
+    if (campaign.contestRewards && campaign.contestRewards.length > 0) {
+      const contestRewardsWithUSD = await Promise.all(
+        campaign.contestRewards.map(async (reward) => ({
+          ...reward,
+          rewardInUSD: await this.campaignHelper.getCurrencyInUSD(
+            campaign.currency,
+            reward.reward,
+          ),
+        })),
+      );
+      campaign.contestRewards = contestRewardsWithUSD;
+    }
+
     const updatedCampaign = await this.campaignRepository.updateCampaign({
       ...campaign,
       ...(campaign.expiredAt && {

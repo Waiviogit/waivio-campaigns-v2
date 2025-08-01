@@ -6,9 +6,7 @@ import {
 } from '../type';
 import { EngineVoteType } from '../../engine-parser/types';
 import { ObjectId } from 'mongoose';
-import {
-  SponsorsBotUpvoteDocumentType,
-} from '../../../persistance/sponsors-bot-upvote/type';
+import { SponsorsBotUpvoteDocumentType } from '../../../persistance/sponsors-bot-upvote/type';
 import BigNumber from 'bignumber.js';
 
 export interface SponsorsBotInterface {

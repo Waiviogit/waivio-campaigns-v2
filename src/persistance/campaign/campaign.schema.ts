@@ -16,6 +16,7 @@ import {
   ReservationTimetableType,
   ReviewRequirementsType,
   UserRequirementsType,
+  ContestRewardType,
 } from './types';
 
 @Schema({ timestamps: true })
@@ -91,6 +92,9 @@ export class CampaignUser {
   @Prop({ type: String })
   eventId?: string;
 
+  @Prop({ type: Number })
+  place?: number;
+
   createdAt: Date;
 }
 
@@ -125,6 +129,9 @@ export class Campaign {
 
   @Prop({ type: String, maxlength: 512 })
   note: string;
+
+  @Prop({ type: [String] })
+  contestJudges?: string[];
 
   @Prop({ type: String })
   compensationAccount: string;
@@ -177,6 +184,9 @@ export class Campaign {
 
   @Prop({ type: String })
   giveawayPostTitle?: string;
+
+  @Prop({ type: [Object] })
+  contestRewards?: ContestRewardType[];
 
   @Prop(
     raw({

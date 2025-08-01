@@ -1,4 +1,8 @@
-import { reviewMessageRejectType, reviewMessageSuccessType } from '../types';
+import {
+  reviewMessageRejectType,
+  reviewMessageSuccessType,
+  ContestWinnerType,
+} from '../types';
 
 export interface MessageOnReviewInterface {
   sendMessageSuccessReview({
@@ -14,6 +18,11 @@ export interface MessageOnReviewInterface {
   }: reviewMessageRejectType): Promise<void>;
   giveawayMessage(activationPermlink: string): Promise<void>;
   giveawayObjectWinMessage(_id: string, eventId: string): Promise<void>;
+  contestWinMessage(
+    _id: string,
+    eventId: string,
+    winners: ContestWinnerType[],
+  ): Promise<void>;
   rejectMessageObjectGiveaway(
     activationPermlink: string,
     reservationPermlink: string,

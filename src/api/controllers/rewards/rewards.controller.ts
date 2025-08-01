@@ -27,6 +27,9 @@ import {
   RewardsMapInDto,
   RewardsUserDto,
   UserHistoryInDto,
+  JudgeRewardsInDto,
+  JudgeRewardsByObjectInDto,
+  JudgeSponsorsInDto,
 } from '../../../common/dto/rewards/in';
 import { EligibleSponsorsDto } from '../../../common/dto/rewards/in/eligible-sponsors.dto';
 import { GuideFraudsInDto } from '../../../common/dto/rewards/in/guide-frauds-in.dto';
@@ -375,5 +378,53 @@ export class RewardsController {
     guideName: string,
   ): Promise<InBlacklistOutDto> {
     return this.rewardsService.checkUserInBlacklist({ userName, guideName });
+  }
+
+  @Get('judge/:judgeName')
+  @RewardsControllerDoc.getJudgeRewards()
+  async getJudgeRewards(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('judgeName')
+    judgeName: string,
+    @Query() judgeRewardsInDto: JudgeRewardsInDto,
+  ): Promise<RewardsAllMainOutDto> {
+    return this.rewardsService.getJudgeRewardsMain({
+      ...judgeRewardsInDto,
+      host,
+      judgeName,
+    });
+  }
+
+  @Get('judge/:judgeName/sponsors')
+  @RewardsControllerDoc.getJudgeSponsors()
+  async getJudgeSponsors(
+    @Param('judgeName')
+    judgeName: string,
+    @Query() query: JudgeSponsorsInDto,
+  ): Promise<RewardSponsorsDto> {
+    return this.rewardsService.getSponsorsJudge({
+      ...query,
+      judgeName,
+    });
+  }
+
+  @Get('judge/:judgeName/object/:requiredObject')
+  @RewardsControllerDoc.getJudgeRewardsByObject()
+  async getJudgeRewardsByObject(
+    @CustomHeaders(new HostPipe())
+    host: string,
+    @Param('judgeName')
+    judgeName: string,
+    @Param('requiredObject')
+    requiredObject: string,
+    @Query() query: JudgeRewardsByObjectInDto,
+  ): Promise<RewardsByObjectOutDto> {
+    return this.rewardsService.getJudgeRewardsByObject({
+      ...query,
+      host,
+      judgeName,
+      requiredObject,
+    });
   }
 }

@@ -2,7 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { setTimeout } from 'timers/promises';
 import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
-import { reviewMessageRejectType, reviewMessageSuccessType } from './types';
+import {
+  reviewMessageRejectType,
+  reviewMessageSuccessType,
+  ContestWinnerType,
+} from './types';
 import BigNumber from 'bignumber.js';
 import {
   CAMPAIGN_PAYMENT_PROVIDE,
@@ -535,6 +539,139 @@ Keep creating and stay inspired!`;
 
       //we can comment once in 3 seconds with 1 account
       await setTimeout(5 * 1000);
+    }
+  }
+
+  async contestWinMessage(
+    _id: string,
+    eventId: string,
+    winners: ContestWinnerType[],
+  ): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        _id,
+        status: CAMPAIGN_STATUS.ACTIVE,
+        type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
+      },
+    });
+    if (!campaign) return;
+
+    const sponsorName = await this.getSponsorName(campaign.guideName);
+    const sponsorNameLink = `[${sponsorName}](https://www.waivio.com/@${campaign.guideName})`;
+
+    // Get participants list and filter out winners
+    const allParticipants =
+      await this.giveawayParticipantsRepository.getByNamesByActivationPermlink(
+        campaign.activationPermlink,
+      );
+    const participants = allParticipants.filter(
+      (p) => !winners.some((w) => w.post.author === p),
+    );
+
+    // Get token amounts for winners
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+
+    // Process winners and create messages
+    for (let i = 0; i < Math.min(3, winners.length); i++) {
+      const winner = winners[i];
+      const place = i + 1;
+      const waivAmount = new BigNumber(winner.reward)
+        .dividedBy(payoutTokenRateUSD)
+        .decimalPlaces(tokenPrecision)
+        .toNumber();
+
+      if (place === 1) {
+        // General message for 1st place winner's post
+        const winnerLines = winners.slice(0, 3).map((w, idx) => {
+          const wPlace = idx + 1;
+          const wWaivAmount = new BigNumber(w.reward)
+            .dividedBy(payoutTokenRateUSD)
+            .decimalPlaces(tokenPrecision)
+            .toNumber();
+          return `${wPlace}${this.getOrdinalSuffix(wPlace)} place: @${
+            w.post.author
+          } — $${w.reward} USD (${wWaivAmount} WAIV)`;
+        });
+
+        // Get participants list (up to 100)
+        const participantsList = participants
+          .slice(0, 100)
+          .map((p) => `@${p}`)
+          .join(', ');
+        const participantsNote = participants.length > 100 ? ' ...' : '';
+
+        const generalMessage = `Thanks to everyone who participated in the contest campaign by ${sponsorNameLink}!
+
+After carefully reviewing the entries and all the creative comments, we're excited to announce the winners:
+${winnerLines.join('\n')}
+
+Each winner impressed us with their unique contributions and well-thought-out posts, congratulations!
+
+Big thanks to all participants for joining and supporting the campaign: ${participantsList}${participantsNote}
+
+We loved seeing your insights and enthusiasm. Stay tuned for more contests, campaigns, and chances to earn!
+You can track your rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
+
+Keep creating and good luck next time!`;
+
+        const permlink = `contest-winner-${eventId}-${place}`;
+        await this.hiveClient.createComment({
+          parent_author: winner.post.author,
+          parent_permlink: winner.post.permlink,
+          title: '',
+          json_metadata: JSON.stringify({
+            activationPermlink: campaign.activationPermlink,
+          }),
+          body: generalMessage,
+          author: configService.getMentionsAccount(),
+          permlink,
+          key: configService.getMessagePostingKey(),
+        });
+      } else {
+        // Individual message for 2nd and 3rd place winners
+        const placeText = place === 2 ? '2nd' : '3rd';
+        const individualMessage = `Congratulations @${winner.post.author}!
+
+You've secured ${placeText} place in the recent contest campaign by ${sponsorNameLink}!
+As a reward, you'll receive $${winner.reward} USD (${waivAmount} WAIV), well deserved!
+
+Thanks for your thoughtful post and participation.
+Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global), more chances to win await!`;
+
+        const permlink = `contest-winner-${eventId}-${place}`;
+        await this.hiveClient.createComment({
+          parent_author: winner.post.author,
+          parent_permlink: winner.post.permlink,
+          title: '',
+          json_metadata: JSON.stringify({
+            activationPermlink: campaign.activationPermlink,
+          }),
+          body: individualMessage,
+          author: configService.getMentionsAccount(),
+          permlink,
+          key: configService.getMessagePostingKey(),
+        });
+      }
+
+      // Wait 5 seconds between comments to avoid rate limiting
+      await setTimeout(5 * 1000);
+    }
+  }
+
+  private getOrdinalSuffix(num: number): string {
+    if (num >= 11 && num <= 13) return 'th';
+    switch (num % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
     }
   }
 

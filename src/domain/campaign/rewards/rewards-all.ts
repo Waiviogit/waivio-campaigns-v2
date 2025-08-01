@@ -25,10 +25,12 @@ import {
   CanReserveParamType,
   CanReserveType,
   GetEligiblePipeType,
+  GetJudgeRewardsMainType,
   GetPrimaryObjectRewards,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
+  GetRewardsJudgeType,
   GetRewardsMainType,
   GetSortedCampaignMainType,
   GetSponsorsType,
@@ -44,6 +46,7 @@ import {
   GetReservedFiltersInterface,
   GetSponsorsAllInterface,
   GetSponsorsEligibleInterface,
+  GetSponsorsJudgeInterface,
   RewardsAllInterface,
   RewardsHelperInterface,
 } from './interface';
@@ -483,6 +486,153 @@ export class RewardsAll implements RewardsAllInterface {
       radius,
       userName,
     });
+  }
+
+  async getJudgeRewardsMain({
+    skip,
+    limit,
+    host,
+    sort,
+    judgeName,
+    sponsors,
+    type,
+    reach,
+  }: GetJudgeRewardsMainType): Promise<RewardsAllType> {
+    const campaigns = await this.campaignRepository.find({
+      filter: {
+        status: CAMPAIGN_STATUS.ACTIVE,
+        contestJudges: judgeName,
+        ...(sponsors && { guideName: { $in: sponsors } }),
+        ...(type && { type: { $in: type } }),
+        ...(reach && { reach }),
+      },
+    });
+
+    return this.getPrimaryObjectRewards({
+      skip,
+      limit,
+      host,
+      sort,
+      campaigns,
+    });
+  }
+
+  async getSponsorsJudge({
+    requiredObject,
+    reach,
+    judgeName,
+  }: GetSponsorsJudgeInterface): Promise<GetSponsorsType> {
+    const sponsors: GetSponsorsType[] = await this.campaignRepository.aggregate(
+      {
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              contestJudges: judgeName,
+              ...(requiredObject && { requiredObject }),
+              ...(reach && { reach }),
+            },
+          },
+          {
+            $group: {
+              _id: '$status',
+              type: { $addToSet: '$type' },
+              sponsors: { $addToSet: '$guideName' },
+              reach: { $addToSet: '$reach' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ],
+      },
+    );
+    if (_.isEmpty(sponsors)) return { type: [], sponsors: [], reach: [] };
+    return sponsors[0];
+  }
+
+  async getJudgeRewardsByObject({
+    skip,
+    limit,
+    host,
+    sponsors,
+    type,
+    userName,
+    requiredObject,
+    reach,
+    judgeName,
+  }: GetRewardsJudgeType): Promise<RewardsByObjectType> {
+    const rewards: RewardsByRequiredType[] =
+      await this.campaignRepository.aggregate({
+        pipeline: [
+          {
+            $match: {
+              status: CAMPAIGN_STATUS.ACTIVE,
+              contestJudges: judgeName,
+              ...(requiredObject && { requiredObject }),
+              ...(sponsors && { guideName: { $in: sponsors } }),
+              ...(type && { type: { $in: type } }),
+              ...(reach && { reach }),
+            },
+          },
+          { $sort: { rewardInUsd: -1 } },
+          { $unwind: { path: '$objects' } },
+          {
+            $lookup: {
+              from: COLLECTION.WOBJECTS,
+              localField: 'objects',
+              foreignField: 'author_permlink',
+              as: 'object',
+            },
+          },
+          {
+            $project: {
+              object: { $arrayElemAt: ['$object', 0] },
+              objects: 1,
+              frequencyAssign: 1,
+              matchBots: 1,
+              agreementObjects: 1,
+              usersLegalNotice: 1,
+              description: 1,
+              payoutToken: 1,
+              currency: 1,
+              reward: 1,
+              rewardInUSD: 1,
+              guideName: 1,
+              requirements: 1,
+              userRequirements: 1,
+              countReservationDays: 1,
+              activationPermlink: 1,
+              type: 1,
+              qualifiedPayoutToken: 1,
+              giveawayPermlink: 1,
+              giveawayPostTitle: 1,
+            },
+          },
+          {
+            $match: {
+              'object.status.title': {
+                $nin: [WOBJECT_STATUS.UNAVAILABLE, WOBJECT_STATUS.RELISTED],
+              },
+            },
+          },
+          { $skip: skip },
+          { $limit: limit + 1 },
+        ],
+      });
+
+    const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
+      rewards,
+      host,
+      userName,
+    });
+
+    return {
+      rewards: _.take(rewardsWithAdditionalData, limit),
+      hasMore: rewardsWithAdditionalData.length > limit,
+    };
   }
 
   async getPrimaryObjectRewards({

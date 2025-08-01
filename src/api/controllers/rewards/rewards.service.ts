@@ -13,9 +13,11 @@ import {
   CanReserveType,
   FilterReservationsType,
   FilterUserHistoryType,
+  GetJudgeRewardsMainType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
+  GetRewardsJudgeType,
   GetRewardsMainType,
   GetSponsorsType,
   InBlacklistType,
@@ -39,6 +41,7 @@ import {
   ObjectRewardsInterface,
   RewardsMapInterface,
   UserHistoryInterface,
+  GetSponsorsJudgeInterface,
 } from '../../../domain/campaign/rewards/interface';
 import { GetObjectRewardsInterface } from '../../../domain/campaign/rewards/interface';
 import { ObjectRewardsType } from '../../../domain/campaign/rewards/types/object-rewards.types';
@@ -188,5 +191,23 @@ export class RewardsService {
     params: CheckUserInBlacklistInterface,
   ): Promise<InBlacklistType> {
     return this.guideReservations.checkUserInBlacklist(params);
+  }
+
+  async getJudgeRewardsMain(
+    params: GetJudgeRewardsMainType,
+  ): Promise<RewardsAllType> {
+    return this.rewardsAll.getJudgeRewardsMain(params);
+  }
+
+  async getSponsorsJudge(
+    params: GetSponsorsJudgeInterface,
+  ): Promise<GetSponsorsType> {
+    return this.rewardsAll.getSponsorsJudge(params);
+  }
+
+  async getJudgeRewardsByObject(
+    params: GetRewardsJudgeType,
+  ): Promise<RewardsByObjectType> {
+    return this.rewardsAll.getJudgeRewardsByObject(params);
   }
 }

@@ -56,6 +56,7 @@ import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { UserDocumentType } from '../../../persistance/user/types';
 import {
   CreateGiveawayPayables,
+  CreateContestPayables,
   CreateReviewInterface,
   FraudDetectionInterface,
   getSelfOrGivenTypeInterface,
@@ -350,8 +351,8 @@ export class CreateReview implements CreateReviewInterface {
 
     if (campaignsForMentions.length) {
       for (const campaignsForMention of campaignsForMentions) {
-        // @ts-ignore
-        if (postImages < campaignsForMention.requirements.minPhotos) continue;
+        if (postImages < (campaignsForMention.requirements?.minPhotos || 0))
+          continue;
 
         await this.createMention({
           campaign: campaignsForMention,
@@ -500,6 +501,31 @@ export class CreateReview implements CreateReviewInterface {
           post,
         });
       }
+
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+        // For contests, we need to find the original contest reward for this user
+        const contestUser = campaign.users.find(
+          (u) => u.name === rejectedUser.name && u.eventId,
+        );
+
+        if (contestUser && contestUser.eventId) {
+          // Find the contest reward based on the user's place
+          const contestReward = campaign.contestRewards?.find(
+            (reward) => reward.place === contestUser.place,
+          );
+
+          if (contestReward) {
+            await this.createContestPayables({
+              campaign,
+              userName: rejectedUser.name,
+              post,
+              eventId: contestUser.eventId,
+              place: contestReward.place,
+              rewardInUSD: contestReward.rewardInUSD,
+            });
+          }
+        }
+      }
     }
 
     //remove rejection permlink
@@ -600,6 +626,78 @@ export class CreateReview implements CreateReviewInterface {
             reviewPermlink,
             reservationPermlink,
             ...(eventId && { eventId }),
+          },
+        },
+      },
+    });
+
+    const payments = await this.getCampaignPayments({
+      beneficiaries: [],
+      campaign: campaignReviewType,
+      host: '',
+      isGuest,
+      rewardInToken,
+    });
+
+    await this.createCampaignPayments({
+      payments,
+      campaign: campaignReviewType,
+      app: '',
+      botName: this.getGiveawayBotName(campaign.type, post, isGuest),
+      reviewPermlink,
+      title: post.title,
+      reservationPermlink,
+      campaignType: campaign.type,
+    });
+  }
+
+  async createContestPayables({
+    campaign,
+    userName,
+    post,
+    eventId,
+    place,
+    rewardInUSD,
+  }: CreateContestPayables): Promise<void> {
+    const isGuest = userName.includes('_');
+
+    const reservationPermlink = crypto.randomUUID();
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+    const rewardInToken = new BigNumber(rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
+
+    const userReservationObject = campaign.guideName;
+
+    const reviewPermlink = `${post.author}/${post.permlink}`;
+
+    const campaignReviewType = {
+      ...campaign,
+      userName,
+      payoutTokenRateUSD,
+      campaignId: campaign._id,
+      userReservationObject,
+      rewardInUSD, // Override with contest reward
+    } as never as ReviewCampaignType;
+
+    await this.campaignRepository.updateOne({
+      filter: { _id: campaign._id, status: CAMPAIGN_STATUS.ACTIVE },
+      update: {
+        $push: {
+          users: {
+            name: userName,
+            rootName: userName,
+            status: RESERVATION_STATUS.COMPLETED,
+            payoutTokenRateUSD,
+            objectPermlink: userReservationObject,
+            completedAt: moment.utc().format(),
+            reviewPermlink,
+            reservationPermlink,
+            eventId,
+            place,
           },
         },
       },
@@ -907,8 +1005,7 @@ export class CreateReview implements CreateReviewInterface {
     const thisMonthCompletedUsers = _.filter(
       campaign.users,
       (user) =>
-        // @ts-ignore
-        user.updatedAt > moment.utc().startOf('month') &&
+        (user.updatedAt as Date) > moment.utc().startOf('month').toDate() &&
         user.status === RESERVATION_STATUS.COMPLETED,
     );
     if (

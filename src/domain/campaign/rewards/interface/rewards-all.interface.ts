@@ -2,9 +2,11 @@ import {
   CanReserveParamType,
   CanReserveType,
   GetEligiblePipeType,
+  GetJudgeRewardsMainType,
   GetReservedType,
   GetRewardsByRequiredObjectType,
   GetRewardsEligibleType,
+  GetRewardsJudgeType,
   GetRewardsMainType,
   GetSponsorsType,
   RewardsAllType,
@@ -94,6 +96,14 @@ export interface RewardsAllInterface {
   }: AddDataOnRewardsByObjectType): Promise<RewardsByRequiredType[]>;
 
   getUserRewards(params: GetRewardsEligibleType): Promise<RewardsAllType>;
+
+  getJudgeRewardsMain(params: GetJudgeRewardsMainType): Promise<RewardsAllType>;
+
+  getSponsorsJudge(params: GetSponsorsJudgeInterface): Promise<GetSponsorsType>;
+
+  getJudgeRewardsByObject(
+    params: GetRewardsJudgeType,
+  ): Promise<RewardsByObjectType>;
 }
 
 export interface GetSponsorsEligibleInterface {
@@ -105,6 +115,12 @@ export interface GetSponsorsEligibleInterface {
 export interface GetSponsorsAllInterface {
   requiredObject?: string;
   reach?: string;
+}
+
+export interface GetSponsorsJudgeInterface extends GetSponsorsAllInterface {
+  requiredObject?: string;
+  reach?: string;
+  judgeName: string;
 }
 
 export interface GetReservedFiltersInterface {
