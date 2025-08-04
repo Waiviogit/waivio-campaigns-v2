@@ -1,6 +1,7 @@
 import {
   ActivateCampaignType,
   CampaignDocumentType,
+  CreateCampaignRepositoryType,
   DeleteCampaignType,
   findCampaignByStatusGuideNameActivation,
   UpdateCampaignType,
@@ -8,7 +9,10 @@ import {
 import { MongoRepositoryInterface } from '../../mongo.repository';
 
 export interface CampaignRepositoryInterface
-  extends MongoRepositoryInterface<CampaignDocumentType> {
+  extends MongoRepositoryInterface<
+    CampaignDocumentType,
+    CreateCampaignRepositoryType
+  > {
   findOneSuspended(guideName: string): Promise<CampaignDocumentType>;
   findActiveByActivationLink(
     activationPermlink: string,

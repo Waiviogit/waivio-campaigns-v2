@@ -1,6 +1,4 @@
-import {
-  GiveawayParticipantsDocumentType,
-} from '../types';
+import { GiveawayParticipantsDocumentType } from '../types';
 import { MongoRepositoryInterface } from '../../mongo.repository';
 
 export interface GetGiveawayMessageInterface {

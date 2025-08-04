@@ -1,8 +1,5 @@
 import { SponsorsBotUpvote } from '../sponsors-bot-upvote.schema';
-import {
-  ObjectId,
-} from 'mongoose';
-
+import { ObjectId } from 'mongoose';
 
 export type CreateUpvoteType = Omit<
   SponsorsBotUpvote,

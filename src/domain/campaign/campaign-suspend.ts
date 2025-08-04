@@ -104,7 +104,7 @@ export class CampaignSuspend implements CampaignSuspendInterface {
     guideName: string,
     histories: PayablesAllType[],
     tokenRate: number,
-  ): Promise<string> {
+  ): Promise<string | number> {
     const notPayedWarning = _.filter(
       histories,
       (el) => el.notPayedPeriod > PAYABLE_WARNING,

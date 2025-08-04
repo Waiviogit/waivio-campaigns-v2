@@ -1,2 +1,2 @@
-export * from './blacklist.types'
-export * from './blacklist.repository.types'
+export * from './blacklist.types';
+export * from './blacklist.repository.types';

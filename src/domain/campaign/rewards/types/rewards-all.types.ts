@@ -4,7 +4,10 @@ import {
   ReviewRequirementsType,
   UserRequirementsType,
 } from '../../../../persistance/campaign/types';
-import {UserCampaignType, UserDocumentType} from '../../../../persistance/user/types';
+import {
+  UserCampaignType,
+  UserDocumentType,
+} from '../../../../persistance/user/types';
 import { ReservationDetailsObjectType } from '../../reservation/types/reservation-details.types';
 
 export type RewardsMainType = {
@@ -65,6 +68,11 @@ export type GetRewardsMainType = {
   radius?: number;
   reach?: string;
   userName?: string;
+};
+
+export type GetRewardsJudgeType = GetRewardsMainType & {
+  judgeName: string;
+  requiredObject?: string;
 };
 
 export type GetReservedType = GetRewardsMainType & {
@@ -143,4 +151,15 @@ export type EligiblePipeUserType = Pick<
 export type ExpertiseVariablesType = {
   claims: number;
   rewardBalanceTimesRate: number;
+};
+
+export type GetJudgeRewardsMainType = {
+  skip?: number;
+  limit?: number;
+  host: string;
+  sort?: string;
+  judgeName: string;
+  sponsors?: string[];
+  type?: string[];
+  reach?: string;
 };

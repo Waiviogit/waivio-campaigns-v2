@@ -20,6 +20,7 @@ import { UserSubscriptionRepositoryInterface } from '../../persistance/user-subs
 import { WobjectSubscriptionsRepositoryInterface } from '../../persistance/wobject-subscriptions/interface';
 import { NotificationsInterface } from './interface';
 import { WobjectHelperInterface } from '../wobject/interface';
+import { startsWithAtSign } from 'src/common/helpers/string-helper';
 
 @Injectable()
 export class Notifications implements NotificationsInterface {
@@ -54,6 +55,14 @@ export class Notifications implements NotificationsInterface {
     this.notificationRequest(reqData);
   }
 
+  private getUserOnCampaign(object: string): string {
+    const isUser = startsWithAtSign(object);
+    if (isUser) {
+      return object.replace('@', '');
+    }
+    return '';
+  }
+
   private async getUsersSubscribedOnCampaign(
     campaign: Campaign,
   ): Promise<string[]> {
@@ -83,7 +92,7 @@ export class Notifications implements NotificationsInterface {
       if (_.isEmpty(users)) continue;
 
       const objectName = await this.wobjectHelper.getWobjectName(object);
-      if (!objectName) return;
+      const campaignWithUser = this.getUserOnCampaign(object);
 
       await this.sendNotification({
         id: NOTIFICATION_ID.BELL_WOBJ_REWARDS,
@@ -94,6 +103,7 @@ export class Notifications implements NotificationsInterface {
           primaryObject,
           guideName,
           reach,
+          ...(campaignWithUser && { campaignWithUser }),
         },
       });
     }
@@ -108,7 +118,8 @@ export class Notifications implements NotificationsInterface {
     const object_name = await this.wobjectHelper.getWobjectName(
       campaign.requiredObject,
     );
-    if (!object_name) return;
+
+    const campaignWithUser = this.getUserOnCampaign(campaign.requiredObject);
 
     await this.sendNotification({
       id: NOTIFICATION_ID.ACTIVATION_CAMPAIGN,
@@ -119,8 +130,11 @@ export class Notifications implements NotificationsInterface {
         object_name,
         newCampaigns: true,
         reach: campaign.reach,
+        ...(campaignWithUser && { campaignWithUser }),
       },
     });
+
+    await this.sendJudgesNotification(campaign);
 
     if (
       Array.isArray(campaign?.objects) &&
@@ -149,7 +163,8 @@ export class Notifications implements NotificationsInterface {
     const object_name = await this.wobjectHelper.getWobjectName(
       campaign.requiredObject,
     );
-    if (!object_name) return;
+
+    const campaignWithUser = this.getUserOnCampaign(campaign.requiredObject);
 
     await this.sendNotification({
       id: NOTIFICATION_ID.DEACTIVATION_CAMPAIGN,
@@ -158,7 +173,30 @@ export class Notifications implements NotificationsInterface {
         users: _.uniq([...users, campaign.guideName]),
         author_permlink: campaign.requiredObject,
         object_name,
+        ...(campaignWithUser && { campaignWithUser }),
       },
     });
+  }
+
+  private async sendJudgesNotification(campaign: Campaign): Promise<void> {
+    if (!campaign.contestJudges || !campaign.contestJudges.length) return;
+    const object_name = await this.wobjectHelper.getWobjectName(
+      campaign.requiredObject,
+    );
+
+    const campaignWithUser = this.getUserOnCampaign(campaign.requiredObject);
+
+    for (const judge of campaign.contestJudges) {
+      await this.sendNotification({
+        id: NOTIFICATION_ID.JUDGES_NOTIFICATION,
+        data: {
+          guideName: campaign.guideName,
+          toJudge: judge,
+          author_permlink: campaign.requiredObject,
+          object_name,
+          ...(campaignWithUser && { campaignWithUser }),
+        },
+      });
+    }
   }
 }

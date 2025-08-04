@@ -31,6 +31,12 @@ export type ReservationTimetableType = {
   sunday: boolean;
 };
 
+export type ContestRewardType = {
+  place: number;
+  reward: number;
+  rewardInUSD: number;
+};
+
 export type CampaignUserDocumentType = CampaignUser & Document;
 
 // export type CampaignPaymentDocumentType = CampaignPayment & Document;
