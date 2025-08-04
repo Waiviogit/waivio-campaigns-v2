@@ -14,7 +14,7 @@ import {
 } from '../../persistance/campaign/types';
 import { BlacklistHelperInterface } from '../blacklist/interface';
 import { GiveawayObjectInterface } from './rewards/interface/giveaway-object.interface';
-import { ContestInterface } from './rewards/interface/contest.interface';
+import { ContestInterface } from './rewards/interface';
 import { castToUTC } from '../../common/helpers';
 
 const MIN_CAMPAIGN_REWARD_USD = 0.5;
@@ -42,7 +42,17 @@ export class CreateCampaign implements CreateCampaignInterface {
       campaign.reward,
     );
 
-    if (rewardInUSD < MIN_CAMPAIGN_REWARD_USD) {
+    const campaignWithOneReward: string[] = [
+      CAMPAIGN_TYPE.REVIEWS,
+      CAMPAIGN_TYPE.MENTIONS,
+      CAMPAIGN_TYPE.GIVEAWAYS,
+      CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
+    ];
+
+    if (
+      rewardInUSD < MIN_CAMPAIGN_REWARD_USD &&
+      campaignWithOneReward.includes(campaign.type)
+    ) {
       throw new HttpException(
         `Campaign is not created. Reward should be more than $${MIN_CAMPAIGN_REWARD_USD}.`,
         422,
@@ -76,8 +86,6 @@ export class CreateCampaign implements CreateCampaignInterface {
 
       // Update campaign with calculated rewardInUSD values
       campaign.contestRewards = contestRewardsWithUSD;
-    } else if (campaign.reward > campaign.budget) {
-      throw new HttpException(`Reward more than budget`, 422);
     }
 
     const { blacklist, whitelist } = await this.blacklistHelper.getBlacklist(
