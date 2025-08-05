@@ -142,10 +142,10 @@ export class Campaign {
   @Prop({ type: Number, required: true, min: 0.001, max: 10000 })
   budget: number;
 
-  @Prop({ type: Number, required: true, min: 0.001, max: 500 })
+  @Prop({ type: Number, required: true, min: 0, max: 500 })
   reward: number;
 
-  @Prop({ type: Number, required: true, min: 0.001, max: 50000 })
+  @Prop({ type: Number, required: true, min: 0, max: 50000 })
   rewardInUSD: number;
 
   @Prop({ type: Number, default: 1 })
