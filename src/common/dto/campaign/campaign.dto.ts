@@ -203,7 +203,7 @@ export class ContestRewardInputDto {
   place: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(0.001)
   @Max(50000)
   @ApiProperty({ type: Number })
   reward: number;
@@ -305,13 +305,13 @@ export class CampaignDto {
   budget: number;
 
   @IsNumber()
-  @Min(0.001)
+  @Min(0)
   @Max(500)
   @ApiProperty({ type: Number, required: true })
   reward: number;
 
   @IsNumber()
-  @Min(0.001)
+  @Min(0)
   @Max(500)
   @ApiProperty({ type: Number, required: true })
   rewardInUSD: number;
