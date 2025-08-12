@@ -7,6 +7,7 @@ import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
   CURRENCY_RATES_PROVIDE,
   HIVE_ENGINE_PROVIDE,
   PAYOUT_TOKEN,
@@ -24,6 +25,8 @@ import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rat
 import { CampaignHelperInterface, GuideCampaignsInterface } from './interface';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
 import { GuidePaymentsQueryInterface } from '../campaign-payment/interface';
+
+const CAMPAIGN_TYPE_REMAINING = [CAMPAIGN_TYPE.MENTIONS, CAMPAIGN_TYPE.REVIEWS];
 
 @Injectable()
 export class GuideCampaigns implements GuideCampaignsInterface {
@@ -161,7 +164,12 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               giveawayRequirements: 1,
               remaining: {
                 $cond: [
-                  { $eq: ['$status', 'active'] },
+                  {
+                    $and: [
+                      { $eq: ['$status', 'active'] },
+                      { $in: ['$type', CAMPAIGN_TYPE_REMAINING] },
+                    ],
+                  },
                   {
                     $subtract: [
                       { $divide: ['$budget', '$reward'] },
@@ -275,7 +283,12 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               giveawayRequirements: 1,
               remaining: {
                 $cond: [
-                  { $eq: ['$status', 'active'] },
+                  {
+                    $and: [
+                      { $eq: ['$status', 'active'] },
+                      { $in: ['$type', CAMPAIGN_TYPE_REMAINING] },
+                    ],
+                  },
                   {
                     $subtract: [
                       { $divide: ['$budget', '$reward'] },
