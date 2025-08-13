@@ -19,6 +19,7 @@ import {
   WOBJECT_SUBSCRIPTION_PROVIDE,
   USER_SUBSCRIPTION_PROVIDE,
   MUTED_USER_PROVIDE,
+  CAMPAIGN_TYPE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import {
@@ -415,6 +416,7 @@ export class RewardsAll implements RewardsAllInterface {
               qualifiedPayoutToken: 1,
               giveawayPermlink: 1,
               giveawayPostTitle: 1,
+              contestRewards: 1,
             },
           },
           {
@@ -608,7 +610,7 @@ export class RewardsAll implements RewardsAllInterface {
               type: 1,
               qualifiedPayoutToken: 1,
               giveawayPermlink: 1,
-              giveawayPostTitle: 1,
+              contestRewards: 1,
             },
           },
           {
@@ -632,6 +634,52 @@ export class RewardsAll implements RewardsAllInterface {
     return {
       rewards: _.take(rewardsWithAdditionalData, limit),
       hasMore: rewardsWithAdditionalData.length > limit,
+    };
+  }
+
+  private getMinMaxRewardForPrimary(groupedCampaigns): {
+    minReward: number;
+    maxReward: number;
+    guideName: string;
+  } {
+    let minReward: number;
+    let maxReward: number;
+
+    const maxRewardCampaign = _.maxBy(groupedCampaigns, (campaign) => {
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+        return _.maxBy(campaign.contestRewards, 'rewardInUSD').rewardInUSD;
+      }
+      return campaign.rewardInUSD;
+    });
+    if (maxRewardCampaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+      maxReward =
+        _.maxBy(maxRewardCampaign.maxRewardCampaign, 'rewardInUSD')
+          ?.rewardInUSD || 0;
+    } else {
+      maxReward = maxRewardCampaign?.rewardInUSD || 0;
+    }
+
+    const guideName = maxRewardCampaign.guideName || '';
+
+    const minRewardCampaign = _.minBy(groupedCampaigns, (campaign) => {
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+        return _.minBy(campaign.contestRewards, 'rewardInUSD').rewardInUSD;
+      }
+      return campaign.rewardInUSD;
+    });
+
+    if (minRewardCampaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+      minReward =
+        _.minBy(maxRewardCampaign.maxRewardCampaign, 'rewardInUSD')
+          ?.rewardInUSD || 0;
+    } else {
+      minReward = maxRewardCampaign?.rewardInUSD || 0;
+    }
+
+    return {
+      minReward,
+      maxReward,
+      guideName,
     };
   }
 
@@ -689,22 +737,17 @@ export class RewardsAll implements RewardsAllInterface {
         if (distance > radius) continue;
       }
 
-      const maxRewardCampaign = _.maxBy(
-        groupedCampaigns[key],
-        (campaign) => campaign.rewardInUSD,
-      );
+      const { minReward, maxReward, guideName } =
+        this.getMinMaxRewardForPrimary(groupedCampaigns[key]);
 
       rewards.push({
         lastCreated: _.maxBy(
           groupedCampaigns[key],
           (campaign) => campaign.createdAt,
         ).createdAt,
-        minReward: _.minBy(
-          groupedCampaigns[key],
-          (campaign) => campaign.rewardInUSD,
-        ).rewardInUSD,
-        maxReward: maxRewardCampaign.rewardInUSD,
-        guideName: maxRewardCampaign.guideName,
+        minReward,
+        maxReward,
+        guideName,
         distance,
         object,
         user,
@@ -847,6 +890,7 @@ export class RewardsAll implements RewardsAllInterface {
               type: 1,
               giveawayPermlink: 1,
               giveawayPostTitle: 1,
+              contestRewards: 1,
             },
           },
           {
