@@ -653,8 +653,8 @@ export class RewardsAll implements RewardsAllInterface {
     });
     if (maxRewardCampaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
       maxReward =
-        _.maxBy(maxRewardCampaign.maxRewardCampaign, 'rewardInUSD')
-          ?.rewardInUSD || 0;
+        _.maxBy(maxRewardCampaign.contestRewards, 'rewardInUSD')?.rewardInUSD ||
+        0;
     } else {
       maxReward = maxRewardCampaign?.rewardInUSD || 0;
     }
@@ -670,8 +670,8 @@ export class RewardsAll implements RewardsAllInterface {
 
     if (minRewardCampaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
       minReward =
-        _.minBy(maxRewardCampaign.maxRewardCampaign, 'rewardInUSD')
-          ?.rewardInUSD || 0;
+        _.minBy(maxRewardCampaign.contestRewards, 'rewardInUSD')?.rewardInUSD ||
+        0;
     } else {
       minReward = maxRewardCampaign?.rewardInUSD || 0;
     }
