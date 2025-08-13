@@ -200,6 +200,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
               activationPermlink: 1,
               requiredObject: 1,
               type: 1,
+              contestRewards: 1,
             },
           },
         ],
