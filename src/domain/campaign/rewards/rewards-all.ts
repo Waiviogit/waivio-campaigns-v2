@@ -417,6 +417,7 @@ export class RewardsAll implements RewardsAllInterface {
               giveawayPermlink: 1,
               giveawayPostTitle: 1,
               contestRewards: 1,
+              contestJudges: 1,
             },
           },
           {
@@ -611,6 +612,7 @@ export class RewardsAll implements RewardsAllInterface {
               qualifiedPayoutToken: 1,
               giveawayPermlink: 1,
               contestRewards: 1,
+              contestJudges: 1,
             },
           },
           {
@@ -891,6 +893,7 @@ export class RewardsAll implements RewardsAllInterface {
               giveawayPermlink: 1,
               giveawayPostTitle: 1,
               contestRewards: 1,
+              contestJudges: 1,
             },
           },
           {
