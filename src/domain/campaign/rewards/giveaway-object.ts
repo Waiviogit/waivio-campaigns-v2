@@ -24,7 +24,7 @@ import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/gi
 import { CampaignHelperInterface } from '../interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
-import crypto from 'node:crypto';
+import * as crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 
 @Injectable()
