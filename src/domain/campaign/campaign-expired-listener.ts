@@ -53,13 +53,16 @@ export class CampaignExpiredListener
       [campaign.requiredObject, ...campaign.objects],
     );
 
+    const campaignsStatusesToExpire: string[] = [
+      CAMPAIGN_STATUS.ACTIVE,
+      CAMPAIGN_STATUS.REACHED_LIMIT,
+    ];
+    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS) {
+      campaignsStatusesToExpire.push(CAMPAIGN_STATUS.PENDING);
+    }
+
     await this.campaignRepository.updateOne({
-      filter: {
-        _id,
-        status: {
-          $in: [CAMPAIGN_STATUS.ACTIVE, CAMPAIGN_STATUS.REACHED_LIMIT],
-        },
-      },
+      filter: { _id, status: { $in: campaignsStatusesToExpire } },
       update: { status: CAMPAIGN_STATUS.EXPIRED },
     });
   }
