@@ -1,6 +1,8 @@
+import { PostDocumentType } from '../../../../persistance/post/types';
+
 export type ContestWinnerType = {
   place: number;
   reward: number;
-  post: { author: string; permlink: string };
+  post: PostDocumentType;
   votePercentage: number;
 };

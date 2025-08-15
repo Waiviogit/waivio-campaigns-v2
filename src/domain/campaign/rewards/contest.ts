@@ -25,6 +25,7 @@ import { CreateReviewInterface } from '../review/interface';
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import * as crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
+import { ContestWinnerType } from '../review/types';
 
 @Injectable()
 export class Contest implements ContestInterface {
@@ -175,6 +176,7 @@ export class Contest implements ContestInterface {
         json_metadata: 1,
         beneficiaries: 1,
         active_votes: 1,
+        root_author: 1,
       },
     });
 
@@ -223,15 +225,8 @@ export class Contest implements ContestInterface {
         type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
       },
     });
-    if (!campaign) {
-      console.log(`No campaign contest ${_id}`);
-      return;
-    }
-
-    if (!campaign.recurrenceRule) {
-      console.log(`No recurrenceRule contest ${_id}`);
-      return;
-    }
+    if (!campaign) return;
+    if (!campaign.recurrenceRule) return;
 
     const rruleObject = rrulestr(campaign.recurrenceRule);
     const now = new Date();
@@ -243,13 +238,13 @@ export class Contest implements ContestInterface {
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
     if (!isInRange) {
-      console.log(`Not in range contest ${_id}`);
+      await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
       return;
     }
 
     const posts = await this.getContestPosts(campaign);
     if (!posts.length) {
-      console.log(`no posts contest ${_id}`);
+      await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
       return;
     }
 
@@ -280,7 +275,8 @@ export class Contest implements ContestInterface {
     });
 
     // Determine winners based on contest rewards
-    const winners = [];
+    const winners: ContestWinnerType[] = [];
+    const winningAuthors = new Set<string>();
     const contestRewards = campaign.contestRewards || [];
 
     for (
@@ -289,18 +285,26 @@ export class Contest implements ContestInterface {
       i++
     ) {
       const reward = contestRewards[i];
-      const postData = sortedPosts[i];
+
+      // Find the next eligible post (author hasn't won yet)
+      let eligiblePostData = null;
+      for (const postData of sortedPosts) {
+        if (!winningAuthors.has(postData.post.author)) {
+          eligiblePostData = postData;
+          break;
+        }
+      }
+
+      if (!eligiblePostData) {
+        // No more eligible authors, break the loop
+        break;
+      }
 
       // If no votes or tied votes, select randomly from remaining posts
-      if (postData.votes === 0) {
-        // Random selection for posts with no votes
+      if (eligiblePostData.votes === 0) {
+        // Random selection for posts with no votes from authors who haven't won
         const eligiblePosts = sortedPosts.filter(
-          (p) =>
-            !winners.some(
-              (w) =>
-                w.post.author === p.post.author &&
-                w.post.permlink === p.post.permlink,
-            ),
+          (p) => !winningAuthors.has(p.post.author),
         );
         if (eligiblePosts.length > 0) {
           const randomIndex = crypto.randomInt(0, eligiblePosts.length);
@@ -311,14 +315,16 @@ export class Contest implements ContestInterface {
             post: randomPostData.post,
             votePercentage: randomPostData.votePercentage,
           });
+          winningAuthors.add(randomPostData.post.author);
         }
       } else {
         winners.push({
           place: reward.place,
           reward: reward.rewardInUSD,
-          post: postData.post,
-          votePercentage: postData.votePercentage,
+          post: eligiblePostData.post,
+          votePercentage: eligiblePostData.votePercentage,
         });
+        winningAuthors.add(eligiblePostData.post.author);
       }
     }
 
@@ -335,8 +341,6 @@ export class Contest implements ContestInterface {
         })),
       );
     }
-
-    console.log(`winners  ${winners.join(',')} ${_id}`);
 
     // Create payables for winners
     for (const winner of winners) {

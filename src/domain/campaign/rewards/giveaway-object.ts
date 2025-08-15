@@ -176,7 +176,10 @@ export class GiveawayObject implements GiveawayObjectInterface {
     const isInRange = occurrences.some(
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
-    if (!isInRange) return;
+    if (!isInRange) {
+      await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+      return;
+    }
 
     let participants = await this.getParticipants(campaign);
     const eventId = crypto.randomUUID();
