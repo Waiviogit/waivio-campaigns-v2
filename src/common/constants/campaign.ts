@@ -21,7 +21,7 @@ export const EXPIRED_MESSAGE_TYPE = Object.freeze({
 
 export const RECURRENT_TYPE = Object.freeze({
   GIVEAWAY_OBJECT: 'giveaway_object_recurrent',
-  CONTEST_OBJECT: 'contest_recurrent',
+  CONTEST_OBJECT: 'contest_object_recurrent',
 } as const);
 
 export const REWARDS_TAB = Object.freeze({
