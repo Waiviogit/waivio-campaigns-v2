@@ -223,8 +223,15 @@ export class Contest implements ContestInterface {
         type: CAMPAIGN_TYPE.CONTESTS_OBJECT,
       },
     });
-    if (!campaign) return;
-    if (!campaign.recurrenceRule) return;
+    if (!campaign) {
+      console.log(`No campaign contest ${_id}`);
+      return;
+    }
+
+    if (!campaign.recurrenceRule) {
+      console.log(`No recurrenceRule contest ${_id}`);
+      return;
+    }
 
     const rruleObject = rrulestr(campaign.recurrenceRule);
     const now = new Date();
@@ -235,10 +242,16 @@ export class Contest implements ContestInterface {
     const isInRange = occurrences.some(
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
-    if (!isInRange) return;
+    if (!isInRange) {
+      console.log(`Not in range contest ${_id}`);
+      return;
+    }
 
     const posts = await this.getContestPosts(campaign);
-    if (!posts.length) return;
+    if (!posts.length) {
+      console.log(`no posts contest ${_id}`);
+      return;
+    }
 
     const judgeVotes = await this.getJudgeVotes(campaign, posts);
     const eventId = crypto.randomUUID();
@@ -322,6 +335,8 @@ export class Contest implements ContestInterface {
         })),
       );
     }
+
+    console.log(`winners  ${winners.join(',')} ${_id}`);
 
     // Create payables for winners
     for (const winner of winners) {
