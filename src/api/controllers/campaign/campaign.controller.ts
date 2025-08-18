@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { CampaignControllerDocs } from './campaign.controller.doc';
 import {
-  CreateCampaignDto,
   DeleteCampaignDto,
   UpdateCampaignDto,
   ValidateActivationDto,
@@ -28,7 +27,11 @@ import {
 } from '../../../common/dto/campaign/out';
 import { CampaignDto } from '../../../common/dto/campaign/campaign.dto';
 import { CustomHeaders } from '../../../common/decorators';
-import { HostPipe } from '../../pipes/host.pipe';
+import {
+  CreateCampaignPipe,
+  HostPipe,
+  CreateCampaignUnionDto,
+} from '../../pipes';
 
 @Controller('campaign')
 @CampaignControllerDocs.main()
@@ -39,9 +42,9 @@ export class CampaignController {
   @UseGuards(AuthGuard)
   @CampaignControllerDocs.createCampaign()
   async create(
-    @Body() createCampaignDto: CreateCampaignDto,
+    @Body(new CreateCampaignPipe()) dto: CreateCampaignUnionDto,
   ): Promise<CreateCampaignOutDto> {
-    return this.campaignService.create(createCampaignDto);
+    return this.campaignService.create(dto);
   }
 
   @Patch()
