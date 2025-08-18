@@ -600,7 +600,7 @@ export class CreateReview implements CreateReviewInterface {
       .dividedBy(payoutTokenRateUSD)
       .decimalPlaces(tokenPrecision);
 
-    const userReservationObject = campaign.guideName;
+    const userReservationObject = campaign.requiredObject;
 
     const reviewPermlink = this.getGiveawayReviewPermlink(campaign.type, post);
 
@@ -670,7 +670,7 @@ export class CreateReview implements CreateReviewInterface {
       .dividedBy(payoutTokenRateUSD)
       .decimalPlaces(tokenPrecision);
 
-    const userReservationObject = campaign.guideName;
+    const userReservationObject = campaign.requiredObject;
 
     const reviewPermlink = `${post.author}/${post.permlink}`;
 
