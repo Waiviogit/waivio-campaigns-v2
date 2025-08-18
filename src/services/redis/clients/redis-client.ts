@@ -24,23 +24,23 @@ export abstract class RedisClient
 
   async get(key: string): Promise<string | null> {
     try {
-      return this.client.get(key);
+      return await this.client.get(key);
     } catch (error) {
-      this.logger.error(error.message());
+      this.logger.error(error.message);
     }
   }
 
   async set(key: string, value: string): Promise<string> {
     try {
-      return this.client.set(key, value);
+      return await this.client.set(key, value);
     } catch (error) {
-      this.logger.error(error.message());
+      this.logger.error(error.message);
     }
   }
 
   async setex(key: string, expire: number, value: string): Promise<string> {
     try {
-      return this.client.setEx(key, expire, value);
+      return await this.client.setEx(key, expire, value);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -48,7 +48,7 @@ export abstract class RedisClient
 
   async deleteKey(key: string): Promise<number> {
     try {
-      return this.client.del(key);
+      return await this.client.del(key);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -56,7 +56,7 @@ export abstract class RedisClient
 
   async hGetAll(key: string): Promise<object> {
     try {
-      return this.client.HGETALL(key);
+      return await this.client.HGETALL(key);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -64,7 +64,7 @@ export abstract class RedisClient
 
   async publish(key: string, data: string): Promise<number> {
     try {
-      return this.client.PUBLISH(key, data);
+      return await this.client.PUBLISH(key, data);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -72,7 +72,12 @@ export abstract class RedisClient
 
   async zadd(key: string, score: number, member: string): Promise<number> {
     try {
-      return this.client.sendCommand(['ZADD', key, String(score), member]);
+      return await this.client.sendCommand([
+        'ZADD',
+        key,
+        String(score),
+        member,
+      ]);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -84,7 +89,7 @@ export abstract class RedisClient
     max: number,
   ): Promise<number> {
     try {
-      return this.client.sendCommand([
+      return await this.client.sendCommand([
         'ZREMRANGEBYSCORE',
         key,
         String(min),
@@ -97,7 +102,7 @@ export abstract class RedisClient
 
   async zrem(key: string, member: string): Promise<number> {
     try {
-      return this.client.sendCommand(['ZREM', key, member]);
+      return await this.client.sendCommand(['ZREM', key, member]);
     } catch (error) {
       this.logger.error(error.message);
     }
