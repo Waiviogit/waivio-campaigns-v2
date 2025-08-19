@@ -329,8 +329,8 @@ We encourage you to create and share original content to qualify for rewards in 
         .join(', ')}.\n`;
     }
     message += `Thank you all for joining and sharing great content!
+    
 Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
-
 Keep creating and good luck next time!`;
     if (legalAgreement) message += `\n\n${legalAgreement}`;
 
@@ -519,7 +519,7 @@ Keep creating and stay inspired!`;
             });
 
       const existComment = await this.hiveClient.getContent(
-        configService.getMentionsAccount(),
+        configService.getGiveawayAccount(),
         permlink,
       );
       if (existComment?.body === message) continue;
@@ -532,7 +532,7 @@ Keep creating and stay inspired!`;
           activationPermlink: campaign.activationPermlink,
         }),
         body: message,
-        author: configService.getMentionsAccount(),
+        author: configService.getGiveawayAccount(),
         permlink: permlink,
         key: configService.getMessagePostingKey(),
       });
@@ -601,20 +601,15 @@ Keep creating and stay inspired!`;
           .slice(0, 100)
           .map((p) => `@${p}`)
           .join(', ');
-        const participantsNote = participants.length > 100 ? ' ...' : '';
+        const participantsNote = participants.length > 100 ? ' ...' : '.';
 
         const generalMessage = `Thanks to everyone who participated in the contest campaign by ${sponsorNameLink}!
-
 After carefully reviewing the entries and all the creative comments, we're excited to announce the winners:
 ${winnerLines.join('\n')}
-
 Each winner impressed us with their unique contributions and well-thought-out posts, congratulations!
-
 Big thanks to all participants for joining and supporting the campaign: ${participantsList}${participantsNote}
-
 We loved seeing your insights and enthusiasm. Stay tuned for more contests, campaigns, and chances to earn!
 You can track your rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
-
 Keep creating and good luck next time!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
@@ -626,7 +621,7 @@ Keep creating and good luck next time!`;
             activationPermlink: campaign.activationPermlink,
           }),
           body: generalMessage,
-          author: configService.getMentionsAccount(),
+          author: configService.getGiveawayAccount(),
           permlink,
           key: configService.getMessagePostingKey(),
         });
@@ -634,11 +629,10 @@ Keep creating and good luck next time!`;
         // Individual message for 2nd and 3rd place winners
         const placeText = place === 2 ? '2nd' : '3rd';
         const individualMessage = `Congratulations @${winner.post.author}!
-
 You've secured ${placeText} place in the recent contest campaign by ${sponsorNameLink}!
 As a reward, you'll receive $${winner.reward} USD (${waivAmount} WAIV), well deserved!
-
 Thanks for your thoughtful post and participation.
+
 Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global), more chances to win await!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
@@ -650,7 +644,7 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
             activationPermlink: campaign.activationPermlink,
           }),
           body: individualMessage,
-          author: configService.getMentionsAccount(),
+          author: configService.getGiveawayAccount(),
           permlink,
           key: configService.getMessagePostingKey(),
         });
@@ -720,7 +714,7 @@ We encourage you to create and share original content to qualify for rewards in 
         activationPermlink: campaign.activationPermlink,
       }),
       body: message,
-      author: configService.getMentionsAccount(),
+      author: configService.getGiveawayAccount(),
       permlink: permlink,
       key: configService.getMessagePostingKey(),
     });
