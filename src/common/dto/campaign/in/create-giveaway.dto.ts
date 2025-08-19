@@ -38,6 +38,7 @@ export class CreateGiveawayDto extends PickType(CampaignDto, [
   'qualifiedPayoutToken',
   'reach',
   'timezone',
+
   'giveawayPermlink',
   'giveawayPostTitle',
   'giveawayRequirements',

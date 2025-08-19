@@ -13,7 +13,6 @@ import {
   Max,
   Matches,
   IsMongoId,
-  ValidateIf,
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
@@ -282,7 +281,6 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   note: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS_OBJECT)
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
@@ -351,26 +349,22 @@ export class CampaignDto {
   @ApiProperty({ type: () => UserRequirementsDto })
   userRequirements: UserRequirementsDto;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => GiveawayRequirementsDto)
   @ApiProperty({ type: () => GiveawayRequirementsDto })
   giveawayRequirements?: GiveawayRequirementsDto;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
   @IsNotEmpty()
   @IsString()
   @ApiProperty({ type: String })
   giveawayPermlink?: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.GIVEAWAYS)
   @IsNotEmpty()
   @IsString()
   @ApiProperty({ type: String })
   giveawayPostTitle?: string;
 
-  @ValidateIf((o) => o.type === CAMPAIGN_TYPE.CONTESTS_OBJECT)
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
@@ -499,9 +493,6 @@ export class CampaignDto {
   })
   timezone?: string;
 
-  @ValidateIf((o) =>
-    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT].includes(o.type),
-  )
   @IsNotEmpty()
   @IsString()
   @Validate(IsRRuleConstraint)
@@ -512,17 +503,11 @@ export class CampaignDto {
   })
   recurrenceRule?: string;
 
-  @ValidateIf((o) =>
-    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT].includes(o.type),
-  )
   @IsNumber()
   @Min(1)
   @ApiProperty({ type: Number, required: false })
   durationDays?: number;
 
-  @ValidateIf((o) =>
-    [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT].includes(o.type),
-  )
   @IsNumber()
   @Min(1)
   @ApiProperty({ type: Number, required: false })
