@@ -331,12 +331,11 @@ export class CampaignDto {
   @ApiProperty({ type: String, required: false })
   usersLegalNotice: string;
 
-  @IsOptional()
   @IsNumber()
   @Min(0.05)
   @Max(1)
   @ApiProperty({ type: Number })
-  commissionAgreement: number;
+  commissionAgreement = 0.05;
 
   @ValidateNested()
   @Type(() => RequirementsDto)
