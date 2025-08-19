@@ -51,19 +51,14 @@ export class GuideCampaigns implements GuideCampaignsInterface {
       options: { sort: { dateString: -1 } },
     });
 
-    return campaigns.map((campaign) => ({
-      ...campaign,
-      budgetUSD:
-        campaign.currency === SUPPORTED_CURRENCY.USD
-          ? campaign.budget
-          : new BigNumber(campaign.budget)
-              .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
-              .toNumber(),
-      payed: _.reduce(
+    return campaigns.map((campaign) => {
+      let reward = campaign.reward;
+      let rewardInUSD = campaign.rewardInUSD;
+      let payed = _.reduce(
         campaign.users,
         (acc, usr) => {
           if (usr.status === 'completed') {
-            acc = new BigNumber(campaign.rewardInUSD)
+            return new BigNumber(campaign.rewardInUSD)
               .div(usr.payoutTokenRateUSD)
               .plus(usr.rewardRaisedBy)
               .plus(acc)
@@ -73,8 +68,47 @@ export class GuideCampaigns implements GuideCampaignsInterface {
           return acc;
         },
         0,
-      ),
-    }));
+      );
+
+      if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+        reward = _.sumBy(campaign.contestRewards, 'reward');
+        rewardInUSD = _.sumBy(campaign.contestRewards, 'rewardInUSD');
+        payed = _.reduce(
+          campaign.users,
+          (acc, usr) => {
+            if (usr.status === 'completed') {
+              const userReward = _.find(
+                campaign.contestRewards,
+                (r) => r.place === usr.place,
+              );
+              if (!userReward) return acc;
+
+              return new BigNumber(userReward.rewardInUSD)
+                .div(usr.payoutTokenRateUSD)
+                .plus(usr.rewardRaisedBy)
+                .plus(acc)
+                .dp(8)
+                .toNumber();
+            }
+            return acc;
+          },
+          0,
+        );
+      }
+
+      return {
+        ...campaign,
+        budgetUSD:
+          campaign.currency === SUPPORTED_CURRENCY.USD
+            ? campaign.budget
+            : new BigNumber(campaign.budget)
+                .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
+                .toNumber(),
+        payed,
+        reward,
+        rewardInUSD,
+      };
+    });
   }
 
   async getInactiveCampaigns({
@@ -148,6 +182,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               budget: 1,
               reward: 1,
               rewardInUSD: 1,
+              contestRewards: 1,
               reserved: 1,
               completed: 1,
               completedTotal: 1,
@@ -267,6 +302,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               budget: 1,
               reward: 1,
               rewardInUSD: 1,
+              contestRewards: 1,
               reserved: 1,
               completed: 1,
               completedTotal: 1,

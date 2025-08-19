@@ -1,5 +1,6 @@
 import {
   CampaignUserDocumentType,
+  ContestRewardType,
   ReviewRequirementsType,
   UserRequirementsType,
 } from '../../../persistance/campaign/types';
@@ -29,6 +30,7 @@ export type GuideManageCampaignType = {
   currency: string;
   commissionAgreement: number;
   remaining: number;
+  contestRewards?: ContestRewardType[];
 };
 
 export type ReservedCampaigns = {
