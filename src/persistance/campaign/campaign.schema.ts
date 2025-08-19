@@ -170,11 +170,11 @@ export class Campaign {
 
   @Prop(
     raw({
-      follow: { type: Boolean, default: false },
-      likePost: { type: Boolean, default: false },
-      comment: { type: Boolean, default: false },
-      tagInComment: { type: Boolean, default: false },
-      reblog: { type: Boolean, default: false },
+      follow: { type: Boolean },
+      likePost: { type: Boolean },
+      comment: { type: Boolean },
+      tagInComment: { type: Boolean },
+      reblog: { type: Boolean },
     }),
   )
   giveawayRequirements?: GiveawayRequirements;
