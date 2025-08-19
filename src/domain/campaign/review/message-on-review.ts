@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { setTimeout } from 'timers/promises';
 import { configService } from '../../../common/config';
 import * as crypto from 'node:crypto';
 import {
@@ -13,15 +12,13 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
-  EXPIRED_MESSAGE_TYPE,
   GIVEAWAY_PARTICIPANTS_PROVIDE,
   HIVE_PROVIDE,
   PAYOUT_TOKEN_PRECISION,
-  REDIS_KEY,
-  REDIS_PROVIDE,
   RESERVATION_STATUS,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
+  REVIEW_PROVIDE,
 } from '../../../common/constants';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
 import { WobjectHelperInterface } from '../../wobject/interface';
@@ -36,14 +33,12 @@ import {
   GiveawayParticipantsRepositoryInterface,
 } from '../../../persistance/giveaway-participants/interface';
 import { CampaignHelperInterface } from '../interface';
-import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { PaymentReportInterface } from '../../campaign-payment/interface';
+import { CommentQueueInterface } from './interface/comment-queue.interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
   constructor(
-    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
-    private readonly campaignRedisClient: RedisClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
     @Inject(WOBJECT_PROVIDE.HELPER)
@@ -58,6 +53,8 @@ export class MessageOnReview implements MessageOnReviewInterface {
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.PAYMENT_REPORT)
     private readonly paymentReport: PaymentReportInterface,
+    @Inject(REVIEW_PROVIDE.COMMENT_QUEUE)
+    private readonly commentQueue: CommentQueueInterface,
   ) {}
   async getPermlinkForMessage(
     author: string,
@@ -185,7 +182,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       campaign.activationPermlink,
     );
 
-    await this.hiveClient.createComment({
+    await this.commentQueue.addToQueue({
       parent_author: botName || postAuthor,
       parent_permlink: reviewPermlink,
       title: '',
@@ -195,7 +192,6 @@ You can track all of your outstanding payments and discover many more rewards [h
       body: message,
       author: configService.getMentionsAccount(),
       permlink,
-      key: configService.getMessagePostingKey(),
     });
   }
 
@@ -278,7 +274,7 @@ We encourage you to create and share original content to qualify for rewards in 
       campaign.activationPermlink,
     );
 
-    await this.hiveClient.createComment({
+    await this.commentQueue.addToQueue({
       parent_author: user.rootName,
       parent_permlink: user.reviewPermlink,
       title: '',
@@ -288,7 +284,6 @@ We encourage you to create and share original content to qualify for rewards in 
       body: message,
       author: configService.getMentionsAccount(),
       permlink,
-      key: configService.getMessagePostingKey(),
     });
   }
 
@@ -397,7 +392,7 @@ Thank you again for being part of the community!
 
 Keep creating and stay inspired!`;
 
-      const messageIsSent = await this.hiveClient.createComment({
+      await this.commentQueue.addToQueue({
         parent_author: campaign.guideName,
         parent_permlink: campaign.giveawayPermlink,
         title: '',
@@ -407,13 +402,7 @@ Keep creating and stay inspired!`;
         body: rejectMessage,
         author: configService.getGiveawayAccount(),
         permlink,
-        key: configService.getMessagePostingKey(),
       });
-      if (!messageIsSent) {
-        await this.setExpireTTLGiveaway(campaign.activationPermlink);
-      }
-
-      console.log('SEND MESSAGE GIVEAWAY REJECT');
       return;
     }
     //filter winners
@@ -443,7 +432,7 @@ Keep creating and stay inspired!`;
       participants,
     });
 
-    const messageIsSent = await this.hiveClient.createComment({
+    await this.commentQueue.addToQueue({
       parent_author: campaign.guideName,
       parent_permlink: campaign.giveawayPermlink,
       title: '',
@@ -453,13 +442,7 @@ Keep creating and stay inspired!`;
       body: message,
       author: configService.getGiveawayAccount(),
       permlink,
-      key: configService.getMessagePostingKey(),
     });
-    if (!messageIsSent) {
-      await this.setExpireTTLGiveaway(campaign.activationPermlink);
-    }
-
-    console.log(`SEND MESSAGE GIVEAWAY ${messageIsSent}`);
   }
 
   async giveawayObjectWinMessage(_id: string, eventId: string): Promise<void> {
@@ -524,7 +507,7 @@ Keep creating and stay inspired!`;
       );
       if (existComment?.body === message) continue;
 
-      await this.hiveClient.createComment({
+      await this.commentQueue.addToQueue({
         parent_author: user.rootName,
         parent_permlink: user.reviewPermlink,
         title: '',
@@ -534,11 +517,7 @@ Keep creating and stay inspired!`;
         body: message,
         author: configService.getGiveawayAccount(),
         permlink: permlink,
-        key: configService.getMessagePostingKey(),
       });
-
-      //we can comment once in 3 seconds with 1 account
-      await setTimeout(5 * 1000);
     }
   }
 
@@ -613,7 +592,7 @@ You can track your rewards and explore active campaigns [here](https://www.waivi
 Keep creating and good luck next time!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
-        await this.hiveClient.createComment({
+        await this.commentQueue.addToQueue({
           parent_author: winner.post.author,
           parent_permlink: winner.post.permlink,
           title: '',
@@ -623,7 +602,6 @@ Keep creating and good luck next time!`;
           body: generalMessage,
           author: configService.getGiveawayAccount(),
           permlink,
-          key: configService.getMessagePostingKey(),
         });
       } else {
         // Individual message for 2nd and 3rd place winners
@@ -636,7 +614,7 @@ Thanks for your thoughtful post and participation.
 Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global), more chances to win await!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
-        await this.hiveClient.createComment({
+        await this.commentQueue.addToQueue({
           parent_author: winner.post.author,
           parent_permlink: winner.post.permlink,
           title: '',
@@ -646,12 +624,8 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
           body: individualMessage,
           author: configService.getGiveawayAccount(),
           permlink,
-          key: configService.getMessagePostingKey(),
         });
       }
-
-      // Wait 5 seconds between comments to avoid rate limiting
-      await setTimeout(5 * 1000);
     }
   }
 
@@ -706,7 +680,7 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const permlink = `${user.name}-${user.eventId}`;
 
-    await this.hiveClient.createComment({
+    await this.commentQueue.addToQueue({
       parent_author: user.rootName,
       parent_permlink: user.reviewPermlink,
       title: '',
@@ -716,32 +690,8 @@ We encourage you to create and share original content to qualify for rewards in 
       body: message,
       author: configService.getGiveawayAccount(),
       permlink: permlink,
-      key: configService.getMessagePostingKey(),
     });
 
-    await setTimeout(5 * 1000);
-
     this.giveawayObjectWinMessage(campaign._id.toString(), user.eventId);
-  }
-
-  private async setExpireTTLGiveaway(
-    activationPermlink: string,
-  ): Promise<void> {
-    const expire = 60;
-    await this.campaignRedisClient.setex(
-      `${REDIS_KEY.GIVEAWAY_MESSAGE_EXPIRE}${activationPermlink}`,
-      expire,
-      '',
-    );
-  }
-
-  async listener(key: string): Promise<void> {
-    const [, type, id] = key.split(':');
-    switch (type) {
-      case EXPIRED_MESSAGE_TYPE.GIVEAWAY:
-        return this.giveawayMessage(id);
-      default:
-        return;
-    }
   }
 }

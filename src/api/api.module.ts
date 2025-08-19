@@ -15,6 +15,7 @@ import { PayablesController } from './controllers/payables/payables.controller';
 import { PayablesService } from './controllers/payables/payables.service';
 import { BotsController } from './controllers/bots/bots.controller';
 import { BotsService } from './controllers/bots/bots.service';
+import { CommentQueueController } from './controllers/comment-queue.controller';
 
 @Module({
   imports: [DomainModule, PersistenceModule],
@@ -26,6 +27,7 @@ import { BotsService } from './controllers/bots/bots.service';
     BlacklistsController,
     PayablesController,
     BotsController,
+    CommentQueueController,
   ],
   providers: [
     CampaignService,

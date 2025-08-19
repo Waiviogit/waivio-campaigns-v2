@@ -8,4 +8,9 @@ export interface RedisClientInterface {
   zadd(key: string, score: number, member: string): Promise<number>;
   zremrangebyscore(key: string, min: number, max: number): Promise<number>;
   zrem(key: string, member: string): Promise<number>;
+  // Queue methods for comment posting
+  lpush(key: string, value: string): Promise<number>;
+  rpop(key: string): Promise<string | null>;
+  llen(key: string): Promise<number>;
+  lrange(key: string, start: number, stop: number): Promise<string[]>;
 }

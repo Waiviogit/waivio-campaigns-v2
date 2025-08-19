@@ -130,6 +130,43 @@ export class RedisTestClient implements OnModuleInit, RedisClientInterface {
     }
   }
 
+  // Queue methods for comment posting
+  async lpush(key: string, value: string): Promise<number> {
+    try {
+      return await this.client.LPUSH(key, value);
+    } catch (error) {
+      this.logger.error(`Error pushing to list ${key}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async rpop(key: string): Promise<string | null> {
+    try {
+      return await this.client.RPOP(key);
+    } catch (error) {
+      this.logger.error(`Error popping from list ${key}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async llen(key: string): Promise<number> {
+    try {
+      return await this.client.LLEN(key);
+    } catch (error) {
+      this.logger.error(`Error getting list length ${key}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async lrange(key: string, start: number, stop: number): Promise<string[]> {
+    try {
+      return await this.client.LRANGE(key, start, stop);
+    } catch (error) {
+      this.logger.error(`Error getting list range ${key}: ${error.message}`);
+      throw error;
+    }
+  }
+
   // Test-specific methods
   async clearTestDatabase(): Promise<void> {
     try {

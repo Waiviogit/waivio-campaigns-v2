@@ -27,5 +27,4 @@ export interface MessageOnReviewInterface {
     activationPermlink: string,
     reservationPermlink: string,
   ): Promise<void>;
-  listener(key: string): Promise<void>;
 }

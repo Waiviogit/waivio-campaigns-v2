@@ -32,7 +32,7 @@ export abstract class RedisClient
 
   async set(key: string, value: string): Promise<string> {
     try {
-      return await this.client.set(key, value);
+      return this.client.set(key, value);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -48,7 +48,7 @@ export abstract class RedisClient
 
   async deleteKey(key: string): Promise<number> {
     try {
-      return await this.client.del(key);
+      return this.client.del(key);
     } catch (error) {
       this.logger.error(error.message);
     }
@@ -103,6 +103,39 @@ export abstract class RedisClient
   async zrem(key: string, member: string): Promise<number> {
     try {
       return await this.client.sendCommand(['ZREM', key, member]);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  // Queue methods for comment posting
+  async lpush(key: string, value: string): Promise<number> {
+    try {
+      return await this.client.LPUSH(key, value);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async rpop(key: string): Promise<string | null> {
+    try {
+      return await this.client.RPOP(key);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async llen(key: string): Promise<number> {
+    try {
+      return await this.client.LLEN(key);
+    } catch (error) {
+      this.logger.error(error.message);
+    }
+  }
+
+  async lrange(key: string, start: number, stop: number): Promise<string[]> {
+    try {
+      return await this.client.LRANGE(key, start, stop);
     } catch (error) {
       this.logger.error(error.message);
     }

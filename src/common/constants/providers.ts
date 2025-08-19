@@ -125,6 +125,7 @@ export const REVIEW_PROVIDE = Object.freeze({
   CREATE: 'CreateReview',
   FRAUD: 'FraudDetection',
   MESSAGE_ON_REVIEW: 'MessageOnReview',
+  COMMENT_QUEUE: 'CommentQueueService',
 });
 
 export const REWARDS_PROVIDE = Object.freeze({
