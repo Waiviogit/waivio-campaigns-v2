@@ -587,7 +587,7 @@ Keep creating and good luck next time!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
         await this.commentQueue.addToQueue({
-          parent_author: winner.post.author,
+          parent_author: winner.post.root_author,
           parent_permlink: winner.post.permlink,
           title: '',
           json_metadata: JSON.stringify({
@@ -609,7 +609,7 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
 
         const permlink = `contest-winner-${eventId}-${place}`;
         await this.commentQueue.addToQueue({
-          parent_author: winner.post.author,
+          parent_author: winner.post.root_author,
           parent_permlink: winner.post.permlink,
           title: '',
           json_metadata: JSON.stringify({
