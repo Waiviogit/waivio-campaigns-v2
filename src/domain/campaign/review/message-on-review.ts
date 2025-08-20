@@ -342,13 +342,10 @@ Keep creating and good luck next time!`;
     userName,
   }: GetGiveawayPersonalMessageInterface): string {
     let message = `Congratulations @${userName}!
-
 You’ve been selected as one of the winners in the giveaway campaign by [${sponsorName}](https://www.waivio.com/@${guideName})!
-
 As a reward, you’ll receive ${new BigNumber(rewardInUSD)
       .dp(2)
       .toString()} USD (${rewardInToken} ${payoutToken}), well deserved!
-
 Thanks again for participating and sharing great content.
 Stay tuned for more campaigns and opportunities to earn. You can explore active giveaways and track your rewards [here](https://www.waivio.com/rewards/global).
 
@@ -381,12 +378,9 @@ Keep creating and good luck in the next one!`;
     const permlink = `giveaway-${campaign.activationPermlink}`;
     if (winners.length === 0) {
       const rejectMessage = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${campaign.guideName})!
-
 Unfortunately, the sponsor has decided not to approve the results of this giveaway, and no rewards will be distributed this time.
 We understand this may be disappointing, and we truly appreciate the effort and creativity you put into your content.
-
 We encourage you to keep sharing your ideas and participating in future campaigns. There are always new opportunities to earn rewards and get recognized.
-
 You can track your activity and discover new campaigns [here](https://www.waivio.com/rewards/global).
 Thank you again for being part of the community!
 

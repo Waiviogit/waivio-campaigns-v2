@@ -207,10 +207,8 @@ export class Giveaway implements GiveawayInterface {
       },
     });
     if (!giveawayPost) return;
-    console.log('giveawayPost fetched');
     let participants = await this.getParticipants(campaign, giveawayPost);
     if (participants.length === 0) return;
-    console.log(`partisipants: ${participants.join(',')}`);
 
     await this.giveawayParticipantsRepository.insertMany(
       participants.map((p) => ({
@@ -223,7 +221,6 @@ export class Giveaway implements GiveawayInterface {
 
     while (budget.gte(campaign.reward) && participants.length) {
       const winner = selectRandomWinner(participants);
-      console.log('winner', winner);
       participants = participants.filter((p) => p !== winner);
       await this.createReview.createGiveawayPayables({
         campaign,
@@ -238,7 +235,6 @@ export class Giveaway implements GiveawayInterface {
       filter: { _id },
       update: { status: CAMPAIGN_STATUS.EXPIRED },
     });
-    console.log('call send message');
     await this.messageOnReview.giveawayMessage(campaign.activationPermlink);
   }
 }
