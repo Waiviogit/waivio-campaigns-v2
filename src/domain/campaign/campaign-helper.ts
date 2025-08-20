@@ -59,8 +59,8 @@ export class CampaignHelper implements CampaignHelperInterface {
     expiredAt: Date,
     _id: ObjectId | string,
   ): Promise<void> {
-    const expire = moment.utc(expiredAt).unix() - moment.utc().unix();
-    if (expire < 0) return;
+    const now = moment.utc();
+    const expire = Math.max(1, moment.utc(expiredAt).unix() - now.unix());
 
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.CAMPAIGN_EXPIRE}${_id.toString()}`,
