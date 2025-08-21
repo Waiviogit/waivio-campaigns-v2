@@ -7,6 +7,7 @@ import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
+  CAMPAIGN_TYPE,
   NOTIFICATION_ID,
   NOTIFICATIONS_PROVIDE,
   PAYABLE_DEADLINE,
@@ -214,9 +215,18 @@ export class CampaignSuspend implements CampaignSuspendInterface {
   }
 
   getStatusAfterSuspend(campaign: CampaignDocumentType): string {
+    const reachedLimitCampaignTypes: string[] = [
+      CAMPAIGN_TYPE.REVIEWS,
+      CAMPAIGN_TYPE.MENTIONS,
+    ];
+
     if (campaign.deactivationPermlink) return CAMPAIGN_STATUS.INACTIVE;
     if (campaign.expiredAt < new Date()) return CAMPAIGN_STATUS.EXPIRED;
     if (campaign.activationPermlink) {
+      if (!reachedLimitCampaignTypes.includes(campaign.type)) {
+        return CAMPAIGN_STATUS.ACTIVE;
+      }
+
       const completedUsers = _.filter(
         campaign.users,
         (user) => user.createdAt > moment.utc().startOf('month').toDate(),
