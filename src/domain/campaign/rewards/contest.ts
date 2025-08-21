@@ -178,6 +178,7 @@ export class Contest implements ContestInterface {
       filter: {
         createdAt: { $gte: dateFrom },
         'wobjects.author_permlink': { $in: campaign.objects },
+        author: { $nin: [...campaign.blacklistUsers, campaign.guideName] },
       },
       projection: {
         author: 1,

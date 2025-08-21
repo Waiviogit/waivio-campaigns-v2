@@ -86,6 +86,7 @@ export class GiveawayObject implements GiveawayObjectInterface {
       filter: {
         createdAt: { $gte: dateFrom },
         'wobjects.author_permlink': { $in: campaign.objects },
+        author: { $nin: [...campaign.blacklistUsers, campaign.guideName] },
       },
       projection: {
         author: 1,

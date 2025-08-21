@@ -110,6 +110,7 @@ export class RewardsAll implements RewardsAllInterface {
       notAssigned: false,
       frequency: false,
       notBlacklisted: false,
+      type: '',
     };
     if (!userName) return errResponse;
 
@@ -131,6 +132,7 @@ export class RewardsAll implements RewardsAllInterface {
         ...eligiblePipe,
         {
           $project: {
+            type: 1,
             canAssignByBudget: 1,
             canAssignByCurrentDay: 1,
             posts: 1,
@@ -144,6 +146,14 @@ export class RewardsAll implements RewardsAllInterface {
       ],
     });
     if (!reserve || !reserve.length) return errResponse;
+    if (
+      ![CAMPAIGN_TYPE.REVIEWS, CAMPAIGN_TYPE.MENTIONS].includes(
+        reserve[0].type as 'reviews' | 'mentions',
+      )
+    ) {
+      reserve[0].canAssignByBudget = true;
+    }
+
     return reserve[0];
   }
 
