@@ -26,6 +26,7 @@ import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/gi
 import * as crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 import { ContestWinnerType } from '../review/types';
+import { castToUTC } from '../../../common/helpers';
 
 @Injectable()
 export class Contest implements ContestInterface {
@@ -48,7 +49,11 @@ export class Contest implements ContestInterface {
     private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
   ) {}
 
-  async setNextRecurrentEvent(rruleString: string, _id: string): Promise<void> {
+  async setNextRecurrentEvent(
+    rruleString: string,
+    _id: string,
+    timezone?: string,
+  ): Promise<void> {
     const rruleObject = rrulestr(rruleString);
     const now = new Date();
     const next = rruleObject.after(now, true);
@@ -59,9 +64,14 @@ export class Contest implements ContestInterface {
       );
       return;
     }
+    const nextUtc = castToUTC({
+      date: next,
+      timezone: timezone,
+    });
+
     const expire = Math.max(
       0,
-      Math.floor((next.getTime() - now.getTime()) / 1000),
+      Math.floor((nextUtc.getTime() - now.getTime()) / 1000),
     );
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.CONTEST_OBJECT_RECURRENT}${_id}`,
@@ -238,13 +248,21 @@ export class Contest implements ContestInterface {
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
     if (!isInRange) {
-      await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+      await this.setNextRecurrentEvent(
+        campaign.recurrenceRule,
+        _id,
+        campaign.recurrenceRule,
+      );
       return;
     }
 
     const posts = await this.getContestPosts(campaign);
     if (!posts.length) {
-      await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+      await this.setNextRecurrentEvent(
+        campaign.recurrenceRule,
+        _id,
+        campaign.recurrenceRule,
+      );
       return;
     }
 
@@ -354,7 +372,11 @@ export class Contest implements ContestInterface {
       });
     }
 
-    await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+    await this.setNextRecurrentEvent(
+      campaign.recurrenceRule,
+      _id,
+      campaign.recurrenceRule,
+    );
     this.messageOnReview.contestWinMessage(_id, eventId, winners);
   }
 

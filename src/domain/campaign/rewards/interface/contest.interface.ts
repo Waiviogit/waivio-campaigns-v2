@@ -2,7 +2,11 @@ import { CampaignDocumentType } from '../../../../persistance/campaign/types';
 import { PostDocumentType } from '../../../../persistance/post/types';
 
 export interface ContestInterface {
-  setNextRecurrentEvent(rruleString: string, _id: string): Promise<void>;
+  setNextRecurrentEvent(
+    rruleString: string,
+    _id: string,
+    timezone?: string,
+  ): Promise<void>;
   getContestParticipants(campaign: CampaignDocumentType): Promise<string[]>;
   getContestPosts(campaign: CampaignDocumentType): Promise<PostDocumentType[]>;
   getJudgeVotes(

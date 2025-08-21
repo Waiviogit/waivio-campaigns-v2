@@ -115,12 +115,14 @@ export class CreateCampaign implements CreateCampaignInterface {
         await this.giveawayObject.setNextRecurrentEvent(
           campaign.recurrenceRule,
           createdCampaign._id.toString(),
+          createdCampaign.timezone,
         );
       }
       if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
         await this.contest.setNextRecurrentEvent(
           campaign.recurrenceRule,
           createdCampaign._id.toString(),
+          createdCampaign.timezone,
         );
       }
     }

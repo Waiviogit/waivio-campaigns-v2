@@ -1,7 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
-import { CAMPAIGN_PROVIDE } from '../../common/constants';
+import {
+  CAMPAIGN_PROVIDE,
+  CAMPAIGN_TYPE,
+  REWARDS_PROVIDE,
+} from '../../common/constants';
 import { CampaignHelperInterface } from './interface';
 import { UpdateCampaignInterface } from './interface';
 import {
@@ -9,6 +13,8 @@ import {
   UpdateCampaignType,
 } from '../../persistance/campaign/types';
 import { castToUTC } from '../../common/helpers';
+import { GiveawayObjectInterface } from './rewards/interface/giveaway-object.interface';
+import { ContestInterface } from './rewards/interface';
 
 @Injectable()
 export class UpdateCampaign implements UpdateCampaignInterface {
@@ -17,6 +23,10 @@ export class UpdateCampaign implements UpdateCampaignInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
+    private readonly giveawayObject: GiveawayObjectInterface,
+    @Inject(REWARDS_PROVIDE.CONTEST)
+    private readonly contest: ContestInterface,
   ) {}
 
   async update(campaign: UpdateCampaignType): Promise<CampaignDocumentType> {
@@ -61,6 +71,29 @@ export class UpdateCampaign implements UpdateCampaignInterface {
         updatedCampaign._id,
       );
     }
+
+    if (
+      updatedCampaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT &&
+      (campaign.timezone || campaign.expiredAt)
+    ) {
+      await this.giveawayObject.setNextRecurrentEvent(
+        updatedCampaign.recurrenceRule,
+        updatedCampaign._id.toString(),
+        updatedCampaign.timezone,
+      );
+    }
+
+    if (
+      updatedCampaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT &&
+      (campaign.timezone || campaign.expiredAt)
+    ) {
+      await this.contest.setNextRecurrentEvent(
+        updatedCampaign.recurrenceRule,
+        updatedCampaign._id.toString(),
+        updatedCampaign.timezone,
+      );
+    }
+
     return updatedCampaign;
   }
 }

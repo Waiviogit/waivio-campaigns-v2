@@ -26,6 +26,7 @@ import { UserRepositoryInterface } from '../../../persistance/user/interface';
 import { CreateReviewInterface } from '../review/interface';
 import * as crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
+import { castToUTC } from '../../../common/helpers';
 
 @Injectable()
 export class GiveawayObject implements GiveawayObjectInterface {
@@ -47,7 +48,11 @@ export class GiveawayObject implements GiveawayObjectInterface {
     @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
     private readonly messageOnReview: MessageOnReviewInterface,
   ) {}
-  async setNextRecurrentEvent(rruleString: string, _id: string): Promise<void> {
+  async setNextRecurrentEvent(
+    rruleString: string,
+    _id: string,
+    timezone?: string,
+  ): Promise<void> {
     const rruleObject = rrulestr(rruleString);
     const now = new Date();
     const next = rruleObject.after(now, true);
@@ -58,9 +63,14 @@ export class GiveawayObject implements GiveawayObjectInterface {
       );
       return;
     }
+    const nextUtc = castToUTC({
+      date: next,
+      timezone: timezone,
+    });
+
     const expire = Math.max(
       0,
-      Math.floor((next.getTime() - now.getTime()) / 1000),
+      Math.floor((nextUtc.getTime() - now.getTime()) / 1000),
     );
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.GIVEAWAY_OBJECT_RECURRENT}${_id}`,
@@ -177,7 +187,11 @@ export class GiveawayObject implements GiveawayObjectInterface {
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
     if (!isInRange) {
-      await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+      await this.setNextRecurrentEvent(
+        campaign.recurrenceRule,
+        _id,
+        campaign.recurrenceRule,
+      );
       return;
     }
 
@@ -225,7 +239,11 @@ export class GiveawayObject implements GiveawayObjectInterface {
       budget = budget.minus(campaign.reward);
     }
 
-    await this.setNextRecurrentEvent(campaign.recurrenceRule, _id);
+    await this.setNextRecurrentEvent(
+      campaign.recurrenceRule,
+      _id,
+      campaign.recurrenceRule,
+    );
     this.messageOnReview.giveawayObjectWinMessage(_id, eventId);
   }
 
