@@ -25,7 +25,7 @@ export class UpdateCampaign implements UpdateCampaignInterface {
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
     private readonly giveawayObject: GiveawayObjectInterface,
-    @Inject(REWARDS_PROVIDE.CONTEST)
+    @Inject(REWARDS_PROVIDE.CONTEST_OBJECT)
     private readonly contest: ContestInterface,
   ) {}
 

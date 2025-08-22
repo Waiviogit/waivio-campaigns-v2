@@ -20,7 +20,7 @@ export class RedisCampaignSubscriber extends RedisExpireSubscriber {
     private readonly campaignExpiredListener: CampaignExpiredListenerInterface,
     @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
     private readonly giveawayObject: GiveawayObjectInterface,
-    @Inject(REWARDS_PROVIDE.CONTEST)
+    @Inject(REWARDS_PROVIDE.CONTEST_OBJECT)
     private readonly contest: ContestInterface,
   ) {
     super(

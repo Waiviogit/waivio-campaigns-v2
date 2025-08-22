@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Contest } from '../src/domain/campaign/rewards/contest';
+import { ContestObject } from '../src/domain/campaign/rewards/contest-object';
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
@@ -27,7 +27,7 @@ jest.mock('node:crypto', () => ({
 }));
 
 describe('Contest', () => {
-  let contest: Contest;
+  let contest: ContestObject;
   let mockCampaignRedisClient: any;
   let mockCampaignRepository: any;
   let mockPostRepository: any;
@@ -171,7 +171,7 @@ describe('Contest', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        Contest,
+        ContestObject,
         {
           provide: REDIS_PROVIDE.CAMPAIGN_CLIENT,
           useValue: mockCampaignRedisClient,
@@ -207,7 +207,7 @@ describe('Contest', () => {
       ],
     }).compile();
 
-    contest = module.get<Contest>(Contest);
+    contest = module.get<ContestObject>(ContestObject);
   });
 
   afterEach(() => {

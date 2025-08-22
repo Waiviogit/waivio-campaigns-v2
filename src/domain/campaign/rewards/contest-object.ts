@@ -29,7 +29,7 @@ import { ContestWinnerType } from '../review/types';
 import { castToUTC } from '../../../common/helpers';
 
 @Injectable()
-export class Contest implements ContestInterface {
+export class ContestObject implements ContestInterface {
   constructor(
     @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
     private readonly campaignRedisClient: RedisClientInterface,

@@ -138,5 +138,5 @@ export const REWARDS_PROVIDE = Object.freeze({
   USER_HISTORY: 'UserHistoryRewards',
   GIVEAWAY: 'Giveaway',
   GIVEAWAY_OBJECT: 'GiveawayObject',
-  CONTEST: 'Contest',
+  CONTEST_OBJECT: 'ContestObject',
 });

@@ -10,7 +10,7 @@ import { UserHistory } from './user-history';
 import { UserRewards } from './user-rewards';
 import { Giveaway } from './giveaway';
 import { GiveawayObject } from './giveaway-object';
-import { Contest } from './contest';
+import { ContestObject } from './contest-object';
 
 export const RewardsAllProvider: Provider = {
   provide: REWARDS_PROVIDE.ALL,
@@ -58,6 +58,6 @@ export const UserHistoryProvider: Provider = {
 };
 
 export const ContestProvider: Provider = {
-  provide: REWARDS_PROVIDE.CONTEST,
-  useClass: Contest,
+  provide: REWARDS_PROVIDE.CONTEST_OBJECT,
+  useClass: ContestObject,
 };

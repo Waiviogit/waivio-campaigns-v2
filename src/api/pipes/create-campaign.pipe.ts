@@ -43,7 +43,7 @@ export class CreateCampaignPipe implements PipeTransform {
       case CAMPAIGN_TYPE.REVIEWS:
         return this.transformToCreateReviewDto(value);
       case CAMPAIGN_TYPE.CONTESTS_OBJECT:
-        return this.transformToCreateContestDto(value);
+        return this.transformToCreateContestObjectDto(value);
       case CAMPAIGN_TYPE.MENTIONS:
         return this.transformToMentionsDto(value);
       case CAMPAIGN_TYPE.GIVEAWAYS:
@@ -82,7 +82,7 @@ export class CreateCampaignPipe implements PipeTransform {
     return this.transformToDto(value, CreateReviewCampaignDto);
   }
 
-  private transformToCreateContestDto(
+  private transformToCreateContestObjectDto(
     value: CreateCampaignRequest,
   ): CreateContestObjectDto {
     return this.transformToDto(value, CreateContestObjectDto);
