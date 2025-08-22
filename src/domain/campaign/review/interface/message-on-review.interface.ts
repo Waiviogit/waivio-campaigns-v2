@@ -18,6 +18,7 @@ export interface MessageOnReviewInterface {
   }: reviewMessageRejectType): Promise<void>;
   giveawayMessage(activationPermlink: string): Promise<void>;
   giveawayObjectWinMessage(_id: string, eventId: string): Promise<void>;
+  contestMessage(activationPermlink: string): Promise<void>;
   contestWinMessage(
     _id: string,
     eventId: string,

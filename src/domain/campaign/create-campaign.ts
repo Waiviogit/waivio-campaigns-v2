@@ -59,7 +59,10 @@ export class CreateCampaign implements CreateCampaignInterface {
       );
     }
 
-    if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+    if (
+      campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT ||
+      campaign.type === CAMPAIGN_TYPE.CONTESTS
+    ) {
       // For contests, calculate rewardInUSD for each contest reward and validate total
       const contestRewardsWithUSD = await Promise.all(
         campaign.contestRewards?.map(async (reward) => ({

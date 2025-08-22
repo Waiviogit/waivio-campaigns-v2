@@ -139,4 +139,5 @@ export const REWARDS_PROVIDE = Object.freeze({
   GIVEAWAY: 'Giveaway',
   GIVEAWAY_OBJECT: 'GiveawayObject',
   CONTEST_OBJECT: 'ContestObject',
+  CONTESTS: 'Contests',
 });

@@ -1,5 +1,6 @@
 export * from './create-campaign.dto';
 export * from './create-contest-object.dto';
+export * from './create-contests.dto';
 export * from './create-giveaway-object.dto';
 export * from './create-giveaway.dto';
 export * from './create-review-campaign.dto';

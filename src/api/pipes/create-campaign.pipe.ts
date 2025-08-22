@@ -11,6 +11,7 @@ import {
   CreateGiveawayDto,
   CreateGiveawayObjectDto,
   CreateReviewCampaignDto,
+  CreateContestsDto,
 } from '../../common/dto/campaign/in';
 import { CAMPAIGN_TYPE } from '../../common/constants';
 
@@ -18,7 +19,8 @@ export type CreateCampaignUnionDto =
   | CreateReviewCampaignDto
   | CreateContestObjectDto
   | CreateGiveawayDto
-  | CreateGiveawayObjectDto;
+  | CreateGiveawayObjectDto
+  | CreateContestsDto;
 
 interface CreateCampaignRequest {
   object?: {
@@ -44,6 +46,8 @@ export class CreateCampaignPipe implements PipeTransform {
         return this.transformToCreateReviewDto(value);
       case CAMPAIGN_TYPE.CONTESTS_OBJECT:
         return this.transformToCreateContestObjectDto(value);
+      case CAMPAIGN_TYPE.CONTESTS:
+        return this.transformToCreateContestsDto(value);
       case CAMPAIGN_TYPE.MENTIONS:
         return this.transformToMentionsDto(value);
       case CAMPAIGN_TYPE.GIVEAWAYS:
@@ -98,6 +102,12 @@ export class CreateCampaignPipe implements PipeTransform {
     value: CreateCampaignRequest,
   ): CreateGiveawayObjectDto {
     return this.transformToDto(value, CreateGiveawayObjectDto);
+  }
+
+  private transformToCreateContestsDto(
+    value: CreateCampaignRequest,
+  ): CreateContestsDto {
+    return this.transformToDto(value, CreateContestsDto);
   }
 
   private transformToMentionsDto(

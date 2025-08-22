@@ -32,6 +32,7 @@ import {
 import { WobjectModule } from '../wobject/wobject.module';
 import {
   ContestProvider,
+  ContestsProvider,
   GiveawayObjectProvider,
   GiveawayProvider,
   GuideReservationsProvider,
@@ -86,6 +87,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     GiveawayProvider,
     GiveawayObjectProvider,
     ContestProvider,
+    ContestsProvider,
     CommentQueueServiceProvider,
     CommentQueueProcessorServiceProvider,
   ],
@@ -119,6 +121,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     GiveawayProvider,
     GiveawayObjectProvider,
     ContestProvider,
+    ContestsProvider,
     CommentQueueServiceProvider,
   ],
 })
