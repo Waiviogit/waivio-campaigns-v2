@@ -193,6 +193,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
               reward: 1,
               objects: 1,
               rewardInUSD: 1,
+              budget: 1,
               guideName: 1,
               requirements: 1,
               userRequirements: 1,
