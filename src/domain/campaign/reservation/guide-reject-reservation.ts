@@ -129,6 +129,9 @@ export class GuideRejectReservation implements GuideRejectReservationInterface {
         payload.reservationPermlink,
       );
     }
+    if (campaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT) {
+      this.messageOnReview.contestMessage(campaign.activationPermlink);
+    }
 
     await this.campaignRedisClient.publish(
       REDIS_KEY.PUBLISH_EXPIRE_TRX_ID,

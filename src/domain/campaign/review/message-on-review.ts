@@ -515,6 +515,109 @@ Keep creating and stay inspired!`;
     }
   }
 
+  async contestMessage(activationPermlink: string): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        activationPermlink,
+        type: CAMPAIGN_TYPE.CONTESTS,
+        status: CAMPAIGN_STATUS.EXPIRED,
+      },
+    });
+    if (!campaign) return;
+
+    const rewardsApplicants = campaign.users.map((el) => el.name);
+    if (rewardsApplicants.length === 0) return;
+    const sponsorName = await this.getSponsorName(campaign.guideName);
+
+    const winners = campaign.users
+      .filter((u) => u.status === RESERVATION_STATUS.COMPLETED)
+      .map((el) => el.name);
+
+    const permlink = `contest-${campaign.activationPermlink}`;
+    if (winners.length === 0) {
+      const rejectMessage = `Thanks to everyone who participated in this contest campaign from [${sponsorName}](https://www.waivio.com/@${campaign.guideName})!
+Unfortunately, the sponsor has decided not to approve the results of this contest, and no rewards will be distributed this time.
+We understand this may be disappointing, and we truly appreciate the effort and creativity you put into your content.
+We encourage you to keep sharing your ideas and participating in future campaigns. There are always new opportunities to earn rewards and get recognized.
+You can track your activity and discover new campaigns [here](https://www.waivio.com/rewards/global).
+Thank you again for being part of the community!
+
+Keep creating and stay inspired!`;
+
+      await this.commentQueue.addToQueue({
+        parent_author: campaign.guideName,
+        parent_permlink: campaign.giveawayPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: rejectMessage,
+        author: configService.getGiveawayAccount(),
+        permlink,
+      });
+      return;
+    }
+
+    // Get participants list and filter out winners
+    const participants = (
+      await this.giveawayParticipantsRepository.getByNamesByActivationPermlink(
+        campaign.activationPermlink,
+      )
+    ).filter((el) => !winners.includes(el));
+
+    const legalAgreement = await this.getLegalMessage(campaign);
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+
+    // Get contest rewards for winners
+    const contestRewards = campaign.contestRewards || [];
+    const winnerLines = winners.map((winner, index) => {
+      const reward = contestRewards[index] || contestRewards[0];
+      const rewardInToken = new BigNumber(reward.rewardInUSD)
+        .dividedBy(payoutTokenRateUSD)
+        .decimalPlaces(tokenPrecision)
+        .toNumber();
+      const place = index + 1;
+      return `${place}${this.getOrdinalSuffix(place)} place: @${winner} — $${
+        reward.rewardInUSD
+      } USD (${rewardInToken} ${campaign.payoutToken})`;
+    });
+
+    // Get participants list (up to 100)
+    const participantsList = participants
+      .slice(0, 100)
+      .map((p) => `@${p}`)
+      .join(', ');
+    const participantsNote = participants.length > 100 ? ' ...' : '.';
+
+    let message = `Thanks to everyone who participated in the contest campaign by [${sponsorName}](https://www.waivio.com/@${
+      campaign.guideName
+    })!
+After carefully reviewing the entries and all the creative comments, we're excited to announce the winners:
+${winnerLines.join('\n')}
+Each winner impressed us with their unique contributions and well-thought-out posts, congratulations!
+Big thanks to all participants for joining and supporting the campaign: ${participantsList}${participantsNote}
+We loved seeing your insights and enthusiasm. Stay tuned for more contests, campaigns, and chances to earn!
+You can track your rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
+Keep creating and good luck next time!`;
+
+    if (legalAgreement) message += `\n\n${legalAgreement}`;
+
+    await this.commentQueue.addToQueue({
+      parent_author: campaign.guideName,
+      parent_permlink: campaign.giveawayPermlink,
+      title: '',
+      json_metadata: JSON.stringify({
+        activationPermlink: campaign.activationPermlink,
+      }),
+      body: message,
+      author: configService.getGiveawayAccount(),
+      permlink,
+    });
+  }
+
   async contestWinMessage(
     _id: string,
     eventId: string,
