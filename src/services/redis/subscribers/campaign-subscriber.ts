@@ -1,5 +1,5 @@
 import { configService } from '../../../common/config';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SponsorsBotInterface } from '../../../domain/sponsors-bot/interface';
 import {
   CAMPAIGN_PROVIDE,
@@ -12,7 +12,7 @@ import {
 } from './redis-subscriber';
 import { CampaignExpiredListenerInterface } from '../../../domain/campaign/interface';
 import { GiveawayObjectInterface } from '../../../domain/campaign/rewards/interface/giveaway-object.interface';
-import { ContestInterface } from '../../../domain/campaign/rewards/interface/contest.interface';
+import { ContestInterface } from '../../../domain/campaign/rewards/interface';
 
 @Injectable()
 export class RedisCampaignSubscriber extends RedisExpireSubscriber {
@@ -49,6 +49,8 @@ type CampaignChannelType =
 
 @Injectable()
 export class RedisCampaignPublishSubscriber extends RedisPublishSubscriber {
+  private readonly publishLogger = new Logger('RedisCampaignPublishSubscriber');
+
   constructor() {
     super(
       configService.getRedisCampaignsConfig(),
@@ -56,10 +58,36 @@ export class RedisCampaignPublishSubscriber extends RedisPublishSubscriber {
     );
   }
 
-  async handleMessage(
-    channel: CampaignChannelType,
-    message: string,
-  ): Promise<void> {
-    console.log();
+  async authorityHandler(message: string): Promise<void> {
+    this.publishLogger.log(`FIELD_UPDATE_AUTHORITY: ${message}`);
+  }
+
+  private readonly handlers: Readonly<
+    Record<CampaignChannelType, (message: string) => Promise<void>>
+  > = Object.freeze({
+    [PUBLISH_CHANNEL.FIELD_UPDATE_AUTHORITY]: this.authorityHandler.bind(this),
+  });
+
+  private isCampaignChannel(channel: string): channel is CampaignChannelType {
+    return (Object.values(PUBLISH_CHANNEL) as string[]).includes(channel);
+  }
+
+  async handleMessage(channel: string, message: string): Promise<void> {
+    if (!this.isCampaignChannel(channel)) {
+      this.publishLogger.warn(
+        `Received message for unknown channel: ${channel}`,
+      );
+      return;
+    }
+
+    const handler = this.handlers[channel];
+    try {
+      await handler(message);
+    } catch (error: unknown) {
+      const errMessage = error instanceof Error ? error.message : String(error);
+      this.publishLogger.error(
+        `Error handling message for channel ${channel}: ${errMessage}`,
+      );
+    }
   }
 }
