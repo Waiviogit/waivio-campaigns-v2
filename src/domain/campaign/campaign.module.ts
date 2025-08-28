@@ -31,6 +31,7 @@ import {
 } from './review/review.providers';
 import { WobjectModule } from '../wobject/wobject.module';
 import {
+  AuthoritiesCampaignProvider,
   ContestProvider,
   GiveawayObjectProvider,
   GiveawayProvider,
@@ -88,6 +89,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     ContestProvider,
     CommentQueueServiceProvider,
     CommentQueueProcessorServiceProvider,
+    AuthoritiesCampaignProvider,
   ],
   exports: [
     CreateCampaignProvider,
@@ -120,6 +122,7 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
     GiveawayObjectProvider,
     ContestProvider,
     CommentQueueServiceProvider,
+    AuthoritiesCampaignProvider,
   ],
 })
 export class CampaignModule {}

@@ -85,6 +85,7 @@ export const CAMPAIGN_TYPE = Object.freeze({
   GIVEAWAYS: 'giveaways',
   GIVEAWAYS_OBJECT: 'giveaways_object',
   CONTESTS_OBJECT: 'contests_object',
+  AUTHORITIES: 'authorities',
 } as const);
 
 export const SUPPORTED_CURRENCY = Object.freeze({

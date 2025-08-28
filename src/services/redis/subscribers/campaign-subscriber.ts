@@ -12,7 +12,10 @@ import {
 } from './redis-subscriber';
 import { CampaignExpiredListenerInterface } from '../../../domain/campaign/interface';
 import { GiveawayObjectInterface } from '../../../domain/campaign/rewards/interface/giveaway-object.interface';
-import { ContestInterface } from '../../../domain/campaign/rewards/interface';
+import {
+  AuthoritiesCampaignInterface,
+  ContestInterface,
+} from '../../../domain/campaign/rewards/interface';
 
 @Injectable()
 export class RedisCampaignSubscriber extends RedisExpireSubscriber {
@@ -51,14 +54,25 @@ type CampaignChannelType =
 export class RedisCampaignPublishSubscriber extends RedisPublishSubscriber {
   private readonly publishLogger = new Logger('RedisCampaignPublishSubscriber');
 
-  constructor() {
+  constructor(
+    @Inject(REWARDS_PROVIDE.AUTHORITIES_CAMPAIGN)
+    private readonly authoritiesCampaign: AuthoritiesCampaignInterface,
+  ) {
     super(
       configService.getRedisCampaignsConfig(),
       Object.values(PUBLISH_CHANNEL),
     );
   }
 
-  async authorityHandler(message: string): Promise<void> {
+  private async authorityHandler(message: string): Promise<void> {
+    const [authorPermlink, author, permlink] = message.split(':');
+    if (!authorPermlink || !author || !permlink) return;
+    await this.authoritiesCampaign.handleUpdateEvent(
+      authorPermlink,
+      author,
+      permlink,
+    );
+
     this.publishLogger.log(`FIELD_UPDATE_AUTHORITY: ${message}`);
   }
 

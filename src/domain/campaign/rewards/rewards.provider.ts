@@ -11,6 +11,7 @@ import { UserRewards } from './user-rewards';
 import { Giveaway } from './giveaway';
 import { GiveawayObject } from './giveaway-object';
 import { ContestObject } from './contest-object';
+import { AuthoritiesCampaign } from './authorities-campaign';
 
 export const RewardsAllProvider: Provider = {
   provide: REWARDS_PROVIDE.ALL,
@@ -60,4 +61,9 @@ export const UserHistoryProvider: Provider = {
 export const ContestProvider: Provider = {
   provide: REWARDS_PROVIDE.CONTEST_OBJECT,
   useClass: ContestObject,
+};
+
+export const AuthoritiesCampaignProvider: Provider = {
+  provide: REWARDS_PROVIDE.AUTHORITIES_CAMPAIGN,
+  useClass: AuthoritiesCampaign,
 };

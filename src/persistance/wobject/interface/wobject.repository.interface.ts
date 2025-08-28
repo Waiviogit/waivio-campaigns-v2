@@ -1,4 +1,4 @@
-import { WobjectDocumentType } from '../types';
+import { WobjectDocumentType, WobjectFieldsDocumentType } from '../types';
 import { MongoRepositoryInterface } from '../../mongo.repository';
 
 export interface WobjectRepositoryInterface
@@ -10,4 +10,9 @@ export interface WobjectRepositoryInterface
     links: string[],
   ): Promise<void>;
   findOneByPermlink(author_permlink: string): Promise<WobjectDocumentType>;
+  getField(
+    authorPermlink: string,
+    author: string,
+    permlink: string,
+  ): Promise<WobjectFieldsDocumentType | null>;
 }
