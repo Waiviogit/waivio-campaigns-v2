@@ -6,7 +6,10 @@ import {
   REWARDS_PROVIDE,
   SPONSORS_BOT_PROVIDE,
 } from '../../../common/constants';
-import { RedisExpireSubscriber } from './redis-subscriber';
+import {
+  RedisExpireSubscriber,
+  RedisPublishSubscriber,
+} from './redis-subscriber';
 import { CampaignExpiredListenerInterface } from '../../../domain/campaign/interface';
 import { GiveawayObjectInterface } from '../../../domain/campaign/rewards/interface/giveaway-object.interface';
 import { ContestInterface } from '../../../domain/campaign/rewards/interface/contest.interface';
@@ -34,5 +37,29 @@ export class RedisCampaignSubscriber extends RedisExpireSubscriber {
     await this.campaignExpiredListener.listener(key);
     await this.giveawayObject.listener(key);
     await this.contest.listener(key);
+  }
+}
+
+const PUBLISH_CHANNEL = Object.freeze({
+  FIELD_UPDATE_AUTHORITY: 'field_update:authority',
+} as const);
+
+type CampaignChannelType =
+  (typeof PUBLISH_CHANNEL)[keyof typeof PUBLISH_CHANNEL];
+
+@Injectable()
+export class RedisCampaignPublishSubscriber extends RedisPublishSubscriber {
+  constructor() {
+    super(
+      configService.getRedisCampaignsConfig(),
+      Object.values(PUBLISH_CHANNEL),
+    );
+  }
+
+  async handleMessage(
+    channel: CampaignChannelType,
+    message: string,
+  ): Promise<void> {
+    console.log();
   }
 }

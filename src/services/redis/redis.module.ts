@@ -3,7 +3,10 @@ import {
   RedisBlockProvider,
   RedisCampaignProvider,
 } from './redis-client.provider';
-import { RedisCampaignSubscriber } from './subscribers/campaign-subscriber';
+import {
+  RedisCampaignPublishSubscriber,
+  RedisCampaignSubscriber,
+} from './subscribers/campaign-subscriber';
 import { SponsorsBotModule } from '../../domain/sponsors-bot/sponsors-bot.module';
 import { CampaignModule } from '../../domain/campaign/campaign.module';
 
@@ -14,6 +17,7 @@ import { CampaignModule } from '../../domain/campaign/campaign.module';
     RedisBlockProvider,
     RedisCampaignProvider,
     RedisCampaignSubscriber,
+    RedisCampaignPublishSubscriber,
   ],
   exports: [RedisBlockProvider, RedisCampaignProvider],
 })
