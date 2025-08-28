@@ -71,10 +71,27 @@ export class AuthoritiesCampaign implements AuthoritiesCampaignInterface {
     }
 
     if (campaign.requiredObject === authorPermlink) {
-      //check if has authority on one of other objects
-      //if has - complete if not return
+      const object = await this.campaignRepository.findOne({
+        filter: {
+          author_permlink: { $in: campaign.objects },
+          'authority.administrative': user.name,
+        },
+      });
+      if (object) {
+        ///completed
+      }
       return;
     }
     //here we need to check if user has authority on requiredObject
+    const object = await this.campaignRepository.findOne({
+      filter: {
+        author_permlink: authorPermlink,
+        'authority.administrative': user.name,
+      },
+    });
+
+    if (object) {
+      //completed
+    }
   }
 }
