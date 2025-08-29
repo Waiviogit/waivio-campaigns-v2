@@ -3,6 +3,8 @@ import { CampaignDocumentType } from '../../../../persistance/campaign/types';
 import { ObjectId } from 'mongoose';
 import { HiveCommentType } from '../../../../common/types';
 import BigNumber from 'bignumber.js';
+import { UserDocumentType } from '../../../../persistance/user/types';
+import { WobjectFieldsDocumentType } from '../../../../persistance/wobject/types';
 
 export type ReviewCampaignType = Pick<
   CampaignDocumentType,
@@ -63,6 +65,12 @@ export type CreateMentionType = {
   app: string;
   postMentions: string[];
   images: string[];
+};
+
+export type CreateAuthorityObligationsType = {
+  campaign: CampaignDocumentType;
+  user: UserDocumentType;
+  wobjectField: WobjectFieldsDocumentType;
 };
 
 export type reviewMessageSuccessType = {

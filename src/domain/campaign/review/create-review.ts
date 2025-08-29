@@ -35,6 +35,7 @@ import * as moment from 'moment';
 import { CampaignHelperInterface } from '../interface';
 import {
   CampaignPaymentType,
+  CreateAuthorityObligationsType,
   CreateCampaignPaymentsType,
   CreateMentionType,
   CreateReviewType,
@@ -816,6 +817,79 @@ export class CreateReview implements CreateReviewInterface {
       reviewPermlink,
       userReservationObject,
       reservationPermlink,
+    });
+  }
+
+  async createAuthorityObligations({
+    campaign,
+    user,
+    wobjectField,
+  }: CreateAuthorityObligationsType): Promise<void> {
+    const isGuest = user.name.includes('_');
+
+    const reservationPermlink = crypto.randomUUID();
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
+
+    const userReservationObject =
+      campaign?.objects?.[0] || campaign.requiredObject;
+
+    //todo for matchbots we need latest update permlink + author
+    const reviewPermlink = wobjectField.permlink;
+
+    const campaignReviewType = {
+      ...campaign,
+      userName: user.name,
+      payoutTokenRateUSD,
+      campaignId: campaign._id,
+      userReservationObject: campaign.requiredObject,
+    } as never as ReviewCampaignType;
+
+    await this.campaignRepository.updateOne({
+      filter: { _id: campaign._id, status: CAMPAIGN_STATUS.ACTIVE },
+      update: {
+        $push: {
+          users: {
+            name: user.name,
+            rootName: user.name,
+            status: RESERVATION_STATUS.COMPLETED,
+            payoutTokenRateUSD,
+            objectPermlink: userReservationObject,
+            referralServer: campaign.campaignServer,
+            completedAt: moment.utc().format(),
+            reviewPermlink,
+            reservationPermlink,
+          },
+        },
+      },
+    });
+
+    await this.updateCampaignStatus(campaign._id);
+    await this.campaignHelper.checkOnHoldStatus(campaign.activationPermlink);
+
+    const payments = await this.getCampaignPayments({
+      beneficiaries: [],
+      campaign: campaignReviewType,
+      host: '',
+      isGuest,
+      rewardInToken,
+    });
+
+    await this.createCampaignPayments({
+      payments,
+      campaign: campaignReviewType,
+      app: campaign.campaignServer,
+      //todo it should bee bool value in future (isDemoAcc)
+      botName: isGuest ? user.name : '',
+      reviewPermlink,
+      title: '',
+      reservationPermlink,
+      campaignType: CAMPAIGN_TYPE.MENTIONS,
     });
   }
 

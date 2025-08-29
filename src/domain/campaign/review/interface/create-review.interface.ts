@@ -1,4 +1,4 @@
-import { ParseReviewType } from '../types';
+import { CreateAuthorityObligationsType, ParseReviewType } from '../types';
 import { RestoreCustomType } from '../../../../common/types';
 import { CampaignDocumentType } from '../../../../persistance/campaign/types';
 import { PostDocumentType } from '../../../../persistance/post/types';
@@ -33,6 +33,11 @@ export interface CreateReviewInterface {
     place,
     rewardInUSD,
   }: CreateContestPayables): Promise<void>;
+  createAuthorityObligations({
+    campaign,
+    user,
+    wobjectField,
+  }: CreateAuthorityObligationsType): Promise<void>;
 }
 
 export interface CreateGiveawayPayables {

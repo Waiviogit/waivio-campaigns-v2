@@ -3,6 +3,7 @@ import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
+  REVIEW_PROVIDE,
   REWARDS_PROVIDE,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
@@ -11,6 +12,7 @@ import { WobjectRepositoryInterface } from '../../../persistance/wobject/interfa
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { AuthoritiesCampaignInterface, RewardsAllInterface } from './interface';
 import { UserRepositoryInterface } from '../../../persistance/user/interface';
+import { CreateReviewInterface } from '../review/interface';
 
 @Injectable()
 export class AuthoritiesCampaign implements AuthoritiesCampaignInterface {
@@ -23,6 +25,8 @@ export class AuthoritiesCampaign implements AuthoritiesCampaignInterface {
     private readonly rewardsAll: RewardsAllInterface,
     @Inject(USER_PROVIDE.REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
+    @Inject(REVIEW_PROVIDE.CREATE)
+    private readonly createReview: CreateReviewInterface,
   ) {}
 
   async handleUpdateEvent(
@@ -65,7 +69,11 @@ export class AuthoritiesCampaign implements AuthoritiesCampaignInterface {
       campaign.objects.length === 1 &&
       campaign.requiredObject === campaign.objects[0]
     ) {
-      ///campaign complete
+      await this.createReview.createAuthorityObligations({
+        campaign,
+        user,
+        wobjectField: field,
+      });
 
       return;
     }
@@ -78,7 +86,11 @@ export class AuthoritiesCampaign implements AuthoritiesCampaignInterface {
         },
       });
       if (object) {
-        ///completed
+        await this.createReview.createAuthorityObligations({
+          campaign,
+          user,
+          wobjectField: field,
+        });
       }
       return;
     }
@@ -91,7 +103,11 @@ export class AuthoritiesCampaign implements AuthoritiesCampaignInterface {
     });
 
     if (object) {
-      //completed
+      await this.createReview.createAuthorityObligations({
+        campaign,
+        user,
+        wobjectField: field,
+      });
     }
   }
 }
