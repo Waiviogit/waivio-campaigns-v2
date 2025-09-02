@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import {
+  CAMPAIGN_POSTS_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
@@ -26,6 +27,7 @@ import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/gi
 import * as crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 import { ContestWinnerType } from '../review/types';
+import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-posts/interface';
 
 @Injectable()
 export class ContestObject implements ContestInterface {
@@ -46,6 +48,8 @@ export class ContestObject implements ContestInterface {
     private readonly messageOnReview: MessageOnReviewInterface,
     @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
     private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
+    @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
+    private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
   ) {}
 
   async setNextRecurrentEvent(
@@ -358,6 +362,7 @@ export class ContestObject implements ContestInterface {
 
     // Create payables for winners
     for (const winner of winners) {
+      const reservationPermlink = crypto.randomUUID();
       await this.createReview.createContestPayables({
         campaign,
         userName: winner.post.author,
@@ -365,6 +370,13 @@ export class ContestObject implements ContestInterface {
         eventId,
         place: winner.place,
         rewardInUSD: winner.reward,
+        reservationPermlink,
+      });
+
+      await this.campaignPostsRepository.create({
+        author: winner.post.author,
+        permlink: winner.post.permlink,
+        reservationPermlink,
       });
     }
 

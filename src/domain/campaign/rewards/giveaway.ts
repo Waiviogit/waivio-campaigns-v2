@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { Inject, Injectable } from '@nestjs/common';
-
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
@@ -29,6 +28,7 @@ import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-s
 import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/giveaway-participants/interface';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 import { selectRandomWinner } from '../../../common/helpers/randomHelper';
+import * as crypto from 'node:crypto';
 
 type SearchParticipantsType = (post: PostDocumentType) => Promise<string[]>;
 
@@ -222,10 +222,12 @@ export class Giveaway implements GiveawayInterface {
     while (budget.gte(campaign.reward) && participants.length) {
       const winner = selectRandomWinner(participants);
       participants = participants.filter((p) => p !== winner);
+      const reservationPermlink = crypto.randomUUID();
       await this.createReview.createGiveawayPayables({
         campaign,
         userName: winner,
         post: giveawayPost,
+        reservationPermlink,
       });
 
       budget = budget.minus(campaign.reward);

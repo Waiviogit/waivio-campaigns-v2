@@ -40,6 +40,7 @@ export interface CreateGiveawayPayables {
   userName: string;
   post: PostDocumentType;
   eventId?: string;
+  reservationPermlink: string;
 }
 
 export interface CreateContestPayables {
@@ -49,6 +50,7 @@ export interface CreateContestPayables {
   eventId: string;
   place: number;
   rewardInUSD: number;
+  reservationPermlink: string;
 }
 
 export interface RestoreReviewInterface {

@@ -499,6 +499,7 @@ export class CreateReview implements CreateReviewInterface {
           campaign,
           userName: rejectedUser.name,
           post,
+          reservationPermlink: rejectedUser.reservationPermlink,
         });
       }
 
@@ -522,6 +523,7 @@ export class CreateReview implements CreateReviewInterface {
               eventId: contestUser.eventId,
               place: contestReward.place,
               rewardInUSD: contestReward.rewardInUSD,
+              reservationPermlink: rejectedUser.reservationPermlink,
             });
           }
         }
@@ -588,10 +590,9 @@ export class CreateReview implements CreateReviewInterface {
     userName,
     post,
     eventId,
+    reservationPermlink,
   }: CreateGiveawayPayables): Promise<void> {
     const isGuest = userName.includes('_');
-
-    const reservationPermlink = crypto.randomUUID();
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
@@ -659,10 +660,10 @@ export class CreateReview implements CreateReviewInterface {
     eventId,
     place,
     rewardInUSD,
+    reservationPermlink,
   }: CreateContestPayables): Promise<void> {
     const isGuest = userName.includes('_');
 
-    const reservationPermlink = crypto.randomUUID();
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
@@ -802,10 +803,6 @@ export class CreateReview implements CreateReviewInterface {
     await this.campaignPostsRepository.create({
       author: postAuthor,
       permlink: reviewPermlink,
-      rewardInToken: rewardInToken.toNumber(),
-      symbol: campaign.payoutToken,
-      guideName: campaign.guideName,
-      payoutTokenRateUSD,
       reservationPermlink,
     });
 
@@ -874,10 +871,6 @@ export class CreateReview implements CreateReviewInterface {
     await this.campaignPostsRepository.create({
       author: postAuthor,
       permlink: reviewPermlink,
-      rewardInToken: rewardInToken.toNumber(),
-      symbol: campaign.payoutToken,
-      guideName: campaign.guideName,
-      payoutTokenRateUSD: campaign.payoutTokenRateUSD,
       reservationPermlink: campaign.userReservationPermlink,
     });
   }

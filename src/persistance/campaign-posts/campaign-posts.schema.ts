@@ -9,16 +9,16 @@ export class CampaignPost {
   permlink: string;
 
   @Prop({ type: Number })
-  rewardInToken: number;
+  rewardInToken?: number;
 
   @Prop({ type: Number })
-  payoutTokenRateUSD: number;
+  payoutTokenRateUSD?: number;
 
   @Prop({ type: String })
-  symbol: string;
+  symbol?: string;
 
   @Prop({ type: String })
-  guideName: string;
+  guideName?: string;
 
   @Prop({ type: String })
   reservationPermlink: string;
