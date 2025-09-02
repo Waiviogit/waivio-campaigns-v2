@@ -428,6 +428,7 @@ export class RewardsAll implements RewardsAllInterface {
               giveawayPostTitle: 1,
               contestRewards: 1,
               contestJudges: 1,
+              budget: 1,
             },
           },
           {
@@ -623,6 +624,7 @@ export class RewardsAll implements RewardsAllInterface {
               giveawayPermlink: 1,
               contestRewards: 1,
               contestJudges: 1,
+              budget: 1,
             },
           },
           {
@@ -904,6 +906,7 @@ export class RewardsAll implements RewardsAllInterface {
               giveawayPostTitle: 1,
               contestRewards: 1,
               contestJudges: 1,
+              budget: 1,
             },
           },
           {
