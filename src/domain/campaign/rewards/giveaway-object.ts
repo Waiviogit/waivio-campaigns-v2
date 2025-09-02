@@ -55,8 +55,8 @@ export class GiveawayObject implements GiveawayObjectInterface {
   ): Promise<void> {
     const rruleObject = rrulestr(rruleString);
     const now = new Date();
-    console.log('NOW UTC');
-    console.log(now.toISOString());
+    // console.log('NOW UTC');
+    // console.log(now.toISOString());
     const next = rruleObject.after(now, true);
     if (!next) {
       await this.campaignHelper.setExpireTTLCampaign(
@@ -65,16 +65,16 @@ export class GiveawayObject implements GiveawayObjectInterface {
       );
       return;
     }
-    const nextUtc = castToUTC({
-      date: next,
-      timezone: timezone,
-    });
-    console.log('NEXT UTC');
-    console.log(nextUtc.toISOString());
+    // const nextUtc = castToUTC({
+    //   date: next,
+    //   timezone: timezone,
+    // });
+    // console.log('NEXT UTC');
+    // console.log(nextUtc.toISOString());
 
     const expire = Math.max(
       0,
-      Math.floor((nextUtc.getTime() - now.getTime()) / 1000),
+      Math.floor((next.getTime() - now.getTime()) / 1000),
     );
 
     console.log('EXPIRE: ', expire);
