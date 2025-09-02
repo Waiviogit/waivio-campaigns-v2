@@ -26,7 +26,6 @@ import { GiveawayParticipantsRepositoryInterface } from '../../../persistance/gi
 import * as crypto from 'node:crypto';
 import { MessageOnReviewInterface } from '../review/interface/message-on-review.interface';
 import { ContestWinnerType } from '../review/types';
-import { castToUTC } from '../../../common/helpers';
 
 @Injectable()
 export class ContestObject implements ContestInterface {
@@ -64,14 +63,10 @@ export class ContestObject implements ContestInterface {
       );
       return;
     }
-    const nextUtc = castToUTC({
-      date: next,
-      timezone: timezone,
-    });
 
     const expire = Math.max(
       0,
-      Math.floor((nextUtc.getTime() - now.getTime()) / 1000),
+      Math.floor((next.getTime() - now.getTime()) / 1000),
     );
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.CONTEST_OBJECT_RECURRENT}${_id}`,
