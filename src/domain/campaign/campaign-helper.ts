@@ -36,7 +36,7 @@ import { HiveEngineClientInterface } from '../../services/hive-engine-api/interf
 import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rates/interface';
 import { configService } from '../../common/config';
 import { HiveClientInterface } from '../../services/hive-api/interface';
-import { castToUTC } from '../../common/helpers';
+import { rrulestr } from 'rrule';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -65,6 +65,39 @@ export class CampaignHelper implements CampaignHelperInterface {
     await this.campaignRedisClient.setex(
       `${REDIS_KEY.CAMPAIGN_EXPIRE}${_id.toString()}`,
       expire,
+      '',
+    );
+  }
+
+  async setNextRecurrentEvent(
+    rruleString: string,
+    _id: string,
+    recurrentKey: string,
+  ): Promise<void> {
+    const rruleObject = rrulestr(rruleString);
+    const now = new Date();
+    const next = rruleObject.after(now, true);
+    if (!next) {
+      await this.setExpireTTLCampaign(new Date(now.getTime() + 5 * 1000), _id);
+      return;
+    }
+    this.logger.log(`rrEvent NOW ${_id}`, now.toISOString());
+    this.logger.log(`rrEvent NEXT ${_id}`, next.toISOString());
+
+    const expire = Math.max(
+      0,
+      Math.floor((next.getTime() - now.getTime()) / 1000),
+    );
+    if (!expire) {
+      this.logger.log(`rrEvent WRONG EXPIRE ${_id}`);
+      await this.setExpireTTLCampaign(new Date(now.getTime() + 5 * 1000), _id);
+      return;
+    }
+
+    await this.campaignRedisClient.setex(
+      `${recurrentKey}${_id}`,
+      //add extra seconds to not expire to early
+      expire + 5,
       '',
     );
   }

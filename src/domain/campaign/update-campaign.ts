@@ -4,7 +4,7 @@ import { CampaignRepositoryInterface } from '../../persistance/campaign/interfac
 import {
   CAMPAIGN_PROVIDE,
   CAMPAIGN_TYPE,
-  REWARDS_PROVIDE,
+  REDIS_KEY,
 } from '../../common/constants';
 import { CampaignHelperInterface } from './interface';
 import { UpdateCampaignInterface } from './interface';
@@ -13,8 +13,6 @@ import {
   UpdateCampaignType,
 } from '../../persistance/campaign/types';
 import { castToUTC } from '../../common/helpers';
-import { GiveawayObjectInterface } from './rewards/interface/giveaway-object.interface';
-import { ContestInterface } from './rewards/interface';
 
 @Injectable()
 export class UpdateCampaign implements UpdateCampaignInterface {
@@ -23,10 +21,6 @@ export class UpdateCampaign implements UpdateCampaignInterface {
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
-    @Inject(REWARDS_PROVIDE.GIVEAWAY_OBJECT)
-    private readonly giveawayObject: GiveawayObjectInterface,
-    @Inject(REWARDS_PROVIDE.CONTEST_OBJECT)
-    private readonly contest: ContestInterface,
   ) {}
 
   async update(campaign: UpdateCampaignType): Promise<CampaignDocumentType> {
@@ -76,10 +70,10 @@ export class UpdateCampaign implements UpdateCampaignInterface {
       updatedCampaign.type === CAMPAIGN_TYPE.GIVEAWAYS_OBJECT &&
       (campaign.timezone || campaign.expiredAt)
     ) {
-      await this.giveawayObject.setNextRecurrentEvent(
+      await this.campaignHelper.setNextRecurrentEvent(
         updatedCampaign.recurrenceRule,
         updatedCampaign._id.toString(),
-        updatedCampaign.timezone,
+        REDIS_KEY.GIVEAWAY_OBJECT_RECURRENT,
       );
     }
 
@@ -87,10 +81,10 @@ export class UpdateCampaign implements UpdateCampaignInterface {
       updatedCampaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT &&
       (campaign.timezone || campaign.expiredAt)
     ) {
-      await this.contest.setNextRecurrentEvent(
+      await this.campaignHelper.setNextRecurrentEvent(
         updatedCampaign.recurrenceRule,
         updatedCampaign._id.toString(),
-        updatedCampaign.timezone,
+        REDIS_KEY.CONTEST_OBJECT_RECURRENT,
       );
     }
 

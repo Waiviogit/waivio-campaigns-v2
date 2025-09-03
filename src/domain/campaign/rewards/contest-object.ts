@@ -9,11 +9,9 @@ import {
   POST_PROVIDE,
   RECURRENT_TYPE,
   REDIS_KEY,
-  REDIS_PROVIDE,
   REVIEW_PROVIDE,
   USER_PROVIDE,
 } from '../../../common/constants';
-import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { rrulestr } from 'rrule';
 import { ContestInterface } from './interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
@@ -32,8 +30,6 @@ import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-
 @Injectable()
 export class ContestObject implements ContestInterface {
   constructor(
-    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
-    private readonly campaignRedisClient: RedisClientInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(POST_PROVIDE.REPOSITORY)
@@ -51,33 +47,6 @@ export class ContestObject implements ContestInterface {
     @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
   ) {}
-
-  async setNextRecurrentEvent(
-    rruleString: string,
-    _id: string,
-    timezone?: string,
-  ): Promise<void> {
-    const rruleObject = rrulestr(rruleString);
-    const now = new Date();
-    const next = rruleObject.after(now, true);
-    if (!next) {
-      await this.campaignHelper.setExpireTTLCampaign(
-        new Date(now.getTime() + 5 * 1000),
-        _id,
-      );
-      return;
-    }
-
-    const expire = Math.max(
-      0,
-      Math.floor((next.getTime() - now.getTime()) / 1000),
-    );
-    await this.campaignRedisClient.setex(
-      `${REDIS_KEY.CONTEST_OBJECT_RECURRENT}${_id}`,
-      expire,
-      '',
-    );
-  }
 
   async getContestParticipants(
     campaign: CampaignDocumentType,
@@ -248,20 +217,20 @@ export class ContestObject implements ContestInterface {
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
     if (!isInRange) {
-      await this.setNextRecurrentEvent(
+      await this.campaignHelper.setNextRecurrentEvent(
         campaign.recurrenceRule,
         _id,
-        campaign.recurrenceRule,
+        REDIS_KEY.CONTEST_OBJECT_RECURRENT,
       );
       return;
     }
 
     const posts = await this.getContestPosts(campaign);
     if (!posts.length) {
-      await this.setNextRecurrentEvent(
+      await this.campaignHelper.setNextRecurrentEvent(
         campaign.recurrenceRule,
         _id,
-        campaign.recurrenceRule,
+        REDIS_KEY.CONTEST_OBJECT_RECURRENT,
       );
       return;
     }
@@ -380,10 +349,10 @@ export class ContestObject implements ContestInterface {
       });
     }
 
-    await this.setNextRecurrentEvent(
+    await this.campaignHelper.setNextRecurrentEvent(
       campaign.recurrenceRule,
       _id,
-      campaign.recurrenceRule,
+      REDIS_KEY.CONTEST_OBJECT_RECURRENT,
     );
     this.messageOnReview.contestWinMessage(_id, eventId, winners);
   }

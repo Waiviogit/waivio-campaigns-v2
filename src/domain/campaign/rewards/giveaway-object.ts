@@ -9,11 +9,9 @@ import {
   POST_PROVIDE,
   RECURRENT_TYPE,
   REDIS_KEY,
-  REDIS_PROVIDE,
   REVIEW_PROVIDE,
   USER_PROVIDE,
 } from '../../../common/constants';
-import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { rrulestr } from 'rrule';
 import { GiveawayObjectInterface } from './interface/giveaway-object.interface';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
@@ -32,8 +30,6 @@ import { CampaignPostsRepositoryInterface } from '../../../persistance/campaign-
 @Injectable()
 export class GiveawayObject implements GiveawayObjectInterface {
   constructor(
-    @Inject(REDIS_PROVIDE.CAMPAIGN_CLIENT)
-    private readonly campaignRedisClient: RedisClientInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(POST_PROVIDE.REPOSITORY)
@@ -51,34 +47,6 @@ export class GiveawayObject implements GiveawayObjectInterface {
     @Inject(CAMPAIGN_POSTS_PROVIDE.REPOSITORY)
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
   ) {}
-  async setNextRecurrentEvent(
-    rruleString: string,
-    _id: string,
-    timezone?: string,
-  ): Promise<void> {
-    const rruleObject = rrulestr(rruleString);
-    const now = new Date();
-    const next = rruleObject.after(now, true);
-    if (!next) {
-      await this.campaignHelper.setExpireTTLCampaign(
-        new Date(now.getTime() + 5 * 1000),
-        _id,
-      );
-      return;
-    }
-    console.log('NEXT', next.toISOString());
-
-    const expire = Math.max(
-      0,
-      Math.floor((next.getTime() - now.getTime()) / 1000),
-    );
-
-    await this.campaignRedisClient.setex(
-      `${REDIS_KEY.GIVEAWAY_OBJECT_RECURRENT}${_id}`,
-      expire,
-      '',
-    );
-  }
 
   async getParticipants(campaign: CampaignDocumentType): Promise<string[]> {
     // Get posts within campaign duration and objects
@@ -189,10 +157,10 @@ export class GiveawayObject implements GiveawayObjectInterface {
       (date) => Math.abs(date.getTime() - now.getTime()) <= 60 * 1000,
     );
     if (!isInRange) {
-      await this.setNextRecurrentEvent(
+      await this.campaignHelper.setNextRecurrentEvent(
         campaign.recurrenceRule,
         _id,
-        campaign.recurrenceRule,
+        REDIS_KEY.GIVEAWAY_OBJECT_RECURRENT,
       );
       return;
     }
@@ -248,10 +216,10 @@ export class GiveawayObject implements GiveawayObjectInterface {
       budget = budget.minus(campaign.reward);
     }
 
-    await this.setNextRecurrentEvent(
+    await this.campaignHelper.setNextRecurrentEvent(
       campaign.recurrenceRule,
       _id,
-      campaign.recurrenceRule,
+      REDIS_KEY.GIVEAWAY_OBJECT_RECURRENT,
     );
     this.messageOnReview.giveawayObjectWinMessage(_id, eventId);
   }

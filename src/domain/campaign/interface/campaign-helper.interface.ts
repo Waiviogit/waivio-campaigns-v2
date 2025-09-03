@@ -39,6 +39,11 @@ export interface CampaignHelperInterface {
   incrReviewComment(params: IncrReviewCommentInterface): Promise<void>;
   reCalcCampaignsRewardInUsd(): Promise<void>;
   reachedLimitUpdateToActive(): Promise<void>;
+  setNextRecurrentEvent(
+    rruleString: string,
+    _id: string,
+    recurrentKey: string,
+  ): Promise<void>;
 }
 
 export interface IncrReviewCommentInterface {
