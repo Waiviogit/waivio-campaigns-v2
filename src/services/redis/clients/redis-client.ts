@@ -43,6 +43,7 @@ export abstract class RedisClient
       return await this.client.setEx(key, expire, value);
     } catch (error) {
       this.logger.error(error.message);
+      this.logger.error(`key: ${key}, expire ${expire}`);
     }
   }
 

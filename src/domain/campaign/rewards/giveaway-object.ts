@@ -66,6 +66,7 @@ export class GiveawayObject implements GiveawayObjectInterface {
       );
       return;
     }
+    console.log('NEXT', next.toISOString());
 
     const expire = Math.max(
       0,
