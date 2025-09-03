@@ -66,7 +66,7 @@ export class CreateCampaign implements CreateCampaignInterface {
       );
 
       const totalRewards = contestRewardsWithUSD.reduce(
-        (sum, reward) => sum + reward.rewardInUSD,
+        (sum, reward) => sum + reward.reward,
         0,
       );
       if (totalRewards > campaign.budget) {
