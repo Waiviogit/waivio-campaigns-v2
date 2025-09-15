@@ -675,8 +675,7 @@ export class CreateReview implements CreateReviewInterface {
     const userReservationObject =
       campaign?.objects?.[0] || campaign.requiredObject;
 
-    const reviewPermlink = `${post.author}/${post.permlink}`;
-
+    const reviewPermlink = post.permlink;
     const campaignReviewType = {
       ...campaign,
       userName,
