@@ -474,7 +474,40 @@ export class CreateReview implements CreateReviewInterface {
           images: _.get(parseJSON(post.json_metadata), 'image', []),
           postAuthor: rejectedUser.name,
         });
+
+        await this.campaignRepository.updateOne({
+          filter: {
+            _id: campaign._id,
+            users: {
+              $elemMatch: {
+                name: rejectedUser.name,
+                reservationPermlink: rejectedUser.reservationPermlink,
+              },
+            },
+          },
+          update: {
+            $set: {
+              'users.$.status': havePost
+                ? RESERVATION_STATUS.COMPLETED
+                : RESERVATION_STATUS.ASSIGNED,
+              'users.$.rejectionPermlink': '',
+            },
+          },
+        });
+        return;
       }
+
+      await this.campaignRepository.updateOne({
+        filter: {
+          _id: campaign._id,
+          guideName,
+        },
+        update: {
+          $pull: {
+            users: { rootName: user, reservationPermlink: parentPermlink },
+          },
+        },
+      });
 
       if (campaign.type === CAMPAIGN_TYPE.MENTIONS) {
         await this.createMention({
@@ -529,27 +562,6 @@ export class CreateReview implements CreateReviewInterface {
         }
       }
     }
-
-    //remove rejection permlink
-    await this.campaignRepository.updateOne({
-      filter: {
-        _id: campaign._id,
-        users: {
-          $elemMatch: {
-            name: rejectedUser.name,
-            reservationPermlink: rejectedUser.reservationPermlink,
-          },
-        },
-      },
-      update: {
-        $set: {
-          'users.$.status': havePost
-            ? RESERVATION_STATUS.COMPLETED
-            : RESERVATION_STATUS.ASSIGNED,
-          'users.$.rejectionPermlink': '',
-        },
-      },
-    });
   }
 
   getAdditionalReward(campaign: ReviewCampaignType): BigNumber {
