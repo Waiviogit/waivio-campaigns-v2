@@ -157,7 +157,7 @@ export abstract class MongoRepository<TDocument, TCreate = Partial<TDocument>>
 
   async create(data: TCreate): Promise<TDocument | null> {
     try {
-      return this.model.create(data);
+      return await this.model.create(data);
     } catch (error) {
       this.logger.log(error.message);
       return null;
