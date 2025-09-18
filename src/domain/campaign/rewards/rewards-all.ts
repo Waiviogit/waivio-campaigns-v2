@@ -528,6 +528,7 @@ export class RewardsAll implements RewardsAllInterface {
       host,
       sort,
       campaigns,
+      userName: judgeName,
     });
   }
 
@@ -642,7 +643,7 @@ export class RewardsAll implements RewardsAllInterface {
     const rewardsWithAdditionalData = await this.addDataOnRewardsByObject({
       rewards,
       host,
-      userName,
+      userName: judgeName,
     });
 
     return {
