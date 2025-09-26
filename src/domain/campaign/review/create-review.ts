@@ -627,7 +627,7 @@ export class CreateReview implements CreateReviewInterface {
     } as never as ReviewCampaignType;
 
     await this.campaignRepository.updateOne({
-      filter: { _id: campaign._id, status: CAMPAIGN_STATUS.ACTIVE },
+      filter: { _id: campaign._id },
       update: {
         $push: {
           users: {
@@ -698,7 +698,7 @@ export class CreateReview implements CreateReviewInterface {
     } as never as ReviewCampaignType;
 
     await this.campaignRepository.updateOne({
-      filter: { _id: campaign._id, status: CAMPAIGN_STATUS.ACTIVE },
+      filter: { _id: campaign._id },
       update: {
         $push: {
           users: {
