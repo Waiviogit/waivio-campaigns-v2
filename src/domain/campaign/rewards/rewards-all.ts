@@ -61,6 +61,16 @@ import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wo
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
 
+type AggregatedByObjectResult = {
+  objects: string;
+  lastCreated: Date;
+  payout: number;
+  minReward: number;
+  maxReward: number;
+  guideName: string;
+  reach: string[];
+};
+
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
   constructor(
@@ -166,6 +176,157 @@ export class RewardsAll implements RewardsAllInterface {
     });
     if (rewards.length) return { tabType: REWARDS_TAB.RESERVED };
     return { tabType: REWARDS_TAB.GLOBAL };
+  }
+
+  private buildGroupedByObjectsPipeline({
+    preMatch,
+    postUnwindMatch,
+    preStages = [],
+    sort,
+    skip,
+    limit,
+    area,
+    radius,
+  }: {
+    preMatch: Record<string, unknown>;
+    postUnwindMatch?: Record<string, unknown>;
+    preStages?: PipelineStage[];
+    sort?: string;
+    skip?: number;
+    limit?: number;
+    area?: number[];
+    radius?: number;
+  }): PipelineStage[] {
+    const pipeline: PipelineStage[] = [];
+    if (preMatch && Object.keys(preMatch).length)
+      pipeline.push({ $match: preMatch });
+    if (preStages?.length) pipeline.push(...preStages);
+    pipeline.push({ $unwind: { path: '$objects' } });
+    if (postUnwindMatch && Object.keys(postUnwindMatch).length)
+      pipeline.push({ $match: postUnwindMatch });
+
+    pipeline.push({
+      $addFields: {
+        completedUsers: {
+          $filter: {
+            input: '$users',
+            as: 'u',
+            cond: { $eq: ['$$u.status', RESERVATION_STATUS.COMPLETED] },
+          },
+        },
+        maxCandidate: {
+          $cond: [
+            { $eq: ['$type', CAMPAIGN_TYPE.CONTESTS_OBJECT] },
+            { $max: '$contestRewards.rewardInUSD' },
+            '$rewardInUSD',
+          ],
+        },
+        minCandidate: {
+          $cond: [
+            { $eq: ['$type', CAMPAIGN_TYPE.CONTESTS_OBJECT] },
+            { $min: '$contestRewards.rewardInUSD' },
+            '$rewardInUSD',
+          ],
+        },
+      },
+    });
+    pipeline.push({
+      $addFields: { completedCount: { $size: '$completedUsers' } },
+    });
+    pipeline.push({
+      $addFields: {
+        payoutUnit: {
+          $multiply: [
+            {
+              $cond: [{ $gt: ['$completedCount', 0] }, '$completedCount', 1],
+            },
+            '$rewardInUSD',
+            '$commissionAgreement',
+          ],
+        },
+      },
+    });
+    pipeline.push({ $sort: { maxCandidate: -1 } });
+    pipeline.push({
+      $group: {
+        _id: '$objects',
+        lastCreated: { $max: '$createdAt' },
+        payout: { $sum: '$payoutUnit' },
+        minReward: { $min: '$minCandidate' },
+        maxReward: { $max: '$maxCandidate' },
+        guideName: { $first: '$guideName' },
+        reach: { $addToSet: '$reach' },
+      },
+    });
+    pipeline.push({
+      $project: {
+        _id: 0,
+        objects: '$_id',
+        lastCreated: 1,
+        payout: 1,
+        minReward: 1,
+        maxReward: 1,
+        guideName: 1,
+        reach: 1,
+      },
+    });
+
+    // Proximity sorting branch: lookup wobject and compute distance, then sort/limit
+    if (
+      sort === CAMPAIGN_SORTS.PROXIMITY &&
+      Array.isArray(area) &&
+      area.length === 2
+    ) {
+      /* eslint-disable */
+      const distanceFn = "function (map, area) {\n                try {\n                  if (!map) return null;\n                  var coords = JSON.parse(map);\n                  var lon = coords.longitude, lat = coords.latitude;\n                  if (typeof lon !== 'number' || typeof lat !== 'number') return null;\n                  var EARTH_RADIUS = 6372795;\n                  var long1 = area[0] * (Math.PI / 180);\n                  var long2 = lat * (Math.PI / 180);\n                  var lat1 = area[1] * (Math.PI / 180);\n                  var lat2 = lon * (Math.PI / 180);\n                  var cl1 = Math.cos(lat1);\n                  var cl2 = Math.cos(lat2);\n                  var sl1 = Math.sin(lat1);\n                  var sl2 = Math.sin(lat2);\n                  var delta = long2 - long1;\n                  var cdelta = Math.cos(delta);\n                  var sdelta = Math.sin(delta);\n                  var y = Math.sqrt(Math.pow(cl2 * sdelta, 2) + Math.pow(cl1 * sl2 - sl1 * cl2 * cdelta, 2));\n                  var x = sl1 * sl2 + cl1 * cl2 * cdelta;\n                  var ad = Math.atan2(y, x);\n                  return Math.round(ad * EARTH_RADIUS);\n                } catch (e) {\n                  return null;\n                }\n              }";
+      pipeline.push({
+        $lookup: {
+          from: COLLECTION.WOBJECTS,
+          localField: 'objects',
+          foreignField: 'author_permlink',
+          as: 'object',
+        },
+      });
+      pipeline.push({
+        $addFields: { object: { $arrayElemAt: ['$object', 0] } },
+      });
+      pipeline.push({
+        $addFields: {
+          distance: {
+            $function: {
+              body: distanceFn,
+              args: ['$object.map', area],
+              lang: 'js',
+            },
+          },
+        },
+      });
+      if (typeof radius === 'number' && radius > 0) {
+        pipeline.push({ $match: { distance: { $ne: null, $lte: radius } } });
+      }
+      pipeline.push({ $sort: { distance: 1 } });
+      if (typeof skip === 'number' && skip > 0) pipeline.push({ $skip: skip });
+      if (typeof limit === 'number' && limit > 0)
+        pipeline.push({ $limit: (limit as number) + 1 });
+      /* eslint-enable */
+      return pipeline;
+    }
+
+    // Default and payout/date branches: sort then limit
+    if (
+      !sort ||
+      sort === CAMPAIGN_SORTS.DEFAULT ||
+      sort === CAMPAIGN_SORTS.PAYOUT
+    ) {
+      pipeline.push({ $sort: { payout: -1 } });
+    } else if (sort === CAMPAIGN_SORTS.DATE) {
+      pipeline.push({ $sort: { lastCreated: -1 } });
+    }
+    if (typeof skip === 'number' && skip > 0) pipeline.push({ $skip: skip });
+    if (typeof limit === 'number' && limit > 0)
+      pipeline.push({ $limit: (limit as number) + 1 });
+
+    return pipeline;
   }
 
   async getReservedFilters({
@@ -282,31 +443,33 @@ export class RewardsAll implements RewardsAllInterface {
       projection: { count_posts: 1, followers_count: 1, wobjects_weight: 1 },
     });
     if (!user) return { rewards: [], hasMore: false };
-    const campaigns: CampaignDocumentType[] =
-      await this.campaignRepository.aggregate({
-        pipeline: [
-          {
-            $match: {
-              status: CAMPAIGN_STATUS.ACTIVE,
-              ...(sponsors && { guideName: { $in: sponsors } }),
-              ...(type && { type: { $in: type } }),
-              ...(activationPermlink && { activationPermlink }),
-              ...(reach && { reach }),
-            },
-          },
-          ...(await this.getEligiblePipe({
-            userName,
-            user,
-          })),
-        ],
-      });
+    const pipeline = this.buildGroupedByObjectsPipeline({
+      preMatch: {
+        status: CAMPAIGN_STATUS.ACTIVE,
+        ...(sponsors && { guideName: { $in: sponsors } }),
+        ...(type && { type: { $in: type } }),
+        ...(activationPermlink && { activationPermlink }),
+        ...(reach && { reach }),
+      },
+      preStages: await this.getEligiblePipe({ userName, user }),
+      sort,
+      skip,
+      limit,
+      area,
+      radius,
+    });
+
+    const campaigns = (await this.campaignRepository.aggregate({
+      pipeline,
+    })) as unknown as AggregatedByObjectResult[];
+
     return this.getPrimaryObjectRewards({
       skip,
       limit,
       host,
       sort,
       area,
-      campaigns,
+      campaigns: campaigns as unknown as unknown[],
       radius,
       userName,
     });
@@ -336,24 +499,27 @@ export class RewardsAll implements RewardsAllInterface {
     const usersList = _.map(usersSubs, 'following');
     const objectsList = _.map(wobjectSubs, 'following');
 
-    const campaigns: CampaignDocumentType[] =
-      await this.campaignRepository.aggregate({
-        pipeline: [
-          {
-            $match: {
-              status: CAMPAIGN_STATUS.ACTIVE,
-              $or: [
-                { guideName: { $in: usersList } },
-                { requiredObject: { $in: objectsList } },
-              ],
-            },
-          },
-          ...(await this.getEligiblePipe({
-            userName,
-            user,
-          })),
-        ],
-      });
+    const preMatch: Record<string, unknown> = {
+      status: CAMPAIGN_STATUS.ACTIVE,
+      ...(usersList.length ? { guideName: { $in: usersList } } : {}),
+    };
+    const postUnwindMatch: Record<string, unknown> | undefined =
+      objectsList.length ? { objects: { $in: objectsList } } : undefined;
+
+    const pipeline = this.buildGroupedByObjectsPipeline({
+      preMatch,
+      postUnwindMatch,
+      preStages: await this.getEligiblePipe({ userName, user }),
+      sort,
+      skip,
+      limit,
+      area,
+      radius,
+    });
+
+    const campaigns = (await this.campaignRepository.aggregate({
+      pipeline,
+    })) as unknown as AggregatedByObjectResult[];
 
     return this.getPrimaryObjectRewards({
       skip,
@@ -361,7 +527,7 @@ export class RewardsAll implements RewardsAllInterface {
       host,
       sort,
       area,
-      campaigns,
+      campaigns: campaigns as unknown as unknown[],
       radius,
     });
   }
@@ -387,7 +553,7 @@ export class RewardsAll implements RewardsAllInterface {
           {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
-              ...(requiredObject && { requiredObject }),
+              ...(requiredObject && { objects: requiredObject }),
               ...(sponsors && { guideName: { $in: sponsors } }),
               ...(type && { type: { $in: type } }),
               ...(reach && { reach }),
@@ -406,29 +572,7 @@ export class RewardsAll implements RewardsAllInterface {
           },
           {
             $project: {
-              object: { $arrayElemAt: ['$object', 0] },
-              objects: 1,
-              frequencyAssign: 1,
-              matchBots: 1,
-              agreementObjects: 1,
-              usersLegalNotice: 1,
-              description: 1,
-              payoutToken: 1,
-              currency: 1,
-              reward: 1,
-              rewardInUSD: 1,
-              guideName: 1,
-              requirements: 1,
-              userRequirements: 1,
-              countReservationDays: 1,
-              activationPermlink: 1,
-              type: 1,
-              qualifiedPayoutToken: 1,
-              giveawayPermlink: 1,
-              giveawayPostTitle: 1,
-              contestRewards: 1,
-              contestJudges: 1,
-              budget: 1,
+              ...this.commonObjectProjection(),
             },
           },
           {
@@ -474,21 +618,117 @@ export class RewardsAll implements RewardsAllInterface {
     const mutedNames = mutedList.map((el) => el.userName);
     const guideCondition = mutedList?.length || sponsors?.length;
 
-    const campaigns = await this.campaignRepository.find({
-      filter: {
-        status: CAMPAIGN_STATUS.ACTIVE,
-        ...(guideCondition && {
-          guideName: {
-            ...(mutedNames?.length ? { $nin: mutedNames } : {}),
-            ...(sponsors ? { $in: sponsors } : {}),
+    // Build aggregation to unwind objects and group by objects with calculated metrics
+    const pipeline: PipelineStage[] = [];
+    const matchStage: Record<string, unknown> = {
+      status: CAMPAIGN_STATUS.ACTIVE,
+      ...(guideCondition && {
+        guideName: {
+          ...(mutedNames?.length ? { $nin: mutedNames } : {}),
+          ...(sponsors ? { $in: sponsors } : {}),
+        },
+      }),
+      ...(sponsors && { guideName: { $in: sponsors } }),
+      ...(type && { type: { $in: type } }),
+      // requiredObjects now filters on objects field (applied after unwind)
+      ...(reach && { reach }),
+    };
+
+    pipeline.push({ $match: matchStage });
+    pipeline.push({ $unwind: { path: '$objects' } });
+    if (requiredObjects && requiredObjects.length) {
+      pipeline.push({ $match: { objects: { $in: requiredObjects } } });
+    }
+
+    // Pre-compute candidates per campaign document
+    pipeline.push({
+      $addFields: {
+        completedUsers: {
+          $filter: {
+            input: '$users',
+            as: 'u',
+            cond: { $eq: ['$$u.status', RESERVATION_STATUS.COMPLETED] },
           },
-        }),
-        ...(sponsors && { guideName: { $in: sponsors } }),
-        ...(type && { type: { $in: type } }),
-        ...(requiredObjects && { requiredObject: { $in: requiredObjects } }),
-        ...(reach && { reach }),
+        },
+        maxCandidate: {
+          $cond: [
+            { $eq: ['$type', CAMPAIGN_TYPE.CONTESTS_OBJECT] },
+            { $max: '$contestRewards.rewardInUSD' },
+            '$rewardInUSD',
+          ],
+        },
+        minCandidate: {
+          $cond: [
+            { $eq: ['$type', CAMPAIGN_TYPE.CONTESTS_OBJECT] },
+            { $min: '$contestRewards.rewardInUSD' },
+            '$rewardInUSD',
+          ],
+        },
       },
     });
+    pipeline.push({
+      $addFields: {
+        completedCount: { $size: '$completedUsers' },
+      },
+    });
+    pipeline.push({
+      $addFields: {
+        payoutUnit: {
+          $multiply: [
+            { $cond: [{ $gt: ['$completedCount', 0] }, '$completedCount', 1] },
+            '$rewardInUSD',
+            '$commissionAgreement',
+          ],
+        },
+      },
+    });
+
+    // Sort by maxCandidate so that $first in group picks guide of highest reward campaign per object
+    pipeline.push({ $sort: { maxCandidate: -1 } });
+
+    pipeline.push({
+      $group: {
+        _id: '$objects',
+        lastCreated: { $max: '$createdAt' },
+        payout: { $sum: '$payoutUnit' },
+        minReward: { $min: '$minCandidate' },
+        maxReward: { $max: '$maxCandidate' },
+        guideName: { $first: '$guideName' },
+        reach: { $addToSet: '$reach' },
+      },
+    });
+
+    pipeline.push({
+      $project: {
+        _id: 0,
+        objects: '$_id',
+        lastCreated: 1,
+        payout: 1,
+        minReward: 1,
+        maxReward: 1,
+        guideName: 1,
+        reach: 1,
+      },
+    });
+
+    // Default sort by payout desc to support skip/limit inside aggregation
+    if (
+      !sort ||
+      sort === CAMPAIGN_SORTS.DEFAULT ||
+      sort === CAMPAIGN_SORTS.PAYOUT
+    ) {
+      pipeline.push({ $sort: { payout: -1 } });
+    } else if (sort === CAMPAIGN_SORTS.DATE) {
+      pipeline.push({ $sort: { lastCreated: -1 } });
+    }
+
+    if (typeof skip === 'number' && skip > 0) pipeline.push({ $skip: skip });
+    if (typeof limit === 'number' && limit > 0)
+      pipeline.push({ $limit: (limit as number) + 1 });
+
+    const campaigns = (await this.campaignRepository.aggregate({
+      pipeline,
+    })) as unknown as AggregatedByObjectResult[];
 
     return this.getPrimaryObjectRewards({
       skip,
@@ -496,7 +736,7 @@ export class RewardsAll implements RewardsAllInterface {
       host,
       sort,
       area,
-      campaigns,
+      campaigns: campaigns as unknown as unknown[],
       radius,
       userName,
     });
@@ -512,24 +752,61 @@ export class RewardsAll implements RewardsAllInterface {
     type,
     reach,
   }: GetJudgeRewardsMainType): Promise<RewardsAllType> {
-    const campaigns = await this.campaignRepository.find({
-      filter: {
+    const pipeline = this.buildGroupedByObjectsPipeline({
+      preMatch: {
         status: CAMPAIGN_STATUS.ACTIVE,
         contestJudges: judgeName,
         ...(sponsors && { guideName: { $in: sponsors } }),
         ...(type && { type: { $in: type } }),
         ...(reach && { reach }),
       },
+      sort,
+      skip,
+      limit,
+      area: undefined,
+      radius: undefined,
     });
+
+    const campaigns = (await this.campaignRepository.aggregate({
+      pipeline,
+    })) as unknown as AggregatedByObjectResult[];
 
     return this.getPrimaryObjectRewards({
       skip,
       limit,
       host,
       sort,
-      campaigns,
+      campaigns: campaigns as unknown as unknown[],
       userName: judgeName,
     });
+  }
+
+  private commonObjectProjection(): Record<string, unknown> {
+    return {
+      object: { $arrayElemAt: ['$object', 0] },
+      objects: 1,
+      frequencyAssign: 1,
+      matchBots: 1,
+      agreementObjects: 1,
+      usersLegalNotice: 1,
+      description: 1,
+      payoutToken: 1,
+      currency: 1,
+      reward: 1,
+      rewardInUSD: 1,
+      guideName: 1,
+      requirements: 1,
+      userRequirements: 1,
+      countReservationDays: 1,
+      activationPermlink: 1,
+      type: 1,
+      qualifiedPayoutToken: 1,
+      giveawayPermlink: 1,
+      giveawayPostTitle: 1,
+      contestRewards: 1,
+      contestJudges: 1,
+      budget: 1,
+    };
   }
 
   async getSponsorsJudge({
@@ -586,7 +863,7 @@ export class RewardsAll implements RewardsAllInterface {
             $match: {
               status: CAMPAIGN_STATUS.ACTIVE,
               contestJudges: judgeName,
-              ...(requiredObject && { requiredObject }),
+              ...(requiredObject && { objects: requiredObject }),
               ...(sponsors && { guideName: { $in: sponsors } }),
               ...(type && { type: { $in: type } }),
               ...(reach && { reach }),
@@ -604,28 +881,7 @@ export class RewardsAll implements RewardsAllInterface {
           },
           {
             $project: {
-              object: { $arrayElemAt: ['$object', 0] },
-              objects: 1,
-              frequencyAssign: 1,
-              matchBots: 1,
-              agreementObjects: 1,
-              usersLegalNotice: 1,
-              description: 1,
-              payoutToken: 1,
-              currency: 1,
-              reward: 1,
-              rewardInUSD: 1,
-              guideName: 1,
-              requirements: 1,
-              userRequirements: 1,
-              countReservationDays: 1,
-              activationPermlink: 1,
-              type: 1,
-              qualifiedPayoutToken: 1,
-              giveawayPermlink: 1,
-              contestRewards: 1,
-              contestJudges: 1,
-              budget: 1,
+              ...this.commonObjectProjection(),
             },
           },
           {
@@ -699,7 +955,7 @@ export class RewardsAll implements RewardsAllInterface {
   }
 
   async getPrimaryObjectRewards({
-    skip,
+    skip: _skip,
     limit,
     host,
     sort,
@@ -709,75 +965,73 @@ export class RewardsAll implements RewardsAllInterface {
     userName,
   }: GetPrimaryObjectRewards): Promise<RewardsAllType> {
     const rewards = [];
-    const requiredObjects = _.compact(
-      _.uniq(_.map(campaigns, 'requiredObject')),
-    );
 
-    const objects = await this.wobjectHelper.getWobjectsForCampaigns({
-      links: this.rewardsHelper.filterObjectLinks(requiredObjects),
-      host,
-      userName,
-    });
-
-    const campaignUsers = await this.userRepository.findCampaignsUsers(
-      this.rewardsHelper.getCampaignUsersFromArray(requiredObjects),
-    );
-
-    const groupedCampaigns = _.groupBy(campaigns, 'requiredObject');
-    for (const key in groupedCampaigns) {
-      const object = objects.find((o) => o.author_permlink === key);
-      const user = campaignUsers.find(
-        (u) => u.name === this.rewardsHelper.extractUsername(key),
+    // Input campaigns are aggregated by objects (from aggregation pipeline)
+    {
+      const objectsLinks = _.compact(
+        _.uniq(_.map(campaigns as AggregatedByObjectResult[], 'objects')),
       );
-      const webLink = !object && !user && key.includes('https://') && key;
 
-      if (!object && !user && !webLink) continue;
-      if (
-        _.includes(
-          [WOBJECT_STATUS.RELISTED, WOBJECT_STATUS.UNAVAILABLE],
-          _.get(object, 'status.title'),
-        )
-      ) {
-        continue;
-      }
-      const payout = this.rewardsHelper.getPayedForMain(groupedCampaigns[key]);
-      const coordinates =
-        _.compact(this.rewardsHelper.parseCoordinates(object?.map)) || [];
-
-      const distance =
-        area && coordinates.length === 2
-          ? this.rewardsHelper.getDistance(area, coordinates)
-          : null;
-      if (radius) {
-        if (distance > radius) continue;
-      }
-
-      const { minReward, maxReward, guideName } =
-        this.getMinMaxRewardForPrimary(groupedCampaigns[key]);
-
-      rewards.push({
-        lastCreated: _.maxBy(
-          groupedCampaigns[key],
-          (campaign) => campaign.createdAt,
-        ).createdAt,
-        minReward,
-        maxReward,
-        guideName,
-        distance,
-        object,
-        user,
-        webLink,
-        payout,
-        reach: _.uniq(_.map(campaigns, 'reach')),
+      const objects = await this.wobjectHelper.getWobjectsForCampaigns({
+        links: this.rewardsHelper.filterObjectLinks(objectsLinks),
+        host,
+        userName,
       });
+
+      const campaignUsers = await this.userRepository.findCampaignsUsers(
+        this.rewardsHelper.getCampaignUsersFromArray(objectsLinks),
+      );
+
+      for (const item of campaigns as AggregatedByObjectResult[]) {
+        const key = item.objects as string;
+        const object = objects.find((o) => o.author_permlink === key);
+        const user = campaignUsers.find(
+          (u) => u.name === this.rewardsHelper.extractUsername(key),
+        );
+        const webLink = !object && !user && key.includes('https://') && key;
+
+        if (!object && !user && !webLink) continue;
+        if (
+          _.includes(
+            [WOBJECT_STATUS.RELISTED, WOBJECT_STATUS.UNAVAILABLE],
+            _.get(object, 'status.title'),
+          )
+        ) {
+          continue;
+        }
+
+        const coordinates =
+          _.compact(this.rewardsHelper.parseCoordinates(object?.map)) || [];
+        const distance =
+          area && coordinates.length === 2
+            ? this.rewardsHelper.getDistance(area, coordinates)
+            : null;
+        if (radius) {
+          if (distance > radius) continue;
+        }
+
+        rewards.push({
+          lastCreated: item.lastCreated,
+          minReward: item.minReward,
+          maxReward: item.maxReward,
+          guideName: item.guideName,
+          distance,
+          object,
+          user,
+          webLink,
+          payout: item.payout,
+          reach: item.reach ?? [],
+        });
+      }
+
+      // Skip/limit already applied inside pipeline; only additional sort types might adjust order
+      const sorted = this.getSortedCampaignMain({ sort, rewards });
+      return {
+        rewards: sorted,
+        hasMore:
+          (campaigns as AggregatedByObjectResult[]).length > (limit ?? 0),
+      };
     }
-
-    const sorted = this.getSortedCampaignMain({ sort, rewards });
-
-    return {
-      rewards: sorted.slice(skip, skip + limit),
-      hasMore: sorted.slice(skip).length > limit,
-    };
   }
 
   async getRewardsByRequiredObject({
@@ -834,7 +1088,7 @@ export class RewardsAll implements RewardsAllInterface {
           },
           {
             $project: {
-              object: { $arrayElemAt: ['$object', 0] },
+              ...this.commonObjectProjection(),
               reserved: { $gt: ['$assignedUser', []] },
               reservationCreatedAt: {
                 $let: {
@@ -886,28 +1140,6 @@ export class RewardsAll implements RewardsAllInterface {
                   in: '$$firstMember.rootName',
                 },
               },
-              frequencyAssign: 1,
-              matchBots: 1,
-              agreementObjects: 1,
-              usersLegalNotice: 1,
-              description: 1,
-              payoutToken: 1,
-              currency: 1,
-              reward: 1,
-              objects: 1,
-              rewardInUSD: 1,
-              guideName: 1,
-              requirements: 1,
-              userRequirements: 1,
-              countReservationDays: 1,
-              activationPermlink: 1,
-              qualifiedPayoutToken: 1,
-              type: 1,
-              giveawayPermlink: 1,
-              giveawayPostTitle: 1,
-              contestRewards: 1,
-              contestJudges: 1,
-              budget: 1,
             },
           },
           {

@@ -86,7 +86,7 @@ export type GetRewardsEligibleType = GetRewardsMainType & {
 };
 
 export type GetPrimaryObjectRewards = GetRewardsMainType & {
-  campaigns: CampaignDocumentType[];
+  campaigns: unknown[];
 };
 
 export type GetRewardsByRequiredObjectType = {
