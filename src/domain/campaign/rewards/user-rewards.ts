@@ -167,6 +167,7 @@ export class UserRewards implements UserRewardsInterface {
               activationPermlink: 1,
               requiredObject: 1,
               type: 1,
+              recurrenceRule: 1,
             },
           },
         ],

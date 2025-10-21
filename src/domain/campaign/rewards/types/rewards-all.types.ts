@@ -49,6 +49,8 @@ export type RewardsByRequiredType = {
   muted?: boolean;
   isHide?: boolean;
   reviewPermlink?: string;
+  recurrenceRule?: string;
+  nextEventDate?: string;
 };
 
 export type RewardsByObjectType = {

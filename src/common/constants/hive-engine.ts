@@ -1,10 +1,8 @@
 export const HIVE_ENGINE_NODES = [
-  // 'https://he.sourov.dev',
-  //  'https://ha.herpc.dtools.dev',
+  //'https://api.primersion.com',
+  'https://he.atexoras.com:2083',
   'https://herpc.actifit.io',
-  'https://api.primersion.com',
-  'https://api.hive-engine.com/rpc/',
-  // 'https://herpc.dtools.dev',
+  'https://he.c0ff33a.uk',
 ];
 
 export const TOKEN_WAIV = Object.freeze({

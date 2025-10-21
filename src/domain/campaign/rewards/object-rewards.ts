@@ -203,6 +203,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
               type: 1,
               contestRewards: 1,
               contestJudges: 1,
+              recurrenceRule: 1,
             },
           },
         ],

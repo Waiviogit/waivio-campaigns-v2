@@ -60,6 +60,10 @@ import { PipelineStage } from 'mongoose';
 import { WobjectSubscriptionsRepositoryInterface } from '../../../persistance/wobject-subscriptions/interface';
 import { UserSubscriptionRepositoryInterface } from '../../../persistance/user-subscriptions/interface';
 import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
+import {
+  getNextClosestDate,
+  getNextEventDate,
+} from '../../../common/helpers/rruleHelper';
 
 @Injectable()
 export class RewardsAll implements RewardsAllInterface {
@@ -429,6 +433,7 @@ export class RewardsAll implements RewardsAllInterface {
               contestRewards: 1,
               contestJudges: 1,
               budget: 1,
+              recurrenceRule: 1,
             },
           },
           {
@@ -626,6 +631,7 @@ export class RewardsAll implements RewardsAllInterface {
               contestRewards: 1,
               contestJudges: 1,
               budget: 1,
+              recurrenceRule: 1,
             },
           },
           {
@@ -752,6 +758,12 @@ export class RewardsAll implements RewardsAllInterface {
         if (distance > radius) continue;
       }
 
+      const nextEventDate = getNextClosestDate(
+        groupedCampaigns[key]
+          .map((el) => el.recurrenceRule)
+          .filter((el) => !!el),
+      );
+
       const { minReward, maxReward, guideName } =
         this.getMinMaxRewardForPrimary(groupedCampaigns[key]);
 
@@ -769,6 +781,7 @@ export class RewardsAll implements RewardsAllInterface {
         webLink,
         payout,
         reach: _.uniq(_.map(campaigns, 'reach')),
+        nextEventDate,
       });
     }
 
@@ -908,6 +921,7 @@ export class RewardsAll implements RewardsAllInterface {
               contestRewards: 1,
               contestJudges: 1,
               budget: 1,
+              recurrenceRule: 1,
             },
           },
           {
@@ -973,6 +987,7 @@ export class RewardsAll implements RewardsAllInterface {
           reqUserName: userName,
         });
       }
+      reward.nextEventDate = getNextEventDate(reward.recurrenceRule);
       if (user) reward.user = user;
       if (webLink) reward.webLink = webLink;
     }
