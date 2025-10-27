@@ -414,7 +414,7 @@ export class CampaignDto {
 
   @IsOptional()
   @IsNumber()
-  @Max(300)
+  @Max(1000)
   @ApiProperty({ type: Number, required: false })
   frequencyAssign: number;
 

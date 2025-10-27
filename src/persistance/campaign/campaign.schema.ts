@@ -221,7 +221,7 @@ export class Campaign {
   @Prop({ type: [String] })
   matchBots: string[];
 
-  @Prop({ type: Number, max: 300, default: 0 })
+  @Prop({ type: Number, max: 1000, default: 0 })
   frequencyAssign: number;
 
   @Prop(
