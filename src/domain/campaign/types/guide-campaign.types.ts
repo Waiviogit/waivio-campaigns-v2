@@ -32,6 +32,7 @@ export type GuideManageCampaignType = {
   remaining: number;
   contestRewards?: ContestRewardType[];
   recurrenceRule?: string;
+  winnersNumber?: number;
 };
 
 export type ReservedCampaigns = {

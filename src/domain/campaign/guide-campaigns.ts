@@ -55,7 +55,9 @@ export class GuideCampaigns implements GuideCampaignsInterface {
         countOccurrencesInCurrentMonth(
           campaign.recurrenceRule,
           campaign.expiredAt,
-        ) * rewardInUSD
+        ) *
+        rewardInUSD *
+        (campaign.winnersNumber || 1)
       );
     }
 
@@ -220,6 +222,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               commissionAgreement: 1,
               giveawayRequirements: 1,
               recurrenceRule: 1,
+              winnersNumber: 1,
               remaining: {
                 $cond: [
                   {
@@ -341,6 +344,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               commissionAgreement: 1,
               giveawayRequirements: 1,
               recurrenceRule: 1,
+              winnersNumber: 1,
               remaining: {
                 $cond: [
                   {
