@@ -52,7 +52,10 @@ export class GuideCampaigns implements GuideCampaignsInterface {
   ): number {
     if (campaign.recurrenceRule) {
       return (
-        countOccurrencesInCurrentMonth(campaign.recurrenceRule) * rewardInUSD
+        countOccurrencesInCurrentMonth(
+          campaign.recurrenceRule,
+          campaign.expiredAt,
+        ) * rewardInUSD
       );
     }
 

@@ -33,19 +33,22 @@ export const getNextClosestDate = (rrules: string[]): string => {
 
 export const countOccurrencesInCurrentMonth = (
   rruleString: string,
-  startDate = new Date(),
+  expiredAt: Date,
 ): number => {
   try {
-    // Parse the RRULE
-    const rule = RRule.fromString(rruleString);
-    rule.options.dtstart = startDate;
-
-    // Get start and end of current month
     const startOfMonth = moment().startOf('month').toDate();
     const endOfMonth = moment().endOf('month').toDate();
+    const expiredAtDate = moment(expiredAt).toDate();
+
+    if (startOfMonth > expiredAtDate) {
+      return 0;
+    }
+    // Parse the RRULE
+    const rule = RRule.fromString(rruleString);
+    const lastDate = expiredAtDate < endOfMonth ? expiredAtDate : endOfMonth;
 
     // Get all occurrences in this range
-    const occurrences = rule.between(startOfMonth, endOfMonth, true);
+    const occurrences = rule.between(startOfMonth, lastDate, true);
 
     return occurrences.length;
   } catch (error) {
