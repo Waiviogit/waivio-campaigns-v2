@@ -204,6 +204,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
               contestRewards: 1,
               contestJudges: 1,
               recurrenceRule: 1,
+              qualifiedPayoutToken: 1,
             },
           },
         ],
