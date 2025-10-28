@@ -31,6 +31,7 @@ export type GuideManageCampaignType = {
   commissionAgreement: number;
   remaining: number;
   contestRewards?: ContestRewardType[];
+  recurrenceRule?: string;
 };
 
 export type ReservedCampaigns = {

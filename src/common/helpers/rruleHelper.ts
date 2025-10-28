@@ -1,5 +1,6 @@
 //recurrenceRule
 import { RRule } from 'rrule';
+import * as moment from 'moment/moment';
 
 export const getNextEventDate = (rrule: string): string => {
   try {
@@ -28,4 +29,26 @@ export const getNextClosestDate = (rrules: string[]): string => {
   }
 
   return closestDate ? closestDate.toISOString() : '';
+};
+
+export const countOccurrencesInCurrentMonth = (
+  rruleString: string,
+  startDate = new Date(),
+): number => {
+  try {
+    // Parse the RRULE
+    const rule = RRule.fromString(rruleString);
+    rule.options.dtstart = startDate;
+
+    // Get start and end of current month
+    const startOfMonth = moment().startOf('month').toDate();
+    const endOfMonth = moment().endOf('month').toDate();
+
+    // Get all occurrences in this range
+    const occurrences = rule.between(startOfMonth, endOfMonth, true);
+
+    return occurrences.length;
+  } catch (error) {
+    return 0;
+  }
 };

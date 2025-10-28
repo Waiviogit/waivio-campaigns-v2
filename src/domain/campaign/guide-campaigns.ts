@@ -25,6 +25,8 @@ import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rat
 import { CampaignHelperInterface, GuideCampaignsInterface } from './interface';
 import { HiveEngineClientInterface } from '../../services/hive-engine-api/interface';
 import { GuidePaymentsQueryInterface } from '../campaign-payment/interface';
+import { CurrencyRatesDocumentType } from '../../persistance/currency-rates/types';
+import { countOccurrencesInCurrentMonth } from '../../common/helpers/rruleHelper';
 
 const CAMPAIGN_TYPE_REMAINING = [CAMPAIGN_TYPE.MENTIONS, CAMPAIGN_TYPE.REVIEWS];
 
@@ -42,6 +44,24 @@ export class GuideCampaigns implements GuideCampaignsInterface {
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
   ) {}
+
+  getCampaignBudgetUSD(
+    campaign: GuideManageCampaignType,
+    currencyRate: CurrencyRatesDocumentType,
+    rewardInUSD: number,
+  ): number {
+    if (campaign.recurrenceRule) {
+      return (
+        countOccurrencesInCurrentMonth(campaign.recurrenceRule) * rewardInUSD
+      );
+    }
+
+    return campaign.currency === SUPPORTED_CURRENCY.USD
+      ? campaign.budget
+      : new BigNumber(campaign.budget)
+          .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
+          .toNumber();
+  }
 
   async addBudgetUsdToCampaigns(
     campaigns: GuideManageCampaignType[],
@@ -98,12 +118,11 @@ export class GuideCampaigns implements GuideCampaignsInterface {
 
       return {
         ...campaign,
-        budgetUSD:
-          campaign.currency === SUPPORTED_CURRENCY.USD
-            ? campaign.budget
-            : new BigNumber(campaign.budget)
-                .dividedBy(_.get(currencyRate, `rates.${campaign.currency}`))
-                .toNumber(),
+        budgetUSD: this.getCampaignBudgetUSD(
+          campaign,
+          currencyRate,
+          rewardInUSD,
+        ),
         payed,
         reward,
         rewardInUSD,
@@ -197,6 +216,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               currency: 1,
               commissionAgreement: 1,
               giveawayRequirements: 1,
+              recurrenceRule: 1,
               remaining: {
                 $cond: [
                   {
@@ -317,6 +337,7 @@ export class GuideCampaigns implements GuideCampaignsInterface {
               currency: 1,
               commissionAgreement: 1,
               giveawayRequirements: 1,
+              recurrenceRule: 1,
               remaining: {
                 $cond: [
                   {
