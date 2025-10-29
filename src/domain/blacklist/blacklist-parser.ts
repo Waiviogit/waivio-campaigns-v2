@@ -82,6 +82,7 @@ export class BlacklistParser implements BlacklistParserInterface {
         $pull: { whitelistUsers: { $in: names } },
       },
     });
+    // Update second layer followers (users who follow this user's blacklist)
     const followers = await this.blacklistRepository.find({
       filter: { followLists: user },
       projection: { user: 1 },
@@ -91,6 +92,22 @@ export class BlacklistParser implements BlacklistParserInterface {
       await this.campaignRepository.updateMany({
         filter: {
           guideName: follower.user,
+          status: { $in: CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST },
+        },
+        update: { $addToSet: { blacklistUsers: { $each: names } } },
+      });
+    }
+
+    // Update third layer followers (users who follow the followers)
+    const thirdLayerFollowers = await this.blacklistRepository.find({
+      filter: { followLists: { $in: followers.map((f) => f.user) } },
+      projection: { user: 1 },
+    });
+
+    for (const thirdLayerFollower of thirdLayerFollowers) {
+      await this.campaignRepository.updateMany({
+        filter: {
+          guideName: thirdLayerFollower.user,
           status: { $in: CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST },
         },
         update: { $addToSet: { blacklistUsers: { $each: names } } },
@@ -112,6 +129,7 @@ export class BlacklistParser implements BlacklistParserInterface {
       update: { $pull: { blacklistUsers: { $in: names } } },
     });
 
+    // Update second layer followers (users who follow this user's blacklist)
     const followers = await this.blacklistRepository.find({
       filter: { followLists: user },
       projection: { user: 1 },
@@ -124,6 +142,25 @@ export class BlacklistParser implements BlacklistParserInterface {
       await this.campaignRepository.updateMany({
         filter: {
           guideName: follower.user,
+          status: { $in: CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST },
+        },
+        update: { $pull: { blacklistUsers: { $in: usersToPull } } },
+      });
+    }
+
+    // Update third layer followers (users who follow the followers)
+    const thirdLayerFollowers = await this.blacklistRepository.find({
+      filter: { followLists: { $in: followers.map((f) => f.user) } },
+      projection: { user: 1 },
+    });
+
+    for (const thirdLayerFollower of thirdLayerFollowers) {
+      const { blacklist: thirdLayerBlacklist } =
+        await this.blacklistHelper.getBlacklist(thirdLayerFollower.user);
+      const usersToPull = _.difference(names, thirdLayerBlacklist);
+      await this.campaignRepository.updateMany({
+        filter: {
+          guideName: thirdLayerFollower.user,
           status: { $in: CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST },
         },
         update: { $pull: { blacklistUsers: { $in: usersToPull } } },
@@ -185,6 +222,7 @@ export class BlacklistParser implements BlacklistParserInterface {
 
     const usersToPull = _.difference(unfollowedBlacklist, myBlacklist);
 
+    // Update campaigns for the user who unfollowed
     await this.campaignRepository.updateMany({
       filter: {
         guideName: user,
@@ -192,6 +230,28 @@ export class BlacklistParser implements BlacklistParserInterface {
       },
       update: { $pull: { blacklistUsers: { $in: usersToPull } } },
     });
+
+    // Update campaigns for users who follow this user (third layer propagation)
+    const followers = await this.blacklistRepository.find({
+      filter: { followLists: user },
+      projection: { user: 1 },
+    });
+
+    for (const follower of followers) {
+      const { blacklist: followerBlacklist } =
+        await this.blacklistHelper.getBlacklist(follower.user);
+      const followerUsersToPull = _.difference(
+        unfollowedBlacklist,
+        followerBlacklist,
+      );
+      await this.campaignRepository.updateMany({
+        filter: {
+          guideName: follower.user,
+          status: { $in: CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST },
+        },
+        update: { $pull: { blacklistUsers: { $in: followerUsersToPull } } },
+      });
+    }
   }
 
   async followAnotherBlacklist(user: string, names: string[]): Promise<void> {
@@ -203,6 +263,7 @@ export class BlacklistParser implements BlacklistParserInterface {
     });
     const { blacklist } = await this.blacklistHelper.getBlacklist(user);
 
+    // Update campaigns for the user who started following
     await this.campaignRepository.updateMany({
       filter: {
         guideName: user,
@@ -210,5 +271,23 @@ export class BlacklistParser implements BlacklistParserInterface {
       },
       update: { $addToSet: { blacklistUsers: { $each: blacklist } } },
     });
+
+    // Update campaigns for users who follow this user (third layer propagation)
+    const followers = await this.blacklistRepository.find({
+      filter: { followLists: user },
+      projection: { user: 1 },
+    });
+
+    for (const follower of followers) {
+      const { blacklist: followerBlacklist } =
+        await this.blacklistHelper.getBlacklist(follower.user);
+      await this.campaignRepository.updateMany({
+        filter: {
+          guideName: follower.user,
+          status: { $in: CAMPAIGN_STATUSES_TO_UPDATE_BLACKLIST },
+        },
+        update: { $addToSet: { blacklistUsers: { $each: followerBlacklist } } },
+      });
+    }
   }
 }
