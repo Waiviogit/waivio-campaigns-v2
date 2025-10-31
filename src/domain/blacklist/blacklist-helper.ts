@@ -25,8 +25,17 @@ export class BlacklistHelper implements BlacklistHelperInterface {
         whitelist: [],
       };
     }
+
+    // First layer: user's own blacklist
     const blacklist = [...data.blackList];
+
+    // Second layer: user's followLists blacklists
     for (const item of data.followLists) {
+      blacklist.push(...item.blackList);
+    }
+
+    // Third layer: followLists' followLists blacklists
+    for (const item of data.followListsFollowLists) {
       blacklist.push(...item.blackList);
     }
 
@@ -66,14 +75,38 @@ export class BlacklistHelper implements BlacklistHelperInterface {
       };
     }
 
+    // Get second layer: user's followLists
     const followLists = await this.blacklistRepository.find({
       filter: { user: { $in: blackList.followLists } },
     });
 
+    // Get third layer: followLists' followLists
+    const followListsFollowLists = await this.blacklistRepository.find({
+      filter: {
+        user: { $in: _.flatten(followLists.map((list) => list.followLists)) },
+      },
+    });
+
+    // Filter second layer blacklists to exclude items from first layer
     for (const followList of followLists) {
       followList.blackList = _.filter(
         followList.blackList,
         (el) => !_.includes(blackList.blackList, el),
+      );
+    }
+
+    // Filter third layer blacklists to exclude items from first and second layers
+    const firstLayerBlackList = blackList.blackList;
+    const secondLayerBlackLists = _.flatten(
+      followLists.map((list) => list.blackList),
+    );
+
+    for (const followListFollowList of followListsFollowLists) {
+      followListFollowList.blackList = _.filter(
+        followListFollowList.blackList,
+        (el) =>
+          !_.includes(firstLayerBlackList, el) &&
+          !_.includes(secondLayerBlackLists, el),
       );
     }
 
@@ -82,6 +115,7 @@ export class BlacklistHelper implements BlacklistHelperInterface {
       ...blackList.whiteList,
       ...blackList.blackList,
       ..._.flatten(followLists.map((list) => list.blackList)),
+      ..._.flatten(followListsFollowLists.map((list) => list.blackList)),
     ];
 
     const users = await this.userRepository.find({
@@ -90,15 +124,36 @@ export class BlacklistHelper implements BlacklistHelperInterface {
     });
 
     const blackListResponse = [
+      // First layer: user's own blacklist
       ..._.compact(
         blackList.blackList.map((name) => {
           const currentUser = users.find((user) => user.name === name);
           if (currentUser) return currentUser;
         }),
       ),
+      // Second layer: user's followLists blacklists
       ..._.compact(
         _.reduce(
           followLists,
+          (acc, list) => {
+            const guidesList = list.blackList.map((name) => {
+              const currentUser = users.find((user) => user.name === name);
+              if (currentUser)
+                return {
+                  ...currentUser,
+                  guideName: list.user,
+                };
+            });
+            acc.push(...guidesList);
+            return acc;
+          },
+          [],
+        ),
+      ),
+      // Third layer: followLists' followLists blacklists
+      ..._.compact(
+        _.reduce(
+          followListsFollowLists,
           (acc, list) => {
             const guidesList = list.blackList.map((name) => {
               const currentUser = users.find((user) => user.name === name);

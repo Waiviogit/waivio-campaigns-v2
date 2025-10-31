@@ -25,13 +25,25 @@ export class BlacklistRepository
   ): Promise<BlacklistFindOneTypeOut> {
     const doc = await super.findOne(params);
     if (!doc) return null as unknown as BlacklistFindOneTypeOut;
-    // Populate followLists as Blacklist[]
+
+    // Populate second layer: followLists as Blacklist[]
     const followLists = await this.model
       .find({ user: { $in: doc.followLists } })
       .lean();
+
+    // Populate third layer: followLists' followLists
+    const followListsFollowLists = await this.model
+      .find({
+        user: {
+          $in: followLists.flatMap((list) => list.followLists),
+        },
+      })
+      .lean();
+
     return {
       ...doc,
       followLists,
+      followListsFollowLists,
     } as unknown as BlacklistFindOneTypeOut;
   }
 }
