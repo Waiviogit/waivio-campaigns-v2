@@ -38,6 +38,8 @@ export class CreateContestObjectDto extends PickType(CampaignDto, [
   'qualifiedPayoutToken',
   'reach',
   'timezone',
+  'sponsorName',
+  'sponsorURL',
 
   'contestJudges',
   'contestRewards',

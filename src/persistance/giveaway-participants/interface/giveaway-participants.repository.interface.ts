@@ -2,8 +2,7 @@ import { GiveawayParticipantsDocumentType } from '../types';
 import { MongoRepositoryInterface } from '../../mongo.repository';
 
 export interface GetGiveawayMessageInterface {
-  guideName: string;
-  sponsorName: string;
+  guideLink: string;
   payoutToken: string;
   legalAgreement: string;
   rewardInUSD: number;

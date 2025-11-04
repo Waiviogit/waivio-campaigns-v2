@@ -38,6 +38,8 @@ export class CreateGiveawayObjectDto extends PickType(CampaignDto, [
   'qualifiedPayoutToken',
   'reach',
   'timezone',
+  'sponsorName',
+  'sponsorURL',
 
   'recurrenceRule',
   'durationDays',

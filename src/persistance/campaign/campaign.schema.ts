@@ -301,6 +301,18 @@ export class Campaign {
     required: false,
   })
   winnersNumber?: number;
+
+  @Prop({
+    type: String,
+    required: false,
+  })
+  sponsorName?: string;
+
+  @Prop({
+    type: String,
+    required: false,
+  })
+  sponsorURL?: string;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);

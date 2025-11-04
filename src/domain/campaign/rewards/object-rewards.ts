@@ -25,6 +25,7 @@ import { AppRepositoryInterface } from '../../../persistance/app/interface';
 import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 import { ProcessedWobjectType } from '../../wobject/types';
 import { MutedUserRepositoryInterface } from '../../../persistance/muted-user/interface';
+import { SECONDARY_PROJECTION } from './rewards-all';
 
 @Injectable()
 export class ObjectRewards implements ObjectRewardsInterface {
@@ -183,28 +184,7 @@ export class ObjectRewards implements ObjectRewardsInterface {
                   in: '$$firstMember.payoutTokenRateUSD',
                 },
               },
-              frequencyAssign: 1,
-              matchBots: 1,
-              agreementObjects: 1,
-              usersLegalNotice: 1,
-              description: 1,
-              payoutToken: 1,
-              currency: 1,
-              reward: 1,
-              objects: 1,
-              rewardInUSD: 1,
-              budget: 1,
-              guideName: 1,
-              requirements: 1,
-              userRequirements: 1,
-              countReservationDays: 1,
-              activationPermlink: 1,
-              requiredObject: 1,
-              type: 1,
-              contestRewards: 1,
-              contestJudges: 1,
-              recurrenceRule: 1,
-              qualifiedPayoutToken: 1,
+              ...SECONDARY_PROJECTION,
             },
           },
         ],

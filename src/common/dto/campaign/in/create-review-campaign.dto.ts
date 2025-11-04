@@ -32,4 +32,6 @@ export class CreateReviewCampaignDto extends PickType(CampaignDto, [
   'reach',
   'timezone',
   'objects',
+  'sponsorName',
+  'sponsorURL',
 ]) {}

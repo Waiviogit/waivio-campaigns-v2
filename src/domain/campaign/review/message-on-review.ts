@@ -299,17 +299,29 @@ We encourage you to create and share original content to qualify for rewards in 
     return sponsor.alias || sponsor.name;
   }
 
+  private async getGuideLink(campaign: CampaignDocumentType): Promise<string> {
+    const { guideName } = campaign;
+    const sponsorName = await this.getSponsorName(guideName);
+
+    const link = campaign.sponsorURL
+      ? campaign.sponsorURL
+      : `https://www.waivio.com/@${guideName}`;
+
+    const name = campaign.sponsorName ? campaign.sponsorName : sponsorName;
+
+    return `[${name}](${link})`;
+  }
+
   getGiveawayUsualMessage({
-    guideName,
-    sponsorName,
     payoutToken,
     legalAgreement,
     rewardInToken,
     rewardInUSD,
     winners,
     participants,
+    guideLink,
   }: GetGiveawayMessageInterface): string {
-    let message = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${guideName})!
+    let message = `Thanks to everyone who participated in this giveaway campaign from ${guideLink}!
     The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: ${winners
       .map((w) => `@${w}`)
       .join(', ')}.
@@ -333,16 +345,15 @@ Keep creating and good luck next time!`;
   }
 
   getPersonalGiveawayMessage({
-    sponsorName,
-    guideName,
     rewardInUSD,
     rewardInToken,
     payoutToken,
     legalAgreement,
     userName,
+    guideLink,
   }: GetGiveawayPersonalMessageInterface): string {
     let message = `Congratulations @${userName}!
-You’ve been selected as one of the winners in the giveaway campaign by [${sponsorName}](https://www.waivio.com/@${guideName})!
+You’ve been selected as one of the winners in the giveaway campaign by ${guideLink}!
 As a reward, you’ll receive ${new BigNumber(rewardInUSD)
       .dp(2)
       .toString()} USD (${rewardInToken} ${payoutToken}), well deserved!
@@ -369,15 +380,14 @@ Keep creating and good luck in the next one!`;
 
     const rewardsApplicants = campaign.users.map((el) => el.name);
     if (rewardsApplicants.length === 0) return;
-    const sponsorName = await this.getSponsorName(campaign.guideName);
-
+    const guideLink = await this.getGuideLink(campaign);
     const winners = campaign.users
       .filter((u) => u.status === RESERVATION_STATUS.COMPLETED)
       .map((el) => el.name);
 
     const permlink = `giveaway-${campaign.activationPermlink}`;
     if (winners.length === 0) {
-      const rejectMessage = `Thanks to everyone who participated in this giveaway campaign from [${sponsorName}](https://www.waivio.com/@${campaign.guideName})!
+      const rejectMessage = `Thanks to everyone who participated in this giveaway campaign from ${guideLink}!
 Unfortunately, the sponsor has decided not to approve the results of this giveaway, and no rewards will be distributed this time.
 We understand this may be disappointing, and we truly appreciate the effort and creativity you put into your content.
 We encourage you to keep sharing your ideas and participating in future campaigns. There are always new opportunities to earn rewards and get recognized.
@@ -416,8 +426,7 @@ Keep creating and stay inspired!`;
       .toNumber();
 
     const message = this.getGiveawayUsualMessage({
-      guideName: campaign.guideName,
-      sponsorName,
+      guideLink,
       payoutToken: campaign.payoutToken,
       legalAgreement,
       rewardInToken,
@@ -459,7 +468,7 @@ Keep creating and stay inspired!`;
       )
     ).filter((el) => !usersCompleted.map((u) => u.name).includes(el));
 
-    const sponsorName = await this.getSponsorName(campaign.guideName);
+    const guideLink = await this.getGuideLink(campaign);
     const legalAgreement = await this.getLegalMessage(campaign);
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
@@ -476,8 +485,7 @@ Keep creating and stay inspired!`;
       const message =
         index === 0
           ? this.getGiveawayUsualMessage({
-              guideName: campaign.guideName,
-              sponsorName,
+              guideLink,
               payoutToken: campaign.payoutToken,
               legalAgreement,
               rewardInToken,
@@ -486,8 +494,7 @@ Keep creating and stay inspired!`;
               participants,
             })
           : this.getPersonalGiveawayMessage({
-              guideName: campaign.guideName,
-              sponsorName,
+              guideLink,
               payoutToken: campaign.payoutToken,
               legalAgreement,
               rewardInToken,
@@ -529,8 +536,7 @@ Keep creating and stay inspired!`;
     });
     if (!campaign) return;
 
-    const sponsorName = await this.getSponsorName(campaign.guideName);
-    const sponsorNameLink = `[${sponsorName}](https://www.waivio.com/@${campaign.guideName})`;
+    const guideLink = await this.getGuideLink(campaign);
 
     // Get participants list and filter out winners
     const allParticipants =
@@ -576,7 +582,7 @@ Keep creating and stay inspired!`;
           .join(', ');
         const participantsNote = participants.length > 100 ? ' ...' : '.';
 
-        const generalMessage = `Thanks to everyone who participated in the contest campaign by ${sponsorNameLink}!
+        const generalMessage = `Thanks to everyone who participated in the contest campaign by ${guideLink}!
 After carefully reviewing the entries and all the creative comments, we're excited to announce the winners:
 ${winnerLines.join('\n')}
 Each winner impressed us with their unique contributions and well-thought-out posts, congratulations!
@@ -601,7 +607,7 @@ Keep creating and good luck next time!`;
         // Individual message for 2nd and 3rd place winners
         const placeText = place === 2 ? '2nd' : '3rd';
         const individualMessage = `Congratulations @${winner.post.author}!
-You've secured ${placeText} place in the recent contest campaign by ${sponsorNameLink}!
+You've secured ${placeText} place in the recent contest campaign by ${guideLink}!
 As a reward, you'll receive $${winner.reward} USD (${waivAmount} WAIV), well deserved!
 Thanks for your thoughtful post and participation.
 
@@ -652,8 +658,7 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
       (u) => u.reservationPermlink === reservationPermlink,
     );
     if (!user) return;
-
-    const sponsorName = await this.getSponsorName(campaign.guideName);
+    const guideLink = await this.getGuideLink(campaign);
     const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
@@ -663,9 +668,7 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
       .decimalPlaces(tokenPrecision)
       .toNumber();
 
-    const message = `Thank you for participating in giveaway. Unfortunately, [${sponsorName}](https://www.waivio.com/@${
-      campaign.guideName
-    }) has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${new BigNumber(
+    const message = `Thank you for participating in giveaway. Unfortunately, ${guideLink} has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${new BigNumber(
       campaign.rewardInUSD,
     )
       .dp(2)

@@ -17,6 +17,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
   Validate,
+  IsUrl,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -511,4 +512,21 @@ export class CampaignDto {
   @Min(1)
   @ApiProperty({ type: Number, required: false })
   winnersNumber?: number;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  sponsorName?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsUrl()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  sponsorURL?: string;
 }
