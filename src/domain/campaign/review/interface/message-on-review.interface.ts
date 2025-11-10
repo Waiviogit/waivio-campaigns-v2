@@ -27,4 +27,9 @@ export interface MessageOnReviewInterface {
     activationPermlink: string,
     reservationPermlink: string,
   ): Promise<void>;
+  giveawayMessageWithMatchBot(
+    activationPermlink: string,
+    author: string,
+    permlink: string,
+  ): Promise<void>;
 }

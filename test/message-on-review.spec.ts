@@ -83,14 +83,16 @@ describe('MessageOnReview - contestWinMessage', () => {
     };
 
     mockGiveawayParticipantsRepository = {
-      getByNamesByActivationPermlink: jest.fn().mockResolvedValue([
-        'participant1',
-        'participant2',
-        'participant3',
-        'winner1',
-        'winner2',
-        'winner3',
-      ]),
+      getByNamesByActivationPermlink: jest
+        .fn()
+        .mockResolvedValue([
+          'participant1',
+          'participant2',
+          'participant3',
+          'winner1',
+          'winner2',
+          'winner3',
+        ]),
     };
 
     mockCampaignHelper = {
@@ -148,12 +150,16 @@ describe('MessageOnReview - contestWinMessage', () => {
 
   describe('contestWinMessage', () => {
     it('should filter winners from participants list', async () => {
-      await messageOnReview.contestWinMessage('campaign-id', 'event-id', mockWinners);
+      await messageOnReview.contestWinMessage(
+        'campaign-id',
+        'event-id',
+        mockWinners,
+      );
 
       // Verify that getByNamesByActivationPermlink was called
-      expect(mockGiveawayParticipantsRepository.getByNamesByActivationPermlink).toHaveBeenCalledWith(
-        mockCampaign.activationPermlink,
-      );
+      expect(
+        mockGiveawayParticipantsRepository.getByNamesByActivationPermlink,
+      ).toHaveBeenCalledWith(mockCampaign.activationPermlink);
 
       // Verify that createComment was called 3 times (once for each winner)
       expect(mockHiveClient.createComment).toHaveBeenCalledTimes(3);
@@ -162,7 +168,9 @@ describe('MessageOnReview - contestWinMessage', () => {
       const firstCall = mockHiveClient.createComment.mock.calls[0];
       expect(firstCall[0].parent_author).toBe('winner1');
       expect(firstCall[0].parent_permlink).toBe('post1');
-      expect(firstCall[0].body).toContain('Thanks to everyone who participated');
+      expect(firstCall[0].body).toContain(
+        'Thanks to everyone who participated',
+      );
       expect(firstCall[0].body).toContain('1st place: @winner1');
       expect(firstCall[0].body).toContain('2nd place: @winner2');
       expect(firstCall[0].body).toContain('3rd place: @winner3');
@@ -188,24 +196,38 @@ describe('MessageOnReview - contestWinMessage', () => {
     });
 
     it('should handle empty participants list', async () => {
-      mockGiveawayParticipantsRepository.getByNamesByActivationPermlink.mockResolvedValue([]);
+      mockGiveawayParticipantsRepository.getByNamesByActivationPermlink.mockResolvedValue(
+        [],
+      );
 
-      await messageOnReview.contestWinMessage('campaign-id', 'event-id', mockWinners);
+      await messageOnReview.contestWinMessage(
+        'campaign-id',
+        'event-id',
+        mockWinners,
+      );
 
       expect(mockHiveClient.createComment).toHaveBeenCalledTimes(3);
-      
+
       // First message should still mention participants section but with empty list
       const firstCall = mockHiveClient.createComment.mock.calls[0];
-      expect(firstCall[0].body).toContain('Big thanks to all participants for joining and supporting the campaign:');
-      expect(firstCall[0].body).toContain('We loved seeing your insights and enthusiasm');
+      expect(firstCall[0].body).toContain(
+        'Big thanks to all participants for joining and supporting the campaign:',
+      );
+      expect(firstCall[0].body).toContain(
+        'We loved seeing your insights and enthusiasm',
+      );
     });
 
     it('should handle campaign not found', async () => {
       mockCampaignRepository.findOne.mockResolvedValue(null);
 
-      await messageOnReview.contestWinMessage('campaign-id', 'event-id', mockWinners);
+      await messageOnReview.contestWinMessage(
+        'campaign-id',
+        'event-id',
+        mockWinners,
+      );
 
       expect(mockHiveClient.createComment).not.toHaveBeenCalled();
     });
   });
-}); 
+});

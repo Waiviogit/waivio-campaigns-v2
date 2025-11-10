@@ -26,12 +26,13 @@ import {
   CAMPAIGN_TYPE,
   TOKEN_WAIV,
   CAMPAIGN_CUSTOM_JSON_ID,
+  BENEFICIARY_BOT_UPVOTE_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import * as moment from 'moment';
-
+import * as crypto from 'node:crypto';
 import { CampaignHelperInterface } from '../interface';
 import {
   CampaignPaymentType,
@@ -81,12 +82,13 @@ import { RewardsAllInterface } from '../rewards/interface';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { MetadataType } from '../../hive-parser/types';
-import * as crypto from 'node:crypto';
 import { RestoreCustomType } from '../../../common/types';
 import { parserValidator } from '../../hive-parser/validators';
 import { MessageOnReviewInterface } from './interface/message-on-review.interface';
 import { AppDocumentType } from '../../../persistance/app/types';
 import { PostDocumentType } from '../../../persistance/post/types';
+import { getNextEventDate } from '../../../common/helpers/rruleHelper';
+import { BeneficiaryBotUpvoteRepositoryInterface } from '../../../persistance/beneficiary-bot-upvote/interface/beneficiary-bot-upvote.repository.interface';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -119,6 +121,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly campaignRedisClient: RedisClientInterface,
     @Inject(REVIEW_PROVIDE.MESSAGE_ON_REVIEW)
     private readonly messageOnReview: MessageOnReviewInterface,
+    @Inject(BENEFICIARY_BOT_UPVOTE_PROVIDE.REPOSITORY)
+    private readonly beneficiaryBotUpvoteRepository: BeneficiaryBotUpvoteRepositoryInterface,
   ) {}
 
   //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
@@ -130,6 +134,135 @@ export class CreateReview implements CreateReviewInterface {
       return parseJSON(cache);
     }
     return HOSTS_TO_PARSE_LINKS;
+  }
+
+  async validateSinglePostRecurrentEvent(
+    campaign: CampaignDocumentType,
+    author: string,
+    objects: string[],
+  ): Promise<boolean> {
+    if (!campaign.recurrenceRule) return false;
+
+    const now = new Date();
+    const nextEvent = getNextEventDate(campaign.recurrenceRule);
+    if (!nextEvent) return false;
+
+    const dateFrom = moment(nextEvent)
+      .subtract(campaign.durationDays, 'd')
+      .toDate();
+    if (dateFrom > now) return false;
+
+    const hasObjects = objects.some((o) => campaign.objects.includes(o));
+    if (!hasObjects) return false;
+
+    const user = await this.userRepository.findOne({
+      filter: { name: author },
+      projection: {
+        name: 1,
+        count_posts: 1,
+        followers_count: 1,
+        wobjects_weight: 1,
+      },
+    });
+    if (!user) return false;
+
+    if (
+      (campaign.userRequirements?.minPosts &&
+        user.count_posts < campaign.userRequirements.minPosts) ||
+      (campaign.userRequirements?.minFollowers &&
+        user.followers_count < campaign.userRequirements.minFollowers) ||
+      (campaign.userRequirements?.minExpertise &&
+        user.wobjects_weight < campaign.userRequirements.minExpertise)
+    ) {
+      return false;
+    }
+
+    const whitelist = campaign.whitelistUsers || [];
+    const blacklist = (campaign.blacklistUsers || []).filter(
+      (u: string) => !whitelist.includes(u),
+    );
+    if (blacklist.includes(author)) return false;
+
+    type CampaignUser = { name: string; status: string; updatedAt?: Date };
+    const campaignUsers = (campaign.users || []) as CampaignUser[];
+    const assignedOrCompleted = new Set(
+      campaignUsers
+        .filter((u) => ['completed'].includes(u.status))
+        .map((u) => u.name),
+    );
+    if (assignedOrCompleted.has(author)) return false;
+
+    if (campaign.frequencyAssign) {
+      const lastCompleted = campaignUsers
+        .filter((u) => u.name === author && u.status === 'completed')
+        .reduce((latest, u) => {
+          if (!u.updatedAt) return latest;
+          if (!latest || moment(u.updatedAt).isAfter(latest)) {
+            return moment(u.updatedAt);
+          }
+          return latest;
+        }, null as moment.Moment | null);
+
+      if (lastCompleted) {
+        const daysPassed = moment.utc().diff(lastCompleted, 'days');
+        if (daysPassed < campaign.frequencyAssign) return false;
+      }
+    }
+
+    const nextEventDate = moment(nextEvent).toDate();
+
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
+
+    const alreadyVotedInToken =
+      await this.beneficiaryBotUpvoteRepository.calcVotesOnEvent(
+        campaign.activationPermlink,
+        nextEventDate,
+      );
+
+    if (alreadyVotedInToken >= rewardInToken.toNumber()) return false;
+
+    return true;
+  }
+
+  async validateForGiveaways(
+    author: string,
+    botName: string,
+    permlink: string,
+    objects: string[],
+  ): Promise<void> {
+    const campaigns = await this.campaignRepository.find({
+      filter: {
+        status: CAMPAIGN_STATUS.ACTIVE,
+        matchBots: { $ne: [] },
+        type: {
+          $in: [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT],
+        },
+      },
+      options: { sort: { rewardInUSD: -1 } },
+    });
+
+    for (const campaign of campaigns) {
+      const valid = await this.validateSinglePostRecurrentEvent(
+        campaign,
+        author,
+        objects,
+      );
+      if (!valid) continue;
+
+      await this.messageOnReview.giveawayMessageWithMatchBot(
+        campaign.activationPermlink,
+        botName,
+        permlink,
+      );
+      break;
+    }
   }
 
   async getRegExToParseObjects(): Promise<RegExp> {
@@ -368,6 +501,13 @@ export class CreateReview implements CreateReviewInterface {
         });
       }
     }
+
+    await this.validateForGiveaways(
+      postAuthor,
+      botName || postAuthor,
+      comment.permlink,
+      objects,
+    );
   }
 
   async parseRestoreFromCustomJson({

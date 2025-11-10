@@ -3,33 +3,33 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as moment from 'moment';
 
-import {
-  CreateUpvoteType,
-  GetUpvoteType,
-  SponsorsBotUpvoteDocumentType,
-  UpdateStatusDataType,
-  UpdateStatusType,
-} from './type';
-import { SponsorsBotUpvote } from './sponsors-bot-upvote.schema';
-import { SponsorsBotUpvoteRepositoryInterface } from './interface';
 import { COLLECTION } from '../../common/constants';
 import { MongoRepository } from '../mongo.repository';
+import { BeneficiaryBotUpvoteDocumentType } from './type/beneficiary-bot-upvote.types';
+import { BeneficiaryBotUpvote } from './beneficiary-bot-upvote.schema';
+import {
+  CreateBeneficiaryUpvoteType,
+  GetBeneficiaryUpvoteType,
+  UpdateBeneficiaryStatusDataType,
+  UpdateBeneficiaryStatusType,
+} from './type/beneficiary-bot-upvote.repository.types';
+import { BeneficiaryBotUpvoteRepositoryInterface } from './interface/beneficiary-bot-upvote.repository.interface';
 
 @Injectable()
-export class SponsorsBotUpvoteRepository
-  extends MongoRepository<SponsorsBotUpvoteDocumentType>
-  implements SponsorsBotUpvoteRepositoryInterface
+export class BeneficiaryBotUpvoteRepository
+  extends MongoRepository<BeneficiaryBotUpvoteDocumentType>
+  implements BeneficiaryBotUpvoteRepositoryInterface
 {
   constructor(
-    @InjectModel(SponsorsBotUpvote.name)
-    protected readonly model: Model<SponsorsBotUpvoteDocumentType>,
+    @InjectModel(BeneficiaryBotUpvote.name)
+    protected readonly model: Model<BeneficiaryBotUpvoteDocumentType>,
   ) {
-    super(model, new Logger(SponsorsBotUpvoteRepository.name));
+    super(model, new Logger(BeneficiaryBotUpvoteRepository.name));
   }
 
   async create(
-    upvote: CreateUpvoteType,
-  ): Promise<SponsorsBotUpvoteDocumentType> {
+    upvote: CreateBeneficiaryUpvoteType,
+  ): Promise<BeneficiaryBotUpvoteDocumentType> {
     try {
       return this.model.create({
         ...upvote,
@@ -41,7 +41,7 @@ export class SponsorsBotUpvoteRepository
     }
   }
 
-  async getUpvotes(): Promise<GetUpvoteType[]> {
+  async getUpvotes(): Promise<GetBeneficiaryUpvoteType[]> {
     try {
       return this.model.aggregate([
         { $group: { _id: '$botName', upvotes: { $push: '$$ROOT' } } },
@@ -112,9 +112,8 @@ export class SponsorsBotUpvoteRepository
             permlink: '$upvote.permlink',
             reward: '$upvote.reward',
             totalVotesWeight: '$upvote.totalVotesWeight',
-            requiredObject: '$upvote.requiredObject',
+            activationPermlink: '$upvote.activationPermlink',
             amountToVote: '$upvote.amountToVote',
-            reservationPermlink: '$upvote.reservationPermlink',
           },
         },
       ]);
@@ -128,9 +127,9 @@ export class SponsorsBotUpvoteRepository
     status,
     currentVote,
     voteWeight,
-  }: UpdateStatusType): Promise<boolean> {
+  }: UpdateBeneficiaryStatusType): Promise<boolean> {
     try {
-      const updateData: UpdateStatusDataType = { $set: { status } };
+      const updateData: UpdateBeneficiaryStatusDataType = { $set: { status } };
       if (currentVote) updateData.$set.currentVote = currentVote;
       if (voteWeight) updateData.$set.voteWeight = voteWeight;
       const result = await this.model.updateOne({ _id }, updateData, {
@@ -141,5 +140,18 @@ export class SponsorsBotUpvoteRepository
     } catch (error) {
       return false;
     }
+  }
+
+  async calcVotesOnEvent(
+    activationPermlink: string,
+    eventDate: Date,
+  ): Promise<number> {
+    const [{ totalVotes = 0 } = {}] = await this.aggregate({
+      pipeline: [
+        { $match: { activationPermlink, eventDate } },
+        { $group: { _id: null, totalVotes: { $sum: '$currentVote' } } },
+      ],
+    });
+    return totalVotes;
   }
 }

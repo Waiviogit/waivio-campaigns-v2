@@ -31,6 +31,12 @@ export type CreateUpvoteRecordsType = {
   reservationPermlink?: string;
 };
 
+export type CreateBeneficiaryUpvoteRecordsType = {
+  activationPermlink: string;
+  author: string;
+  permlink: string;
+};
+
 export type GetWeightToVoteType = {
   amount: number;
   symbol: string;

@@ -5,6 +5,8 @@ import {
   REDIS_PROVIDE,
   REDIS_KEY,
   HIVE_PROVIDE,
+  CAMPAIGN_PROVIDE,
+  SPONSORS_BOT_PROVIDE,
 } from '../../../common/constants';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
@@ -13,6 +15,8 @@ import {
   CommentQueueInterface,
   CommentQueueItem,
 } from './interface/comment-queue.interface';
+import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
+import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 
 @Injectable()
 export class CommentQueueService implements CommentQueueInterface {
@@ -26,14 +30,20 @@ export class CommentQueueService implements CommentQueueInterface {
     private readonly campaignRedisClient: RedisClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
+    @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
+    private readonly campaignRepository: CampaignRepositoryInterface,
+    @Inject(SPONSORS_BOT_PROVIDE.BOT)
+    private readonly sponsorsBot: SponsorsBotInterface,
   ) {}
 
   async addToQueue(
     commentData: Omit<BroadcastCommentType, 'key'>,
+    activationPermlink?: string,
   ): Promise<void> {
     const queueItem: CommentQueueItem = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       commentData,
+      activationPermlink,
       retryCount: 0,
       maxRetries: 3,
       createdAt: Date.now(),
@@ -53,11 +63,43 @@ export class CommentQueueService implements CommentQueueInterface {
           queueItem.retryCount + 1
         }`,
       );
+      let success = false;
 
-      const success = await this.hiveClient.createComment({
-        ...queueItem.commentData,
-        key: configService.getMessagePostingKey(),
-      });
+      if (queueItem.activationPermlink) {
+        const campaign = await this.campaignRepository.findOne({
+          filter: { activationPermlink: queueItem.activationPermlink },
+        });
+        if (!campaign) return;
+
+        success = await this.hiveClient.createCommentWithOptions(
+          {
+            ...queueItem.commentData,
+            key: configService.getMessagePostingKey(),
+          },
+          this.hiveClient.getOptionsWithBeneficiaries(
+            queueItem.commentData.author,
+            queueItem.commentData.permlink,
+            [
+              {
+                account: campaign.compensationAccount || campaign.guideName,
+                weight: 10000,
+              },
+            ],
+          ),
+        );
+        if (success) {
+          await this.sponsorsBot.createBeneficiaryUpvoteRecords({
+            activationPermlink: queueItem.activationPermlink,
+            author: queueItem.commentData.author,
+            permlink: queueItem.commentData.permlink,
+          });
+        }
+      } else {
+        success = await this.hiveClient.createComment({
+          ...queueItem.commentData,
+          key: configService.getMessagePostingKey(),
+        });
+      }
 
       if (success) {
         this.logger.log(`Comment posted successfully: ${queueItem.id}`);

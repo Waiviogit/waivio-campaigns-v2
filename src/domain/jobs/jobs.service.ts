@@ -27,7 +27,8 @@ export class JobsService {
 
   @Cron(CronExpression.EVERY_30_MINUTES)
   async matchBotJob(): Promise<void> {
-    return this.sponsorsBot.executeUpvotes();
+    await this.sponsorsBot.executeUpvotes();
+    await this.sponsorsBot.executeBeneficiaryUpvotes();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_6PM)

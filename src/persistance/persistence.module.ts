@@ -16,6 +16,7 @@ import { CampaignPostsPersistenceModule } from './campaign-posts/campaign-posts.
 import { HiddenPostPersistenceModule } from './hidden-post/hidden-post.persistence.module';
 import { MutedUserPersistenceModule } from './muted-user/muted-user.persistence.module';
 import { GiveawayParticipantsPersistenceModule } from './giveaway-participants/giveaway-participants.persistence.module';
+import { BeneficiaryBotUpvotePersistenceModule } from './beneficiary-bot-upvote/beneficiary-bot-upvote.persistence.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { GiveawayParticipantsPersistenceModule } from './giveaway-participants/g
     CampaignPaymentPersistenceModule,
     SponsorsBotPersistenceModule,
     SponsorsBotUpvotePersistenceModule,
+    BeneficiaryBotUpvotePersistenceModule,
     CampaignPostsPersistenceModule,
     HiddenPostPersistenceModule,
     MutedUserPersistenceModule,
@@ -49,6 +51,7 @@ import { GiveawayParticipantsPersistenceModule } from './giveaway-participants/g
     CampaignPaymentPersistenceModule,
     SponsorsBotPersistenceModule,
     SponsorsBotUpvotePersistenceModule,
+    BeneficiaryBotUpvotePersistenceModule,
     CampaignPostsPersistenceModule,
     HiddenPostPersistenceModule,
     MutedUserPersistenceModule,

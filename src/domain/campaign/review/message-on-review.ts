@@ -35,6 +35,7 @@ import {
 import { CampaignHelperInterface } from '../interface';
 import { PaymentReportInterface } from '../../campaign-payment/interface';
 import { CommentQueueInterface } from './interface/comment-queue.interface';
+import { getNextEventDate } from '../../../common/helpers/rruleHelper';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -690,5 +691,53 @@ We encourage you to create and share original content to qualify for rewards in 
     });
 
     this.giveawayObjectWinMessage(campaign._id.toString(), user.eventId);
+  }
+
+  async giveawayMessageWithMatchBot(
+    activationPermlink: string,
+    author: string,
+    permlink: string,
+  ): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: {
+        activationPermlink,
+        type: CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
+      },
+    });
+
+    const guideLink = await this.getGuideLink(campaign);
+
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision)
+      .toNumber();
+
+    const nextDate = getNextEventDate(campaign.recurrenceRule);
+
+    const message = `Thanks for mentioning #${campaign.objects[0]}! Your post meets all the criteria and has been entered into the $${rewardInToken} WAIV giveaway, sponsored by ${guideLink}
+The winner will be announced on ${nextDate}.
+
+You can track your wins and explore more rewards here.
+Keep the great posts coming!`;
+
+    await this.commentQueue.addToQueue(
+      {
+        parent_author: author,
+        parent_permlink: permlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: activationPermlink,
+        }),
+        body: message,
+        author: configService.getMentionsAccount(),
+        permlink: `re-${crypto.randomUUID()}`,
+      },
+      campaign.activationPermlink,
+    );
   }
 }
