@@ -216,9 +216,12 @@ export class CreateReview implements CreateReviewInterface {
       campaign.payoutToken,
     );
 
-    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+    const rewardInToken = new BigNumber(
+      this.campaignHelper.getCampaignRewardInUsd(campaign),
+    )
       .dividedBy(payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision);
+      .decimalPlaces(tokenPrecision)
+      .toNumber();
 
     const alreadyVotedInToken =
       await this.beneficiaryBotUpvoteRepository.calcVotesOnEvent(
@@ -226,7 +229,7 @@ export class CreateReview implements CreateReviewInterface {
         nextEventDate,
       );
 
-    if (alreadyVotedInToken >= rewardInToken.toNumber()) return false;
+    if (alreadyVotedInToken >= rewardInToken) return false;
 
     return true;
   }

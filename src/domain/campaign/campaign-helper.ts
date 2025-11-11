@@ -37,6 +37,7 @@ import { CurrencyRatesRepositoryInterface } from '../../persistance/currency-rat
 import { configService } from '../../common/config';
 import { HiveClientInterface } from '../../services/hive-api/interface';
 import { rrulestr } from 'rrule';
+import { CampaignDocumentType } from '../../persistance/campaign/types';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -397,5 +398,13 @@ export class CampaignHelper implements CampaignHelperInterface {
       filter: { status: CAMPAIGN_STATUS.REACHED_LIMIT },
       update: { $set: { status: CAMPAIGN_STATUS.ACTIVE } },
     });
+  }
+
+  getCampaignRewardInUsd(campaign: CampaignDocumentType): number {
+    if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+      return _.sumBy(campaign.contestRewards, 'rewardInUSD');
+    }
+
+    return campaign.rewardInUSD;
   }
 }

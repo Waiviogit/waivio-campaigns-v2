@@ -190,7 +190,9 @@ export class SponsorsBot implements SponsorsBotInterface {
       campaign.payoutToken,
     );
 
-    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+    const rewardInToken = new BigNumber(
+      this.campaignHelper.getCampaignRewardInUsd(campaign),
+    )
       .dividedBy(payoutTokenRateUSD)
       .decimalPlaces(tokenPrecision);
 

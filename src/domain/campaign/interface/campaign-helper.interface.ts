@@ -5,6 +5,7 @@ import {
   SetExpireAssignType,
   SetExpireSuspendWarningType,
 } from '../types';
+import { CampaignDocumentType } from '../../../persistance/campaign/types';
 
 export interface CampaignHelperInterface {
   setExpireTTLCampaign(expiredAt: Date, _id: ObjectId | string): Promise<void>;
@@ -44,6 +45,7 @@ export interface CampaignHelperInterface {
     _id: string,
     recurrentKey: string,
   ): Promise<void>;
+  getCampaignRewardInUsd(campaign: CampaignDocumentType): number;
 }
 
 export interface IncrReviewCommentInterface {
