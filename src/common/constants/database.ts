@@ -16,6 +16,7 @@ export const COLLECTION = Object.freeze({
   APPS: 'apps',
   CURRENCY_RATES: 'currencies-rates',
   SPONSORS_BOTS: 'sponsors_bots',
+  BENEFICIARY_BOT_UPVOTES: 'beneficiary_bots_upvotes',
   SPONSORS_BOT_UPVOTE: 'sponsors_bots_upvotes',
   BLACKLIST: 'guide-blacklists',
   HIDDEN_POST: 'hidden_posts',

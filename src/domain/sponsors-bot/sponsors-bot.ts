@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 
 import {
   CheckDisableType,
+  CreateBeneficiaryUpvoteRecordsType,
   CreateUpvoteRecordsType,
   GetWeightToVoteType,
   ParseHiveCustomJsonType,
@@ -28,10 +29,12 @@ import {
 } from './interface';
 import { SPONSORS_BOT_COMMAND } from './constants';
 import {
+  BENEFICIARY_BOT_UPVOTE_PROVIDE,
   BOT_UPVOTE_STATUS,
   CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
+  CAMPAIGN_STATUS,
   HIVE_ENGINE_PROVIDE,
   HIVE_PROVIDE,
   MAX_VOTING_POWER,
@@ -56,6 +59,9 @@ import { CampaignRepositoryInterface } from '../../persistance/campaign/interfac
 import { RedisClientInterface } from '../../services/redis/clients/interface';
 import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
 import { sumBy } from '../../common/helpers/calc-helper';
+import { BeneficiaryBotUpvoteRepositoryInterface } from '../../persistance/beneficiary-bot-upvote/interface/beneficiary-bot-upvote.repository.interface';
+import { CampaignHelperInterface } from '../campaign/interface';
+import { getNextEventDate } from '../../common/helpers/rruleHelper';
 
 @Injectable()
 export class SponsorsBot implements SponsorsBotInterface {
@@ -64,6 +70,10 @@ export class SponsorsBot implements SponsorsBotInterface {
     private readonly sponsorsBotRepository: SponsorsBotRepositoryInterface,
     @Inject(SPONSORS_BOT_UPVOTE_PROVIDE.REPOSITORY)
     private readonly sponsorsBotUpvoteRepository: SponsorsBotUpvoteRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
+    @Inject(BENEFICIARY_BOT_UPVOTE_PROVIDE.REPOSITORY)
+    private readonly beneficiaryBotUpvoteRepository: BeneficiaryBotUpvoteRepositoryInterface,
     @Inject(POST_PROVIDE.REPOSITORY)
     private readonly postRepository: PostRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
@@ -159,6 +169,125 @@ export class SponsorsBot implements SponsorsBotInterface {
     accountAuths: [string, number][],
   ): boolean {
     return _.flattenDepth(accountAuths).includes(botName);
+  }
+
+  async createBeneficiaryUpvoteRecords({
+    activationPermlink,
+    author,
+    permlink,
+  }: CreateBeneficiaryUpvoteRecordsType): Promise<void> {
+    const campaign = await this.campaignRepository.findOne({
+      filter: { activationPermlink, status: CAMPAIGN_STATUS.ACTIVE },
+    });
+    if (!campaign) return;
+    const { recurrenceRule, matchBots } = campaign;
+    const nextEvent = getNextEventDate(recurrenceRule);
+    if (!nextEvent) return;
+    const nextEventDate = moment(nextEvent).toDate();
+
+    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
+    const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
+      campaign.payoutToken,
+    );
+
+    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+      .dividedBy(payoutTokenRateUSD)
+      .decimalPlaces(tokenPrecision);
+
+    const alreadyVotedInToken =
+      await this.beneficiaryBotUpvoteRepository.calcVotesOnEvent(
+        activationPermlink,
+        nextEventDate,
+      );
+
+    if (alreadyVotedInToken >= rewardInToken.toNumber()) return;
+
+    for (const matchBot of matchBots) {
+      const bot = await this.sponsorsBotRepository.findOne({
+        filter: {
+          'sponsors.sponsor': campaign.guideName,
+          botName: matchBot,
+          'sponsors.enabled': true,
+        },
+      });
+      if (!bot) continue;
+
+      const sponsorsPermissions = _.find(
+        bot.sponsors,
+        (record) => record.sponsor === campaign.guideName,
+      );
+
+      const reward = rewardInToken.times(2).decimalPlaces(tokenPrecision);
+
+      const amountToVote = reward
+        .times(sponsorsPermissions.votingPercent)
+        .decimalPlaces(tokenPrecision);
+
+      await this.beneficiaryBotUpvoteRepository.create({
+        activationPermlink,
+        symbol: campaign.payoutToken,
+        botName: bot.botName,
+        author,
+        permlink,
+        sponsor: campaign.guideName,
+        amountToVote: amountToVote.toNumber(),
+        reward: reward.toNumber(),
+        eventDate: nextEventDate,
+      });
+    }
+  }
+
+  async executeBeneficiaryUpvotes(): Promise<void> {
+    const upvotes = await this.beneficiaryBotUpvoteRepository.getUpvotes();
+    for (const upvote of upvotes) {
+      const comment = await this.hiveClient.getContent(
+        upvote.author,
+        upvote.permlink,
+      );
+
+      if (
+        comment &&
+        comment.active_votes &&
+        _.map(comment.active_votes, 'voter').includes(upvote.botName)
+      ) {
+        return;
+      }
+      const votingPowers = await this.getVotingPowers(upvote);
+      if (votingPowers.votingPower < upvote.minVotingPower) return;
+
+      const weight = await this.getWeightToVote({
+        amount: upvote.amountToVote,
+        symbol: upvote.symbol,
+        votingPower: votingPowers.votingPower,
+        account: upvote.botName,
+        maxVoteWeight: 10000,
+      });
+
+      const { authorReward } = await this.getVoteAmount({
+        votingPower: votingPowers.votingPower,
+        weight,
+        symbol: upvote.symbol,
+        account: upvote.botName,
+      });
+      if (authorReward.eq(0)) return;
+
+      const vote = await this.hiveClient.voteOnPost({
+        key: process.env.SPONSORS_BOT_KEY,
+        author: upvote.author,
+        permlink: upvote.permlink,
+        voter: upvote.botName,
+        weight,
+      });
+
+      if (vote) {
+        await this.beneficiaryBotUpvoteRepository.updateStatus({
+          _id: upvote._id,
+          status: BOT_UPVOTE_STATUS.UPVOTED,
+          currentVote: authorReward.toNumber(),
+          voteWeight: weight,
+        });
+      }
+    }
   }
 
   async createUpvoteRecords({

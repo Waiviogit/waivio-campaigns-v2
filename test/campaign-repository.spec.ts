@@ -365,7 +365,9 @@ describe('CampaignRepository (Integration)', () => {
         ],
       });
 
-      const updated = await campaignRepository.findCampaignById(created._id.toString());
+      const updated = await campaignRepository.findCampaignById(
+        created._id.toString(),
+      );
       expect(updated!.users).toHaveLength(1);
       expect(updated!.users[0].name).toBe('Test User');
     });

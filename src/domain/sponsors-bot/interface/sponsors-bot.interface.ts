@@ -1,5 +1,6 @@
 import {
   CheckDisableType,
+  CreateBeneficiaryUpvoteRecordsType,
   CreateUpvoteRecordsType,
   ParseHiveCustomJsonType,
   SponsorsBotApiType,
@@ -29,6 +30,12 @@ export interface SponsorsBotInterface {
   removeVotesOnReview({
     reservationPermlink,
   }: RemoveVotesOnReviewInterface): Promise<void>;
+  createBeneficiaryUpvoteRecords({
+    activationPermlink,
+    author,
+    permlink,
+  }: CreateBeneficiaryUpvoteRecordsType): Promise<void>;
+  executeBeneficiaryUpvotes(): Promise<void>;
 }
 
 export interface GetSponsorsBotInterface {

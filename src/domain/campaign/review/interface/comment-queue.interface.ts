@@ -6,10 +6,14 @@ export interface CommentQueueItem {
   retryCount: number;
   maxRetries: number;
   createdAt: number;
+  activationPermlink?: string;
 }
 
 export interface CommentQueueInterface {
-  addToQueue(commentData: Omit<BroadcastCommentType, 'key'>): Promise<void>;
+  addToQueue(
+    commentData: Omit<BroadcastCommentType, 'key'>,
+    activationPermlink?: string,
+  ): Promise<void>;
   processNextComment(): Promise<void>;
   processDelayedComments(): Promise<void>;
   getQueueStats(): Promise<{

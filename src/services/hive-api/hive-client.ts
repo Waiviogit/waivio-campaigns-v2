@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Client, PrivateKey } from '@hiveio/dhive';
 import axios from 'axios';
-
 import { CONDENSER_API, HIVE_RPC_NODES, BRIDGE } from '../../common/constants';
 import { HiveBlockType } from '../../common/types';
 import { GetVoteInterface, HiveClientInterface } from './interface';
@@ -12,6 +11,8 @@ import {
   HiveContentType,
   VoteOnPostType,
 } from './type';
+import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
+import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 
 @Injectable()
 export class HiveClient implements HiveClientInterface {
@@ -106,6 +107,39 @@ export class HiveClient implements HiveClientInterface {
       this.logger.error(error.message);
       return false;
     }
+  }
+
+  async createCommentWithOptions(
+    comment: BroadcastCommentType,
+    options: CommentOptionsOperation[1],
+  ): Promise<boolean> {
+    try {
+      await this.broadcastClient.broadcast.commentWithOptions(
+        comment,
+        options,
+        PrivateKey.fromString(comment.key),
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(error.message);
+      return false;
+    }
+  }
+
+  getOptionsWithBeneficiaries(
+    author: string,
+    permlink: string,
+    beneficiaries: BeneficiaryRoute[],
+  ): CommentOptionsOperation[1] {
+    return {
+      extensions: [[0, { beneficiaries }]],
+      author,
+      permlink,
+      max_accepted_payout: '100000.000 HBD',
+      percent_hbd: 0,
+      allow_votes: true,
+      allow_curation_rewards: true,
+    };
   }
 
   async getContent(author: string, permlink: string): Promise<HiveContentType> {
