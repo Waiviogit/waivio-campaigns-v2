@@ -36,9 +36,11 @@ import { CampaignHelperInterface } from '../interface';
 import { PaymentReportInterface } from '../../campaign-payment/interface';
 import { CommentQueueInterface } from './interface/comment-queue.interface';
 import { getNextEventDate } from '../../../common/helpers/rruleHelper';
+import { formatDateWithZone } from '../../../common/helpers';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
+  rewardTokenPrecision = 2;
   constructor(
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
@@ -417,13 +419,12 @@ Keep creating and stay inspired!`;
       )
     ).filter((el) => !winners.includes(el));
     const legalAgreement = await this.getLegalMessage(campaign);
-    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
     const rewardInToken = new BigNumber(campaign.rewardInUSD)
       .dividedBy(payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision)
+      .decimalPlaces(this.rewardTokenPrecision)
       .toNumber();
 
     const message = this.getGiveawayUsualMessage({
@@ -471,13 +472,12 @@ Keep creating and stay inspired!`;
 
     const guideLink = await this.getGuideLink(campaign);
     const legalAgreement = await this.getLegalMessage(campaign);
-    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
     const rewardInToken = new BigNumber(campaign.rewardInUSD)
       .dividedBy(payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision)
+      .decimalPlaces(this.rewardTokenPrecision)
       .toNumber();
 
     for (const [index, user] of usersCompleted.entries()) {
@@ -548,8 +548,6 @@ Keep creating and stay inspired!`;
       (p) => !winners.some((w) => w.post.author === p),
     );
 
-    // Get token amounts for winners
-    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
@@ -560,7 +558,7 @@ Keep creating and stay inspired!`;
       const place = i + 1;
       const waivAmount = new BigNumber(winner.reward)
         .dividedBy(payoutTokenRateUSD)
-        .decimalPlaces(tokenPrecision)
+        .decimalPlaces(this.rewardTokenPrecision)
         .toNumber();
 
       if (place === 1) {
@@ -569,7 +567,7 @@ Keep creating and stay inspired!`;
           const wPlace = idx + 1;
           const wWaivAmount = new BigNumber(w.reward)
             .dividedBy(payoutTokenRateUSD)
-            .decimalPlaces(tokenPrecision)
+            .decimalPlaces(this.rewardTokenPrecision)
             .toNumber();
           return `${wPlace}${this.getOrdinalSuffix(wPlace)} place: @${
             w.post.author
@@ -660,13 +658,12 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
     );
     if (!user) return;
     const guideLink = await this.getGuideLink(campaign);
-    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
     const rewardInToken = new BigNumber(campaign.rewardInUSD)
       .dividedBy(payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision)
+      .decimalPlaces(this.rewardTokenPrecision)
       .toNumber();
 
     const message = `Thank you for participating in giveaway. Unfortunately, ${guideLink} has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${new BigNumber(
@@ -706,24 +703,33 @@ We encourage you to create and share original content to qualify for rewards in 
     });
 
     const guideLink = await this.getGuideLink(campaign);
-
-    const tokenPrecision = PAYOUT_TOKEN_PRECISION[campaign.payoutToken];
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
 
-    const rewardInToken = new BigNumber(campaign.rewardInUSD)
+    const rewardInUSD =
+      campaign.contestRewards?.[0]?.rewardInUSD || campaign.rewardInUSD;
+
+    const rewardInToken = new BigNumber(rewardInUSD)
       .dividedBy(payoutTokenRateUSD)
-      .decimalPlaces(tokenPrecision)
+      .decimalPlaces(this.rewardTokenPrecision)
       .toNumber();
 
+    const objectName = await this.wobjectHelper.getWobjectName(
+      campaign.objects[0],
+    );
+    const linkToObject = `[${objectName}](https://www.waivio.com/object/${campaign.objects[0]})`;
+
     const nextDate = getNextEventDate(campaign.recurrenceRule);
+    const formatedDate = formatDateWithZone(nextDate, campaign.timezone);
 
-    const message = `Thanks for mentioning #${campaign.objects[0]}! Your post meets all the criteria and has been entered into the $${rewardInToken} WAIV giveaway, sponsored by ${guideLink}
-The winner will be announced on ${nextDate}.
+    const rewardMessage = `$${rewardInUSD} USD (${rewardInToken} ${campaign.payoutToken})`;
 
-You can track your wins and explore more rewards here.
-Keep the great posts coming!`;
+    const message = `Thanks for mentioning ${linkToObject}!
+    Your post meets all the criteria and has been entered into the ${rewardMessage} giveaway, sponsored by ${guideLink}. The winner will be announced on ${formatedDate}.
+    
+    You can track your wins and explore more rewards [here](https://www.waivio.com/rewards/global).
+    Keep the great posts coming!`;
 
     await this.commentQueue.addToQueue(
       {
