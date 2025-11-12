@@ -4,12 +4,14 @@ import {
   CAMPAIGN_PROVIDE,
 } from '../../../common/constants';
 import {
+  GetBeneficiaryVotesInterface,
   GetGlobalReportApiInterface,
   GetSingleReportInterface,
   GuidePaymentsQueryInterface,
   PaymentReportInterface,
 } from '../../../domain/campaign-payment/interface';
 import {
+  BeneficiaryVotesType,
   GetPayableOutType,
   GetPayablesOutType,
   GetPayablesType,
@@ -94,5 +96,11 @@ export class PayablesService {
 
   async payableWarning(guideName: string): Promise<PayableWarningType> {
     return this.campaignSuspend.payableWarning(guideName);
+  }
+
+  async getBeneficiaryVotes(
+    params: GetBeneficiaryVotesInterface,
+  ): Promise<BeneficiaryVotesType> {
+    return this.paymentReport.getBeneficiaryVotes(params);
   }
 }

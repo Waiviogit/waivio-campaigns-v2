@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
+  BeneficiaryVotesOutDto,
   GlobalReportOutDto,
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
@@ -9,6 +10,7 @@ import {
 } from '../../../common/dto/payables/out';
 import { PayablesService } from './payables.service';
 import {
+  BeneficiaryVotesInDto,
   GlobalReportInDto,
   GuidePayablesAllInDto,
   PayablesInDto,
@@ -92,5 +94,17 @@ export class PayablesController {
     guideName: string,
   ): Promise<PayableWarningDto> {
     return this.payablesService.payableWarning(guideName);
+  }
+
+  @Post('beneficiary-votes')
+  @PayablesControllerDoc.getBeneficiaryVotes()
+  async getBeneficiaryVotes(
+    @Body() body: BeneficiaryVotesInDto,
+  ): Promise<BeneficiaryVotesOutDto> {
+    return this.payablesService.getBeneficiaryVotes({
+      ...body,
+      skip: body.skip ?? 0,
+      limit: body.limit ?? 10,
+    });
   }
 }

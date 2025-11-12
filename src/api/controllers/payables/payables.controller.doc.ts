@@ -1,6 +1,7 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
+  BeneficiaryVotesOutDto,
   GuidePayablesOutDto,
   GuidePayablesUserOutDto,
   PayableWarningDto,
@@ -83,6 +84,18 @@ export class PayablesControllerDoc {
       ApiResponse({
         status: HttpStatus.OK,
         type: PayableWarningDto,
+      }),
+    );
+  }
+
+  static getBeneficiaryVotes(): MethodDecorator {
+    return applyDecorators(
+      ApiOperation({
+        summary: 'get beneficiary votes',
+      }),
+      ApiResponse({
+        status: HttpStatus.OK,
+        type: BeneficiaryVotesOutDto,
       }),
     );
   }

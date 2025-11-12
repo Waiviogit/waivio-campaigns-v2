@@ -1,8 +1,15 @@
-import { GlobalReportType, SingleReportType } from '../types';
+import {
+  GlobalReportType,
+  SingleReportType,
+  BeneficiaryVotesType,
+} from '../types';
 
 export interface PaymentReportInterface {
   getSingleReport(params: GetSingleReportInterface): Promise<SingleReportType>;
   getGlobalReport(params: GetGlobalReportInterface): Promise<GlobalReportType>;
+  getBeneficiaryVotes(
+    params: GetBeneficiaryVotesInterface,
+  ): Promise<BeneficiaryVotesType>;
 }
 
 export interface GetSingleReportInterface {
@@ -32,4 +39,11 @@ export interface GetGlobalReportApiInterface
   extends Omit<GetGlobalReportInterface, 'startDate' | 'endDate'> {
   startDate?: number;
   endDate?: number;
+}
+
+export interface GetBeneficiaryVotesInterface {
+  campaignId: string;
+  createdAt: string;
+  skip: number;
+  limit: number;
 }

@@ -1,6 +1,6 @@
 import { CampaignPaymentDocumentType } from '../../../persistance/campaign-payment/types';
 import { ReservationDetailsObjectType } from '../../campaign/reservation/types/reservation-details.types';
-import { CampaignPaymentUserType } from './guide-payements.query.types';
+import { BeneficiaryBotUpvoteDocumentType } from '../../../persistance/beneficiary-bot-upvote/type/beneficiary-bot-upvote.types';
 
 export type UserReportType = {
   name: string;
@@ -35,4 +35,9 @@ export type GlobalPaymentType = Omit<CampaignPaymentDocumentType, 'amount'> & {
   amount: number;
   payableInDollars: number;
   balance: number;
+};
+
+export type BeneficiaryVotesType = {
+  result: BeneficiaryBotUpvoteDocumentType[];
+  hasMore: boolean;
 };

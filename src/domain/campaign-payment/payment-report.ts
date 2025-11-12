@@ -2,11 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 import {
+  GetBeneficiaryVotesInterface,
   GetGlobalReportInterface,
   GetSingleReportInterface,
   PaymentReportInterface,
 } from './interface';
 import {
+  BENEFICIARY_BOT_UPVOTE_PROVIDE,
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CURRENCY_RATES_PROVIDE,
@@ -17,12 +19,18 @@ import {
 import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-payment/interface';
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import { UserRepositoryInterface } from '../../persistance/user/interface';
+import { BeneficiaryBotUpvoteRepositoryInterface } from '../../persistance/beneficiary-bot-upvote/interface/beneficiary-bot-upvote.repository.interface';
 
 import { WobjectHelperInterface } from '../wobject/interface';
 import { sumBy } from '../../common/helpers/calc-helper';
 import BigNumber from 'bignumber.js';
 import { CampaignPaymentDocumentType } from '../../persistance/campaign-payment/types';
-import { GlobalPaymentType, GlobalReportType, SingleReportType } from './types';
+import {
+  BeneficiaryVotesType,
+  GlobalPaymentType,
+  GlobalReportType,
+  SingleReportType,
+} from './types';
 import { getGlobalReportPipe } from './pipes';
 import { CurrencyRatesHelperInterface } from '../currency-rates/interface';
 
@@ -39,6 +47,8 @@ export class PaymentReport implements PaymentReportInterface {
     private readonly wobjectHelper: WobjectHelperInterface,
     @Inject(CURRENCY_RATES_PROVIDE.HELPER)
     private readonly currencyRatesHelper: CurrencyRatesHelperInterface,
+    @Inject(BENEFICIARY_BOT_UPVOTE_PROVIDE.REPOSITORY)
+    private readonly beneficiaryBotUpvoteRepository: BeneficiaryBotUpvoteRepositoryInterface,
   ) {}
 
   async getGlobalReport({
@@ -263,6 +273,41 @@ export class PaymentReport implements PaymentReportInterface {
         'json_metadata',
       ]),
       user: _.pick(user, ['name', 'wobjects_weight', 'alias', 'json_metadata']),
+    };
+  }
+
+  async getBeneficiaryVotes({
+    campaignId,
+    createdAt,
+    skip,
+    limit,
+  }: GetBeneficiaryVotesInterface): Promise<BeneficiaryVotesType> {
+    const campaign = await this.campaignRepository.findCampaignById(campaignId);
+    if (!campaign || !campaign.activationPermlink) {
+      return { result: [], hasMore: false };
+    }
+
+    const createdAtDate = moment(createdAt).toDate();
+    const eventDateStart = moment(createdAtDate)
+      .subtract(2, 'minutes')
+      .toDate();
+    const eventDateEnd = moment(createdAtDate).add(2, 'minutes').toDate();
+
+    const result =
+      await this.beneficiaryBotUpvoteRepository.findBeneficiaryVotes({
+        activationPermlink: campaign.activationPermlink,
+        eventDateStart,
+        eventDateEnd,
+        skip,
+        limit: limit + 1,
+      });
+
+    const hasMore = result.length > limit;
+    const finalResult = hasMore ? result.slice(0, limit) : result;
+
+    return {
+      result: finalResult,
+      hasMore,
     };
   }
 }

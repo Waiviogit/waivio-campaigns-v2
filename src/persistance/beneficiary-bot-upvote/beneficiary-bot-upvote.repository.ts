@@ -154,4 +154,33 @@ export class BeneficiaryBotUpvoteRepository
     });
     return totalVotes;
   }
+
+  async findBeneficiaryVotes({
+    activationPermlink,
+    eventDateStart,
+    eventDateEnd,
+    skip,
+    limit,
+  }: {
+    activationPermlink: string;
+    eventDateStart: Date;
+    eventDateEnd: Date;
+    skip: number;
+    limit: number;
+  }): Promise<BeneficiaryBotUpvoteDocumentType[]> {
+    return this.find({
+      filter: {
+        activationPermlink,
+        eventDate: {
+          $gte: eventDateStart,
+          $lte: eventDateEnd,
+        },
+      },
+      options: {
+        skip,
+        limit,
+        sort: { _id: -1 },
+      },
+    });
+  }
 }

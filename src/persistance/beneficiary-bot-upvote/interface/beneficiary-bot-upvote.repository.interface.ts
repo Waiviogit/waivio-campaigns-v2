@@ -25,4 +25,17 @@ export interface BeneficiaryBotUpvoteRepositoryInterface
     activationPermlink: string,
     eventDate: Date,
   ): Promise<number>;
+  findBeneficiaryVotes({
+    activationPermlink,
+    eventDateStart,
+    eventDateEnd,
+    skip,
+    limit,
+  }: {
+    activationPermlink: string;
+    eventDateStart: Date;
+    eventDateEnd: Date;
+    skip: number;
+    limit: number;
+  }): Promise<BeneficiaryBotUpvoteDocumentType[]>;
 }

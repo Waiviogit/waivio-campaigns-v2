@@ -4,3 +4,4 @@ export * from './user-receivables-out.dto';
 export * from './single-report-out.dto';
 export * from './global-report-out.dto';
 export * from './payable-warning.dto';
+export * from './beneficiary-votes-out.dto';
