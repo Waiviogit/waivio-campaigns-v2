@@ -8,6 +8,7 @@ import {
 import { PersistenceModule } from '../../persistance/persistence.module';
 import { WobjectModule } from '../wobject/wobject.module';
 import { CurrencyRatesModule } from '../currency-rates/currency-rates.module';
+import { CampaignProviderHelper } from '../campaign/campaign.provider';
 
 @Module({
   imports: [PersistenceModule, WobjectModule, CurrencyRatesModule],
@@ -15,6 +16,7 @@ import { CurrencyRatesModule } from '../currency-rates/currency-rates.module';
     GuidePaymentQProvider,
     UserPaymentQProvider,
     PaymentReportProvider,
+    CampaignProviderHelper,
   ],
   exports: [GuidePaymentQProvider, UserPaymentQProvider, PaymentReportProvider],
 })

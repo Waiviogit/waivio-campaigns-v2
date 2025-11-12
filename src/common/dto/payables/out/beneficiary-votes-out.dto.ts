@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BeneficiaryBotUpvoteDto } from './beneficiary-bot-upvote.dto';
-import { BeneficiaryBotUpvoteDocumentType } from '../../../../persistance/beneficiary-bot-upvote/type/beneficiary-bot-upvote.types';
+import { BeneficiaryUpvoteReport } from 'src/domain/campaign-payment/types/payment-report.types';
 
 export class BeneficiaryVotesOutDto {
   @ApiProperty({ type: () => [BeneficiaryBotUpvoteDto] })
-  result: BeneficiaryBotUpvoteDocumentType[];
+  result: BeneficiaryUpvoteReport[];
 
   @ApiProperty({ type: Boolean })
   hasMore: boolean;

@@ -12,6 +12,7 @@ import {
   CAMPAIGN_PAYMENT_PROVIDE,
   CAMPAIGN_PROVIDE,
   CURRENCY_RATES_PROVIDE,
+  PAYOUT_TOKEN,
   PAYOUT_TOKEN_PRECISION,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
@@ -33,6 +34,7 @@ import {
 } from './types';
 import { getGlobalReportPipe } from './pipes';
 import { CurrencyRatesHelperInterface } from '../currency-rates/interface';
+import { CampaignHelperInterface } from '../campaign/interface';
 
 @Injectable()
 export class PaymentReport implements PaymentReportInterface {
@@ -49,6 +51,8 @@ export class PaymentReport implements PaymentReportInterface {
     private readonly currencyRatesHelper: CurrencyRatesHelperInterface,
     @Inject(BENEFICIARY_BOT_UPVOTE_PROVIDE.REPOSITORY)
     private readonly beneficiaryBotUpvoteRepository: BeneficiaryBotUpvoteRepositoryInterface,
+    @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
+    private readonly campaignHelper: CampaignHelperInterface,
   ) {}
 
   async getGlobalReport({
@@ -302,8 +306,21 @@ export class PaymentReport implements PaymentReportInterface {
         limit: limit + 1,
       });
 
+    const rate = await this.campaignHelper.getPayoutTokenRateUSD(
+      PAYOUT_TOKEN.WAIV,
+    );
+
     const hasMore = result.length > limit;
-    const finalResult = hasMore ? result.slice(0, limit) : result;
+    const finalResult = (hasMore ? result.slice(0, limit) : result).map(
+      (el) => ({
+        _id: el._id.toString(),
+        botName: el.botName,
+        status: el.status,
+        voteWeight: el.voteWeight || 0,
+        tokenAmount: el.currentVote || 0,
+        usdAmount: el.currentVote ? el.currentVote * rate : 0,
+      }),
+    );
 
     return {
       result: finalResult,

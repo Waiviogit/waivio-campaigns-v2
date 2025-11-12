@@ -37,7 +37,16 @@ export type GlobalPaymentType = Omit<CampaignPaymentDocumentType, 'amount'> & {
   balance: number;
 };
 
+export type BeneficiaryUpvoteReport = {
+  _id: string;
+  botName: string;
+  status: string;
+  voteWeight?: number;
+  tokenAmount?: number;
+  usdAmount?: number;
+};
+
 export type BeneficiaryVotesType = {
-  result: BeneficiaryBotUpvoteDocumentType[];
+  result: BeneficiaryUpvoteReport[];
   hasMore: boolean;
 };
