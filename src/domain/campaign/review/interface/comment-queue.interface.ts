@@ -7,13 +7,21 @@ export interface CommentQueueItem {
   maxRetries: number;
   createdAt: number;
   activationPermlink?: string;
+  beneficiaryAccount?: string;
+}
+
+export interface AddToQueueInterface {
+  commentData: Omit<BroadcastCommentType, 'key'>;
+  activationPermlink?: string;
+  beneficiaryAccount?: string;
 }
 
 export interface CommentQueueInterface {
-  addToQueue(
-    commentData: Omit<BroadcastCommentType, 'key'>,
-    activationPermlink?: string,
-  ): Promise<void>;
+  addToQueue({
+    commentData,
+    activationPermlink,
+    beneficiaryAccount,
+  }: AddToQueueInterface): Promise<void>;
   processNextComment(): Promise<void>;
   processDelayedComments(): Promise<void>;
   getQueueStats(): Promise<{

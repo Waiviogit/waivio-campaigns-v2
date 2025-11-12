@@ -14,7 +14,6 @@ import {
   CAMPAIGN_TYPE,
   GIVEAWAY_PARTICIPANTS_PROVIDE,
   HIVE_PROVIDE,
-  PAYOUT_TOKEN_PRECISION,
   RESERVATION_STATUS,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
@@ -37,6 +36,7 @@ import { PaymentReportInterface } from '../../campaign-payment/interface';
 import { CommentQueueInterface } from './interface/comment-queue.interface';
 import { getNextEventDate } from '../../../common/helpers/rruleHelper';
 import { formatDateWithZone } from '../../../common/helpers';
+import { WobjectRepositoryInterface } from '../../../persistance/wobject/interface';
 
 @Injectable()
 export class MessageOnReview implements MessageOnReviewInterface {
@@ -51,6 +51,8 @@ export class MessageOnReview implements MessageOnReviewInterface {
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
+    @Inject(WOBJECT_PROVIDE.REPOSITORY)
+    private readonly wobjectRepository: WobjectRepositoryInterface,
     private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
@@ -186,15 +188,18 @@ You can track all of your outstanding payments and discover many more rewards [h
     );
 
     await this.commentQueue.addToQueue({
-      parent_author: botName || postAuthor,
-      parent_permlink: reviewPermlink,
-      title: '',
-      json_metadata: JSON.stringify({
-        activationPermlink: campaign.activationPermlink,
-      }),
-      body: message,
-      author: configService.getMentionsAccount(),
-      permlink,
+      commentData: {
+        parent_author: botName || postAuthor,
+        parent_permlink: reviewPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: message,
+        author: configService.getMentionsAccount(),
+        permlink,
+      },
+      beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
     });
   }
 
@@ -278,15 +283,17 @@ We encourage you to create and share original content to qualify for rewards in 
     );
 
     await this.commentQueue.addToQueue({
-      parent_author: user.rootName,
-      parent_permlink: user.reviewPermlink,
-      title: '',
-      json_metadata: JSON.stringify({
-        activationPermlink: campaign.activationPermlink,
-      }),
-      body: message,
-      author: configService.getMentionsAccount(),
-      permlink,
+      commentData: {
+        parent_author: user.rootName,
+        parent_permlink: user.reviewPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: message,
+        author: configService.getMentionsAccount(),
+        permlink,
+      },
     });
   }
 
@@ -324,23 +331,26 @@ We encourage you to create and share original content to qualify for rewards in 
     participants,
     guideLink,
   }: GetGiveawayMessageInterface): string {
-    let message = `Thanks to everyone who participated in this giveaway campaign from ${guideLink}!
-    The campaign has ended, and the results are in. Out of all the amazing participants, we’ve randomly selected the winners: ${winners
-      .map((w) => `@${w}`)
-      .join(', ')}.
-      Each winner will receive $${new BigNumber(rewardInUSD)
-        .dp(2)
-        .toString()} USD (${rewardInToken} ${payoutToken}) as a reward. Congratulations!
+    const plural = winners.length > 1;
+
+    const addPlural = (plural: boolean): string => (plural ? 's' : '');
+
+    let message = `Thanks to everyone who participated in ${guideLink} giveaway!
+    The campaign has ended, and we’ve randomly selected the winning account${addPlural(
+      plural,
+    )}:
+    🎉 Winner${addPlural(plural)}: ${winners.map((w) => `@${w}`).join(', ')}.
+    Reward: $${new BigNumber(rewardInUSD)
+      .dp(2)
+      .toString()} USD (${rewardInToken} ${payoutToken})
     `;
 
     if (participants.length > 0) {
-      message += `Big thanks to all participants for joining and supporting the campaign: ${participants
-        .map((w) => `@${w}`)
-        .join(', ')}.\n`;
+      message += `Thank you to all participants for joining and supporting the campaign:
+      ${participants.map((w) => `@${w}`).join(', ')}.\n`;
     }
-    message += `Thank you all for joining and sharing great content!
-    
-Keep an eye out for new campaigns, giveaways, and chances to earn more rewards. You can track your current rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
+    message += `More campaigns, giveaways, and earning opportunities are on the way.
+Track your rewards and see active campaigns [here](https://www.waivio.com/rewards/global).
 Keep creating and good luck next time!`;
     if (legalAgreement) message += `\n\n${legalAgreement}`;
 
@@ -400,15 +410,17 @@ Thank you again for being part of the community!
 Keep creating and stay inspired!`;
 
       await this.commentQueue.addToQueue({
-        parent_author: campaign.guideName,
-        parent_permlink: campaign.giveawayPermlink,
-        title: '',
-        json_metadata: JSON.stringify({
-          activationPermlink: campaign.activationPermlink,
-        }),
-        body: rejectMessage,
-        author: configService.getGiveawayAccount(),
-        permlink,
+        commentData: {
+          parent_author: campaign.guideName,
+          parent_permlink: campaign.giveawayPermlink,
+          title: '',
+          json_metadata: JSON.stringify({
+            activationPermlink: campaign.activationPermlink,
+          }),
+          body: rejectMessage,
+          author: configService.getGiveawayAccount(),
+          permlink,
+        },
       });
       return;
     }
@@ -438,15 +450,18 @@ Keep creating and stay inspired!`;
     });
 
     await this.commentQueue.addToQueue({
-      parent_author: campaign.guideName,
-      parent_permlink: campaign.giveawayPermlink,
-      title: '',
-      json_metadata: JSON.stringify({
-        activationPermlink: campaign.activationPermlink,
-      }),
-      body: message,
-      author: configService.getGiveawayAccount(),
-      permlink,
+      commentData: {
+        parent_author: campaign.guideName,
+        parent_permlink: campaign.giveawayPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: message,
+        author: configService.getGiveawayAccount(),
+        permlink,
+      },
+      beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
     });
   }
 
@@ -510,15 +525,18 @@ Keep creating and stay inspired!`;
       if (existComment?.body === message) continue;
 
       await this.commentQueue.addToQueue({
-        parent_author: user.rootName,
-        parent_permlink: user.reviewPermlink,
-        title: '',
-        json_metadata: JSON.stringify({
-          activationPermlink: campaign.activationPermlink,
-        }),
-        body: message,
-        author: configService.getGiveawayAccount(),
-        permlink: permlink,
+        commentData: {
+          parent_author: user.rootName,
+          parent_permlink: user.reviewPermlink,
+          title: '',
+          json_metadata: JSON.stringify({
+            activationPermlink: campaign.activationPermlink,
+          }),
+          body: message,
+          author: configService.getGiveawayAccount(),
+          permlink: permlink,
+        },
+        beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
       });
     }
   }
@@ -592,15 +610,18 @@ Keep creating and good luck next time!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
         await this.commentQueue.addToQueue({
-          parent_author: winner.post.root_author,
-          parent_permlink: winner.post.permlink,
-          title: '',
-          json_metadata: JSON.stringify({
-            activationPermlink: campaign.activationPermlink,
-          }),
-          body: generalMessage,
-          author: configService.getGiveawayAccount(),
-          permlink,
+          commentData: {
+            parent_author: winner.post.root_author,
+            parent_permlink: winner.post.permlink,
+            title: '',
+            json_metadata: JSON.stringify({
+              activationPermlink: campaign.activationPermlink,
+            }),
+            body: generalMessage,
+            author: configService.getGiveawayAccount(),
+            permlink,
+          },
+          beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
         });
       } else {
         // Individual message for 2nd and 3rd place winners
@@ -614,15 +635,18 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
 
         const permlink = `contest-winner-${eventId}-${place}`;
         await this.commentQueue.addToQueue({
-          parent_author: winner.post.root_author,
-          parent_permlink: winner.post.permlink,
-          title: '',
-          json_metadata: JSON.stringify({
-            activationPermlink: campaign.activationPermlink,
-          }),
-          body: individualMessage,
-          author: configService.getGiveawayAccount(),
-          permlink,
+          commentData: {
+            parent_author: winner.post.root_author,
+            parent_permlink: winner.post.permlink,
+            title: '',
+            json_metadata: JSON.stringify({
+              activationPermlink: campaign.activationPermlink,
+            }),
+            body: individualMessage,
+            author: configService.getGiveawayAccount(),
+            permlink,
+          },
+          beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
         });
       }
     }
@@ -676,15 +700,17 @@ We encourage you to create and share original content to qualify for rewards in 
     const permlink = `${user.name}-${user.eventId}`;
 
     await this.commentQueue.addToQueue({
-      parent_author: user.rootName,
-      parent_permlink: user.reviewPermlink,
-      title: '',
-      json_metadata: JSON.stringify({
-        activationPermlink: campaign.activationPermlink,
-      }),
-      body: message,
-      author: configService.getGiveawayAccount(),
-      permlink: permlink,
+      commentData: {
+        parent_author: user.rootName,
+        parent_permlink: user.reviewPermlink,
+        title: '',
+        json_metadata: JSON.stringify({
+          activationPermlink: campaign.activationPermlink,
+        }),
+        body: message,
+        author: configService.getGiveawayAccount(),
+        permlink: permlink,
+      },
     });
 
     this.giveawayObjectWinMessage(campaign._id.toString(), user.eventId);
@@ -706,33 +732,41 @@ We encourage you to create and share original content to qualify for rewards in 
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
     );
-
     const rewardInUSD =
       campaign.contestRewards?.[0]?.rewardInUSD || campaign.rewardInUSD;
-
     const rewardInToken = new BigNumber(rewardInUSD)
       .dividedBy(payoutTokenRateUSD)
       .decimalPlaces(this.rewardTokenPrecision)
       .toNumber();
+    const object = await this.wobjectRepository.findOne({
+      filter: { author_permlink: campaign.objects[0] },
+      projection: { object_type: 1 },
+    });
 
     const objectName = await this.wobjectHelper.getWobjectName(
       campaign.objects[0],
     );
-    const linkToObject = `[${objectName}](https://www.waivio.com/object/${campaign.objects[0]})`;
+
+    const linkToObject =
+      object && object.object_type === 'hashtag'
+        ? `#${campaign.objects[0]}`
+        : `[${objectName}](https://www.waivio.com/object/${campaign.objects[0]})`;
 
     const nextDate = getNextEventDate(campaign.recurrenceRule);
     const formatedDate = formatDateWithZone(nextDate, campaign.timezone);
 
     const rewardMessage = `$${rewardInUSD} USD (${rewardInToken} ${campaign.payoutToken})`;
 
+    const campaignType =
+      campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT ? 'contest' : 'giveaway';
+
     const message = `Thanks for mentioning ${linkToObject}!
-    Your post meets all the criteria and has been entered into the ${rewardMessage} giveaway, sponsored by ${guideLink}. The winner will be announced on ${formatedDate}.
-    
+    Your post meets all the criteria and has been entered into the ${rewardMessage} ${campaignType}, sponsored by ${guideLink}. The winner will be announced on ${formatedDate}.
     You can track your wins and explore more rewards [here](https://www.waivio.com/rewards/global).
     Keep the great posts coming!`;
 
-    await this.commentQueue.addToQueue(
-      {
+    await this.commentQueue.addToQueue({
+      commentData: {
         parent_author: author,
         parent_permlink: permlink,
         title: '',
@@ -743,7 +777,8 @@ We encourage you to create and share original content to qualify for rewards in 
         author: configService.getMentionsAccount(),
         permlink: `re-${crypto.randomUUID()}`,
       },
-      campaign.activationPermlink,
-    );
+      activationPermlink: campaign.activationPermlink,
+      beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
+    });
   }
 }

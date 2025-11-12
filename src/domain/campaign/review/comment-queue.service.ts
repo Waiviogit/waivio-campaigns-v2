@@ -10,8 +10,8 @@ import {
 } from '../../../common/constants';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
 import { HiveClientInterface } from '../../../services/hive-api/interface';
-import { BroadcastCommentType } from '../../../services/hive-api/type';
 import {
+  AddToQueueInterface,
   CommentQueueInterface,
   CommentQueueItem,
 } from './interface/comment-queue.interface';
@@ -36,14 +36,16 @@ export class CommentQueueService implements CommentQueueInterface {
     private readonly sponsorsBot: SponsorsBotInterface,
   ) {}
 
-  async addToQueue(
-    commentData: Omit<BroadcastCommentType, 'key'>,
-    activationPermlink?: string,
-  ): Promise<void> {
+  async addToQueue({
+    commentData,
+    activationPermlink,
+    beneficiaryAccount,
+  }: AddToQueueInterface): Promise<void> {
     const queueItem: CommentQueueItem = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       commentData,
       activationPermlink,
+      beneficiaryAccount,
       retryCount: 0,
       maxRetries: 3,
       createdAt: Date.now(),
@@ -66,11 +68,6 @@ export class CommentQueueService implements CommentQueueInterface {
       let success = false;
 
       if (queueItem.activationPermlink) {
-        const campaign = await this.campaignRepository.findOne({
-          filter: { activationPermlink: queueItem.activationPermlink },
-        });
-        if (!campaign) return;
-
         success = await this.hiveClient.createCommentWithOptions(
           {
             ...queueItem.commentData,
@@ -81,7 +78,7 @@ export class CommentQueueService implements CommentQueueInterface {
             queueItem.commentData.permlink,
             [
               {
-                account: campaign.compensationAccount || campaign.guideName,
+                account: queueItem.beneficiaryAccount,
                 weight: 10000,
               },
             ],
@@ -95,10 +92,29 @@ export class CommentQueueService implements CommentQueueInterface {
           });
         }
       } else {
-        success = await this.hiveClient.createComment({
-          ...queueItem.commentData,
-          key: configService.getMessagePostingKey(),
-        });
+        if (queueItem.beneficiaryAccount) {
+          success = await this.hiveClient.createCommentWithOptions(
+            {
+              ...queueItem.commentData,
+              key: configService.getMessagePostingKey(),
+            },
+            this.hiveClient.getOptionsWithBeneficiaries(
+              queueItem.commentData.author,
+              queueItem.commentData.permlink,
+              [
+                {
+                  account: queueItem.beneficiaryAccount,
+                  weight: 10000,
+                },
+              ],
+            ),
+          );
+        } else {
+          success = await this.hiveClient.createComment({
+            ...queueItem.commentData,
+            key: configService.getMessagePostingKey(),
+          });
+        }
       }
 
       if (success) {
