@@ -335,7 +335,7 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const addPlural = (plural: boolean): string => (plural ? 's' : '');
 
-    let message = `Thanks to everyone who participated in ${guideLink} giveaway!
+    let message = `Thanks to everyone who participated in the ${guideLink} giveaway!
     The campaign has ended, and we’ve randomly selected the winning account${addPlural(
       plural,
     )}:
