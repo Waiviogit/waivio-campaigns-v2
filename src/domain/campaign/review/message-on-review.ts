@@ -698,9 +698,9 @@ We encourage you to create and share original content to qualify for rewards in 
     const campaign = await this.campaignRepository.findOne({
       filter: {
         activationPermlink,
-        type: CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
       },
     });
+    if (!campaign) return;
 
     const guideLink = await this.getGuideLink(campaign);
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
