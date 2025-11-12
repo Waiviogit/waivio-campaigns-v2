@@ -248,12 +248,18 @@ export class CreateReview implements CreateReviewInterface {
           $in: [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT],
         },
       },
-      options: { sort: { rewardInUSD: -1 } },
     });
 
-    for (const campaign of campaigns) {
+    const campaignsWithWeight = campaigns.map((el) => ({
+      ...el,
+      weight: this.campaignHelper.getCampaignRewardInUsd(el),
+    }));
+
+    campaignsWithWeight.sort((a, b) => b.weight - a.weight);
+
+    for (const campaign of campaignsWithWeight) {
       const valid = await this.validateSinglePostRecurrentEvent(
-        campaign,
+        campaign as unknown as CampaignDocumentType,
         author,
         objects,
       );
