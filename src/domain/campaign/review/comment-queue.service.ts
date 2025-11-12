@@ -5,7 +5,6 @@ import {
   REDIS_PROVIDE,
   REDIS_KEY,
   HIVE_PROVIDE,
-  CAMPAIGN_PROVIDE,
   SPONSORS_BOT_PROVIDE,
 } from '../../../common/constants';
 import { RedisClientInterface } from '../../../services/redis/clients/interface';
@@ -15,7 +14,6 @@ import {
   CommentQueueInterface,
   CommentQueueItem,
 } from './interface/comment-queue.interface';
-import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import { SponsorsBotInterface } from '../../sponsors-bot/interface';
 
 @Injectable()
@@ -30,8 +28,6 @@ export class CommentQueueService implements CommentQueueInterface {
     private readonly campaignRedisClient: RedisClientInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
-    @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
-    private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(SPONSORS_BOT_PROVIDE.BOT)
     private readonly sponsorsBot: SponsorsBotInterface,
   ) {}

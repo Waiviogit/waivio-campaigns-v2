@@ -51,9 +51,9 @@ export class MessageOnReview implements MessageOnReviewInterface {
     @Inject(CAMPAIGN_PROVIDE.REPOSITORY)
     private readonly campaignRepository: CampaignRepositoryInterface,
     @Inject(GIVEAWAY_PARTICIPANTS_PROVIDE.REPOSITORY)
+    private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
     @Inject(WOBJECT_PROVIDE.REPOSITORY)
     private readonly wobjectRepository: WobjectRepositoryInterface,
-    private readonly giveawayParticipantsRepository: GiveawayParticipantsRepositoryInterface,
     @Inject(CAMPAIGN_PROVIDE.CAMPAIGN_HELPER)
     private readonly campaignHelper: CampaignHelperInterface,
     @Inject(CAMPAIGN_PAYMENT_PROVIDE.PAYMENT_REPORT)
@@ -621,7 +621,8 @@ Keep creating and good luck next time!`;
             author: configService.getGiveawayAccount(),
             permlink,
           },
-          beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
+          beneficiaryAccount:
+            campaign.compensationAccount || campaign.guideName,
         });
       } else {
         // Individual message for 2nd and 3rd place winners
@@ -646,7 +647,8 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
             author: configService.getGiveawayAccount(),
             permlink,
           },
-          beneficiaryAccount: campaign.compensationAccount || campaign.guideName,
+          beneficiaryAccount:
+            campaign.compensationAccount || campaign.guideName,
         });
       }
     }
