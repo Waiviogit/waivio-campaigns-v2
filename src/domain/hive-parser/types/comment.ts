@@ -10,6 +10,7 @@ type MetadataWobject = {
   objectName: string;
   author_permlink: string;
   percent: number;
+  tags?: string[];
 };
 
 type MetadataCommentType = {

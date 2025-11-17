@@ -240,9 +240,15 @@ export class CreateReview implements CreateReviewInterface {
     permlink: string,
     objects: string[],
   ): Promise<void> {
+    const qualified = TOKEN_WAIV.TAGS.some((el) =>
+      (objects ?? []).includes(el),
+    );
+    if (!qualified) return;
+
     const campaigns = await this.campaignRepository.find({
       filter: {
         status: CAMPAIGN_STATUS.ACTIVE,
+        objects: { $in: objects },
         matchBots: { $ne: [] },
         type: {
           $in: [CAMPAIGN_TYPE.GIVEAWAYS_OBJECT, CAMPAIGN_TYPE.CONTESTS_OBJECT],
@@ -255,9 +261,12 @@ export class CreateReview implements CreateReviewInterface {
       weight: this.campaignHelper.getCampaignRewardInUsd(el),
     }));
 
-    campaignsWithWeight.sort((a, b) => b.weight - a.weight);
-
-    for (const campaign of campaignsWithWeight) {
+    const sorted = _.orderBy(
+      campaignsWithWeight,
+      ['weight', 'createdAt'],
+      ['desc', 'asc'],
+    );
+    for (const campaign of sorted) {
       const valid = await this.validateSinglePostRecurrentEvent(
         campaign as unknown as CampaignDocumentType,
         author,
@@ -448,6 +457,7 @@ export class CreateReview implements CreateReviewInterface {
     const objects = _.uniq([...metadataWobj, ...bodyWobj]);
     const mentions = getMentionsFromPost(comment.body);
     const links = await this.getObjectTypeLinkFromUrl(comment.body);
+    const tags = metadata?.tags || [];
 
     const qualifiedTokenCondition =
       this.getQualifiedPayoutTokenCondition(metadata);
@@ -487,7 +497,7 @@ export class CreateReview implements CreateReviewInterface {
 
     const campaignsForMentions = await this.findMentionCampaigns(
       postAuthor,
-      [...objects, ...mentions, ...links],
+      [...objects, ...mentions, ...links, ...tags],
       qualifiedTokenCondition,
     );
 
@@ -515,7 +525,7 @@ export class CreateReview implements CreateReviewInterface {
       postAuthor,
       botName || postAuthor,
       comment.permlink,
-      objects,
+      [...objects, ...tags],
     );
   }
 
