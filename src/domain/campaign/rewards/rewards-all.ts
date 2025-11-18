@@ -90,6 +90,7 @@ export const SECONDARY_PROJECTION = Object.freeze({
   recurrenceRule: 1,
   sponsorName: 1,
   sponsorURL: 1,
+  objects: 1,
 } as const);
 
 @Injectable()
