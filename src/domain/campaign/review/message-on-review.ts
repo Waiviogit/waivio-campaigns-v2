@@ -751,7 +751,7 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const linkToObject =
       object && object.object_type === 'hashtag'
-        ? `#${campaign.objects[0]}`
+        ? `[#${campaign.objects[0]}](https://www.waivio.com/object/${campaign.objects[0]})`
         : `[${objectName}](https://www.waivio.com/object/${campaign.objects[0]})`;
 
     const nextDate = getNextEventDate(campaign.recurrenceRule);
