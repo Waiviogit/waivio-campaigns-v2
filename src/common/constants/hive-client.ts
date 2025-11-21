@@ -1,9 +1,8 @@
 export const HIVE_RPC_NODES = [
-  'https://api.hive.blog',
   'https://api.deathwing.me',
-  'https://hive-api.arcange.eu',
-  'https://api.syncad.com',
+  'https://api.hive.blog',
   'https://api.openhive.network',
+  'https://rpc.mahdiyari.info',
 ];
 
 const HIVE_API = Object.freeze({
