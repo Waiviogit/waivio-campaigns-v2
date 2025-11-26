@@ -64,7 +64,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
 
   getMainSiteLink(sponsorURL?: string): string {
     if (sponsorURL) return sponsorURL;
-    return 'https://waivio.com';
+    return 'https://www.waivio.com';
   }
   async getPermlinkForMessage(
     author: string,
@@ -94,9 +94,9 @@ export class MessageOnReview implements MessageOnReviewInterface {
       campaign.description ||
       campaign?.agreementObjects?.length ||
       campaign.usersLegalNotice;
-
     if (!hasLegal) return '';
 
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
     const objectNamesMap: Record<string, string> = {};
     const mapNames = async (el: string): Promise<void> => {
       objectNamesMap[el] = await this.wobjectHelper.getWobjectName(el);
@@ -109,7 +109,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     }
     if (campaign.agreementObjects?.length) {
       legalAgreement += `\nLegal: ${campaign.agreementObjects
-        .map((o) => `[${objectNamesMap[o]}](https://waivio.com/object/${o})`)
+        .map((o) => `[${objectNamesMap[o]}](${mainSiteLink}/object/${o})`)
         .join(', ')}.`;
     }
     if (campaign.usersLegalNotice) {
@@ -127,6 +127,7 @@ export class MessageOnReview implements MessageOnReviewInterface {
     botName,
     reservationPermlink,
   }: reviewMessageSuccessType): Promise<void> {
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
     const sponsor = await this.userRepository.findOne({
       filter: { name: campaign.guideName },
     });
@@ -156,15 +157,13 @@ export class MessageOnReview implements MessageOnReviewInterface {
         if (!acc) continue;
 
         linksToObjects.push(
-          `[${acc.alias || acc.name}](https://www.waivio.com/@${acc.name})`,
+          `[${acc.alias || acc.name}](${mainSiteLink}/@${acc.name})`,
         );
         continue;
       }
 
       const objName = await this.wobjectHelper.getWobjectName(object);
-      linksToObjects.push(
-        `[${objName}](https://www.waivio.com/object/${object})`,
-      );
+      linksToObjects.push(`[${objName}](${mainSiteLink}/object/${object})`);
     }
     const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
 
@@ -178,11 +177,11 @@ export class MessageOnReview implements MessageOnReviewInterface {
       .dp(2)
       .toString()} USD (${report.rewardTokenAmount} ${
       campaign.payoutToken
-    }) from [${sponsor.alias || sponsor.name}](https://www.waivio.com/@${
+    }) from [${sponsor.alias || sponsor.name}](${mainSiteLink}/@${
       campaign.guideName
     })! 
 Your post will be reviewed, and if it meets quality standards, the reward will be yours. 
-You can track all of your outstanding payments and discover many more rewards [here](https://www.waivio.com/rewards/global). Keep sharing great content!`;
+You can track all of your outstanding payments and discover many more rewards [here](${mainSiteLink}/rewards/global). Keep sharing great content!`;
 
     if (legalAgreement) message += `\n\n${legalAgreement}`;
 
@@ -220,6 +219,8 @@ You can track all of your outstanding payments and discover many more rewards [h
         },
       },
     });
+    if (!campaign) return;
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
 
     const user = _.find(
       campaign?.users,
@@ -253,24 +254,20 @@ You can track all of your outstanding payments and discover many more rewards [h
         if (!acc) continue;
 
         linksToObjects.push(
-          `[${acc.alias || acc.name}](https://www.waivio.com/@${acc.name})`,
+          `[${acc.alias || acc.name}](${mainSiteLink}/@${acc.name})`,
         );
         continue;
       }
 
       const objName = await this.wobjectHelper.getWobjectName(object);
-      linksToObjects.push(
-        `[${objName}](https://www.waivio.com/object/${object})`,
-      );
+      linksToObjects.push(`[${objName}](${mainSiteLink}/object/${object})`);
     }
 
     const twoOrMorePhotos = campaign?.requirements?.minPhotos > 1;
 
     const message = `Thank you for mentioning ${linksToObjects.join(', ')}${
       twoOrMorePhotos ? ' and sharing two or more photos' : ''
-    }. Unfortunately, [${
-      sponsor.alias || sponsor.name
-    }](https://www.waivio.com/@${
+    }. Unfortunately, [${sponsor.alias || sponsor.name}](${mainSiteLink}/@${
       campaign.guideName
     }) has determined that your post did not meet the quality standards required to receive the sponsored rewards of $${new BigNumber(
       campaign.rewardInUSD,
@@ -279,7 +276,7 @@ You can track all of your outstanding payments and discover many more rewards [h
       .toString()} USD (${report.rewardTokenAmount} ${
       campaign.payoutToken
     }) this time.
-We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
+We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](${mainSiteLink}/rewards/global). Keep creating and sharing!`;
 
     const permlink = await this.getPermlinkForMessage(
       user.rootName,
@@ -324,7 +321,11 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const name = campaign.sponsorName ? campaign.sponsorName : sponsorName;
 
-    return `[${name}](${link})`;
+    let result = `[${sponsorName}](${link})`;
+    if (campaign.sponsorURL) {
+      result += ` ([${name}](${campaign.sponsorURL}))`;
+    }
+    return result;
   }
 
   getGiveawayUsualMessage({
@@ -335,6 +336,7 @@ We encourage you to create and share original content to qualify for rewards in 
     winners,
     participants,
     guideLink,
+    mainSiteLink,
   }: GetGiveawayMessageInterface): string {
     const plural = winners.length > 1;
 
@@ -355,7 +357,7 @@ We encourage you to create and share original content to qualify for rewards in 
       ${participants.map((w) => `@${w}`).join(', ')}.\n`;
     }
     message += `More campaigns, giveaways, and earning opportunities are on the way.
-Track your rewards and see active campaigns [here](https://www.waivio.com/rewards/global).
+Track your rewards and see active campaigns [here](${mainSiteLink}/rewards/global).
 Keep creating and good luck next time!`;
     if (legalAgreement) message += `\n\n${legalAgreement}`;
 
@@ -369,6 +371,7 @@ Keep creating and good luck next time!`;
     legalAgreement,
     userName,
     guideLink,
+    mainSiteLink,
   }: GetGiveawayPersonalMessageInterface): string {
     let message = `Congratulations @${userName}!
 You’ve been selected as one of the winners in the giveaway campaign by ${guideLink}!
@@ -376,7 +379,7 @@ As a reward, you’ll receive ${new BigNumber(rewardInUSD)
       .dp(2)
       .toString()} USD (${rewardInToken} ${payoutToken}), well deserved!
 Thanks again for participating and sharing great content.
-Stay tuned for more campaigns and opportunities to earn. You can explore active giveaways and track your rewards [here](https://www.waivio.com/rewards/global).
+Stay tuned for more campaigns and opportunities to earn. You can explore active giveaways and track your rewards [here](${mainSiteLink}/rewards/global).
 
 Keep creating and good luck in the next one!`;
 
@@ -395,6 +398,7 @@ Keep creating and good luck in the next one!`;
       },
     });
     if (!campaign) return;
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
 
     const rewardsApplicants = campaign.users.map((el) => el.name);
     if (rewardsApplicants.length === 0) return;
@@ -409,7 +413,7 @@ Keep creating and good luck in the next one!`;
 Unfortunately, the sponsor has decided not to approve the results of this giveaway, and no rewards will be distributed this time.
 We understand this may be disappointing, and we truly appreciate the effort and creativity you put into your content.
 We encourage you to keep sharing your ideas and participating in future campaigns. There are always new opportunities to earn rewards and get recognized.
-You can track your activity and discover new campaigns [here](https://www.waivio.com/rewards/global).
+You can track your activity and discover new campaigns [here](${mainSiteLink}/rewards/global).
 Thank you again for being part of the community!
 
 Keep creating and stay inspired!`;
@@ -452,6 +456,7 @@ Keep creating and stay inspired!`;
       rewardInUSD: campaign.rewardInUSD,
       winners,
       participants,
+      mainSiteLink,
     });
 
     await this.commentQueue.addToQueue({
@@ -478,6 +483,7 @@ Keep creating and stay inspired!`;
       },
     });
     if (!campaign) return;
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
     const usersCompleted = campaign.users.filter(
       (u) =>
         u?.eventId === eventId && u.status === RESERVATION_STATUS.COMPLETED,
@@ -513,6 +519,7 @@ Keep creating and stay inspired!`;
               rewardInUSD: campaign.rewardInUSD,
               winners: usersCompleted.map((el) => el.name),
               participants,
+              mainSiteLink,
             })
           : this.getPersonalGiveawayMessage({
               guideLink,
@@ -521,6 +528,7 @@ Keep creating and stay inspired!`;
               rewardInToken,
               rewardInUSD: campaign.rewardInUSD,
               userName: user.name,
+              mainSiteLink,
             });
 
       const existComment = await this.hiveClient.getContent(
@@ -559,6 +567,7 @@ Keep creating and stay inspired!`;
       },
     });
     if (!campaign) return;
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
 
     const guideLink = await this.getGuideLink(campaign);
 
@@ -610,7 +619,7 @@ ${winnerLines.join('\n')}
 Each winner impressed us with their unique contributions and well-thought-out posts, congratulations!
 Big thanks to all participants for joining and supporting the campaign: ${participantsList}${participantsNote}
 We loved seeing your insights and enthusiasm. Stay tuned for more contests, campaigns, and chances to earn!
-You can track your rewards and explore active campaigns [here](https://www.waivio.com/rewards/global).
+You can track your rewards and explore active campaigns [here](${mainSiteLink}/rewards/global).
 Keep creating and good luck next time!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
@@ -637,7 +646,7 @@ You've secured ${placeText} place in the recent contest campaign by ${guideLink}
 As a reward, you'll receive $${winner.reward} USD (${waivAmount} WAIV), well deserved!
 Thanks for your thoughtful post and participation.
 
-Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global), more chances to win await!`;
+Keep an eye on upcoming campaigns [here](${mainSiteLink}/rewards/global), more chances to win await!`;
 
         const permlink = `contest-winner-${eventId}-${place}`;
         await this.commentQueue.addToQueue({
@@ -684,6 +693,7 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
       },
     });
     if (!campaign) return;
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
     const user = campaign.users.find(
       (u) => u.reservationPermlink === reservationPermlink,
     );
@@ -702,7 +712,7 @@ Keep an eye on upcoming campaigns [here](https://www.waivio.com/rewards/global),
     )
       .dp(2)
       .toString()} USD (${rewardInToken} ${campaign.payoutToken}) this time.
-We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](https://www.waivio.com/rewards/global). Keep creating and sharing!`;
+We encourage you to create and share original content to qualify for rewards in the future. You can discover more rewards [here](${mainSiteLink}/rewards/global). Keep creating and sharing!`;
 
     const permlink = `${user.name}-${user.eventId}`;
 
