@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 
 import { CampaignRepositoryInterface } from '../../persistance/campaign/interface';
 import {
@@ -24,6 +24,17 @@ export class UpdateCampaign implements UpdateCampaignInterface {
   ) {}
 
   async update(campaign: UpdateCampaignType): Promise<CampaignDocumentType> {
+    if (campaign.sponsorURL) {
+      const isValidUrl = await this.campaignHelper.validateSponsorUrl(
+        campaign.sponsorURL,
+      );
+      if (!isValidUrl)
+        throw new HttpException(
+          `Campaign is not created. sponsorURL doesn't match validation criteria `,
+          422,
+        );
+    }
+
     if (campaign.reward) {
       campaign.rewardInUSD = await this.campaignHelper.getCurrencyInUSD(
         campaign.currency,

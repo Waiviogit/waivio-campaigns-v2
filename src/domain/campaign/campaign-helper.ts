@@ -4,6 +4,7 @@ import { ObjectId } from 'mongoose';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import {
+  APP_PROVIDE,
   CAMPAIGN_PROVIDE,
   CAMPAIGN_STATUS,
   CAMPAIGN_TYPE,
@@ -38,6 +39,7 @@ import { configService } from '../../common/config';
 import { HiveClientInterface } from '../../services/hive-api/interface';
 import { rrulestr } from 'rrule';
 import { CampaignDocumentType } from '../../persistance/campaign/types';
+import { AppRepositoryInterface } from '../../persistance/app/interface';
 
 @Injectable()
 export class CampaignHelper implements CampaignHelperInterface {
@@ -54,6 +56,8 @@ export class CampaignHelper implements CampaignHelperInterface {
     private readonly currencyRatesRepository: CurrencyRatesRepositoryInterface,
     @Inject(HIVE_PROVIDE.CLIENT)
     private readonly hiveClient: HiveClientInterface,
+    @Inject(APP_PROVIDE.REPOSITORY)
+    private readonly appRepository: AppRepositoryInterface,
   ) {}
 
   async setExpireTTLCampaign(
@@ -242,6 +246,26 @@ export class CampaignHelper implements CampaignHelperInterface {
       return _.get(result, 'data.current.hive.usd');
     } catch (error) {
       this.logger.error(error.message);
+    }
+  }
+
+  async validateSponsorUrl(url: string): Promise<boolean> {
+    try {
+      const urlObject = new URL(url);
+      if (urlObject.pathname) return false;
+      if (urlObject.protocol !== 'https:') return false;
+
+      const app = await this.appRepository.findOne({
+        filter: {
+          host: urlObject.host.replace('www.', ''),
+          status: 'active',
+        },
+        projection: { _id: 1 },
+      });
+
+      return !!app;
+    } catch (error) {
+      return false;
     }
   }
 

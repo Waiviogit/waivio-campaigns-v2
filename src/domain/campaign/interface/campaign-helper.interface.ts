@@ -46,6 +46,7 @@ export interface CampaignHelperInterface {
     recurrentKey: string,
   ): Promise<void>;
   getCampaignRewardInUsd(campaign: CampaignDocumentType): number;
+  validateSponsorUrl(url: string): Promise<boolean>
 }
 
 export interface IncrReviewCommentInterface {

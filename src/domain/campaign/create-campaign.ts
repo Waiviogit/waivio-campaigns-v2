@@ -31,6 +31,17 @@ export class CreateCampaign implements CreateCampaignInterface {
   async create(
     campaign: Omit<CreateCampaignType, 'rewardInUSD'>,
   ): Promise<CampaignDocumentType> {
+    if (campaign.sponsorURL) {
+      const isValidUrl = await this.campaignHelper.validateSponsorUrl(
+        campaign.sponsorURL,
+      );
+      if (!isValidUrl)
+        throw new HttpException(
+          `Campaign is not created. sponsorURL doesn't match validation criteria `,
+          422,
+        );
+    }
+
     const rewardInUSD = await this.campaignHelper.getCurrencyInUSD(
       campaign.currency,
       campaign.reward,
