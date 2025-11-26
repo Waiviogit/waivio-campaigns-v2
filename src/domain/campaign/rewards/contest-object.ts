@@ -10,6 +10,7 @@ import {
   RECURRENT_TYPE,
   REDIS_KEY,
   REVIEW_PROVIDE,
+  TOKEN_WAIV,
   USER_PROVIDE,
 } from '../../../common/constants';
 import { rrulestr } from 'rrule';
@@ -53,10 +54,21 @@ export class ContestObject implements ContestInterface {
   ): Promise<string[]> {
     // Get posts within campaign duration and objects
     const dateFrom = moment().subtract(campaign.durationDays, 'd').toDate();
+    const objectsCondition = campaign.qualifiedPayoutToken
+      ? {
+          $and: [
+            {
+              'wobjects.author_permlink': { $in: TOKEN_WAIV.TAGS },
+            },
+            { 'wobjects.author_permlink': { $in: campaign.objects } },
+          ],
+        }
+      : { 'wobjects.author_permlink': { $in: campaign.objects } };
+
     const posts = await this.postRepository.find({
       filter: {
         createdAt: { $gte: dateFrom },
-        'wobjects.author_permlink': { $in: campaign.objects },
+        ...objectsCondition,
       },
       projection: {
         author: 1,
