@@ -251,6 +251,7 @@ export class CampaignHelper implements CampaignHelperInterface {
 
   async validateSponsorUrl(url: string): Promise<boolean> {
     try {
+      if (url.endsWith('/')) return false;
       const urlObject = new URL(url);
       if (urlObject.pathname && urlObject.pathname !== '/') return false;
       if (urlObject.protocol !== 'https:') return false;
