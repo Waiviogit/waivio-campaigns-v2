@@ -61,6 +61,11 @@ export class MessageOnReview implements MessageOnReviewInterface {
     @Inject(REVIEW_PROVIDE.COMMENT_QUEUE)
     private readonly commentQueue: CommentQueueInterface,
   ) {}
+
+  getMainSiteLink(sponsorURL?: string): string {
+    if (sponsorURL) return sponsorURL;
+    return 'https://waivio.com';
+  }
   async getPermlinkForMessage(
     author: string,
     permlink: string,
@@ -314,7 +319,7 @@ We encourage you to create and share original content to qualify for rewards in 
     const sponsorName = await this.getSponsorName(guideName);
 
     const link = campaign.sponsorURL
-      ? campaign.sponsorURL
+      ? `${campaign.sponsorURL}/@${guideName}`
       : `https://www.waivio.com/@${guideName}`;
 
     const name = campaign.sponsorName ? campaign.sponsorName : sponsorName;
@@ -730,6 +735,7 @@ We encourage you to create and share original content to qualify for rewards in 
     });
     if (!campaign) return;
 
+    const mainSiteLink = this.getMainSiteLink(campaign.sponsorURL);
     const guideLink = await this.getGuideLink(campaign);
     const payoutTokenRateUSD = await this.campaignHelper.getPayoutTokenRateUSD(
       campaign.payoutToken,
@@ -751,8 +757,8 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const linkToObject =
       object && object.object_type === 'hashtag'
-        ? `[#${campaign.objects[0]}](https://www.waivio.com/object/${campaign.objects[0]})`
-        : `[${objectName}](https://www.waivio.com/object/${campaign.objects[0]})`;
+        ? `[#${campaign.objects[0]}](${mainSiteLink}/object/${campaign.objects[0]})`
+        : `[${objectName}](${mainSiteLink}/object/${campaign.objects[0]})`;
 
     const nextDate = getNextEventDate(campaign.recurrenceRule);
     const formatedDate = formatDateWithZone(nextDate, campaign.timezone);
@@ -764,7 +770,7 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const message = `Thanks for mentioning ${linkToObject}!
     Your post meets all the criteria and has been entered into the ${rewardMessage} ${campaignType}, sponsored by ${guideLink}. The winner will be announced on ${formatedDate}.
-    You can track your wins and explore more rewards [here](https://www.waivio.com/rewards/global).
+    You can track your wins and explore more rewards [here](${mainSiteLink}/rewards/global).
     Keep the great posts coming!`;
 
     await this.commentQueue.addToQueue({
