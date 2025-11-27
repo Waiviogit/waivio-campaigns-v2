@@ -778,8 +778,12 @@ We encourage you to create and share original content to qualify for rewards in 
     const campaignType =
       campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT ? 'contest' : 'giveaway';
 
+    const judgeMention = CAMPAIGN_TYPE.CONTESTS_OBJECT
+      ? ` judged by ${campaign.contestJudges.join(',')}`
+      : '';
+
     const message = `Thanks for mentioning ${linkToObject}!
-    Your post meets all the criteria and has been entered into the ${rewardMessage} ${campaignType}, sponsored by ${guideLink}. The winner will be announced on ${formatedDate}.
+    Your post meets all the criteria and has been entered into the ${rewardMessage} ${campaignType}, sponsored by ${guideLink}${judgeMention}. The winner will be announced on ${formatedDate}.
     You can track your wins and explore more rewards [here](${mainSiteLink}/rewards/global).
     Keep the great posts coming!`;
 
