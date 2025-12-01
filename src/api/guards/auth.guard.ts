@@ -21,17 +21,20 @@ export class AuthGuard implements CanActivate {
   async validateRequest({ headers }: ValidateRequestType): Promise<boolean> {
     const account = headers.account;
     const token = headers['access-token'];
-    const hiveAuth = headers['hive-auth'] === 'true';
-    // const waivioAuth = headers['waivio-auth'] === 'true';
-
-    if (hiveAuth) {
+    const authType = headers['auth-type'];
+    if (authType === 'hive-auth') {
       return this.validateHiveAuth(account, token);
     }
-    //
-    // if (waivioAuth) {
-    //   return this.validateGuestUser(account, token);
-    // }
-    return this.validateHiveSigner(account, token);
+    if (authType === 'hive-signer') {
+      return this.validateHiveSigner(account, token);
+    }
+    if (authType === 'hive-keychain') {
+      return this.validateHiveKeychain(account, token);
+    }
+    if (authType === 'waivio-auth') {
+      return this.validateGuestUser(account, token);
+    }
+    return false;
   }
 
   async validateGuestUser(account: string, token: string): Promise<boolean> {
@@ -46,6 +49,26 @@ export class AuthGuard implements CanActivate {
         return response?.data?.user?.name === account;
       }
       return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async validateHiveKeychain(account: string, token: string): Promise<boolean> {
+    try {
+      const res = await fetch(configService.getKeychainValidationURL(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        return false;
+      }
+
+      return body?.username === account && body?.exp > Date.now() / 1000;
     } catch (error) {
       return false;
     }

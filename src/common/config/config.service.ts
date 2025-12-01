@@ -78,6 +78,10 @@ class ConfigService {
     return this.getValue('VALIDATE_GUEST_TOKEN_ROUTE', true);
   }
 
+  public getKeychainValidationURL(): string {
+    return this.getValue('VALIDATE_KEYCHAIN_URL', true);
+  }
+
   public getNotificationsKey(): string {
     return this.getValue('API_KEY', true);
   }
