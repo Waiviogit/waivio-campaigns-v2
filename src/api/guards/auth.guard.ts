@@ -1,6 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import axios from 'axios';
 import * as sc2 from 'sc2-sdk';
 import * as CryptoJS from 'crypto-js';
 
@@ -22,33 +21,41 @@ export class AuthGuard implements CanActivate {
     const account = headers.account;
     const token = headers['access-token'];
     const authType = headers['auth-type'];
-    if (authType === 'hive-auth') {
-      return this.validateHiveAuth(account, token);
-    }
-    if (authType === 'hive-signer') {
-      return this.validateHiveSigner(account, token);
-    }
-    if (authType === 'hive-keychain') {
-      return this.validateHiveKeychain(account, token);
-    }
-    if (authType === 'waivio-auth') {
-      return this.validateGuestUser(account, token);
-    }
-    return false;
+
+    const strategies: Record<
+      string,
+      (account: string, token: string) => Promise<boolean> | boolean
+    > = {
+      'hive-auth': this.validateHiveAuth.bind(this),
+      'hive-signer': this.validateHiveSigner.bind(this),
+      'hive-keychain': this.validateHiveKeychain.bind(this),
+      'waivio-auth': this.validateGuestUser.bind(this),
+    };
+
+    const strategy = strategies[authType];
+
+    if (!strategy) return false;
+
+    const result = strategy(account, token);
+    return result instanceof Promise ? await result : result;
   }
 
   async validateGuestUser(account: string, token: string): Promise<boolean> {
     try {
-      const response = await axios.post(
-        configService.getGuestValidationURL(),
-        {},
-        { headers: { 'access-token': token } },
-      );
+      const res = await fetch(configService.getGuestValidationURL(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'access-token': token,
+        },
+        body: JSON.stringify({}),
+      });
 
-      if (response?.data) {
-        return response?.data?.user?.name === account;
-      }
-      return false;
+      if (!res.ok) return false;
+
+      const data = await res.json().catch(() => ({}));
+
+      return data?.user?.name === account;
     } catch (error) {
       return false;
     }
