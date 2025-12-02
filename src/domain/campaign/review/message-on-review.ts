@@ -319,11 +319,14 @@ We encourage you to create and share original content to qualify for rewards in 
       ? `${campaign.sponsorURL}/@${guideName}`
       : `https://www.waivio.com/@${guideName}`;
 
-    const name = campaign.sponsorName ? campaign.sponsorName : sponsorName;
-
     let result = `[${sponsorName}](${link})`;
-    if (campaign.sponsorURL) {
-      result += ` ([${name}](${campaign.sponsorURL}))`;
+
+    if (campaign.sponsorName) {
+      const addition = campaign.sponsorURL
+        ? ` ([${campaign.sponsorName}](${campaign.sponsorURL}))`
+        : ` (${campaign.sponsorName})`;
+
+      result += addition;
     }
     return result;
   }
