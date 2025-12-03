@@ -783,7 +783,7 @@ We encourage you to create and share original content to qualify for rewards in 
 
     const judgeMention =
       campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT
-        ? ` judged by ${campaign.contestJudges.join(',')}`
+        ? ` judged by ${campaign.contestJudges.map((el) => `@${el}`).join(',')}`
         : '';
 
     const message = `Thanks for mentioning ${linkToObject}!
