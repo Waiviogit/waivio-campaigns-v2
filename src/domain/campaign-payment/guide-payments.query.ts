@@ -112,8 +112,12 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
 
     histories.sort(sortFunc[sort] || sortFunc.amount);
 
+    const formattedTotal = Number(
+      _.get(totalPayable, '[0].total', 0).toFixed(8),
+    );
+
     return {
-      totalPayable: _.get(totalPayable, '[0].total', 0),
+      totalPayable: formattedTotal,
       histories: limit ? histories.slice(skip, skip + limit) : histories,
       hasMore: histories.slice(skip).length > limit,
     };
@@ -231,7 +235,10 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
         pipeline: getPayableByUserPipe({ guideName, userName, payoutToken }),
       });
 
-    return payables[0];
+    return {
+      payable: Number(_.get(payables[0], 'payable', 0).toFixed(8)),
+      notPayedPeriod: payables[0].notPayedPeriod,
+    };
   }
 
   async getHistoriesByUser({
