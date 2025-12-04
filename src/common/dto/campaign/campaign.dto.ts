@@ -523,7 +523,6 @@ export class CampaignDto {
 
   @IsOptional()
   @IsString()
-  @IsUrl()
   @ApiProperty({
     type: String,
     required: false,
