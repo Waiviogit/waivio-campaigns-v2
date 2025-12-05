@@ -5,4 +5,5 @@ export const NOTIFICATION_ID = Object.freeze({
   CAMPAIGN_MESSAGE: 'campaignMessage',
   SUSPENDED_STATUS: 'suspendedStatus',
   JUDGES_NOTIFICATION: 'judgesNotification',
+  PAYABLE_NOTIFICATION: 'payableNotification',
 });

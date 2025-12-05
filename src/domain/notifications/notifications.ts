@@ -178,6 +178,19 @@ export class Notifications implements NotificationsInterface {
     });
   }
 
+  async sendPayableRecord(_id: string, userName: string): Promise<void> {
+    const campaign = await this.campaignRepository.findCampaignById(_id);
+    if (!campaign) return;
+    await this.sendNotification({
+      id: NOTIFICATION_ID.DEACTIVATION_CAMPAIGN,
+      data: {
+        guideName: campaign.guideName,
+        userName,
+        campaignName: campaign.name,
+      },
+    });
+  }
+
   private async sendJudgesNotification(campaign: Campaign): Promise<void> {
     if (!campaign.contestJudges || !campaign.contestJudges.length) return;
     const object_name = await this.wobjectHelper.getWobjectName(
