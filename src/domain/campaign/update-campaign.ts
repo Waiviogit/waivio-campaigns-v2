@@ -30,9 +30,25 @@ export class UpdateCampaign implements UpdateCampaignInterface {
       );
       if (!isValidUrl)
         throw new HttpException(
-          `Campaign is not created. sponsorURL doesn't match validation criteria `,
+          `Campaign is not updated. sponsorURL doesn't match validation criteria`,
           422,
         );
+    }
+
+    // Fetch existing campaign to get type for validation if needed
+    let campaignType: string | undefined = campaign.type;
+    const needsTypeForValidation =
+      campaign.reward !== undefined || campaign.contestRewards?.length > 0;
+
+    if (needsTypeForValidation && !campaignType) {
+      const existingCampaign = await this.campaignRepository.findOne({
+        filter: { _id: campaign._id },
+        projection: { type: 1 },
+      });
+      if (!existingCampaign) {
+        throw new HttpException('Campaign not found', 404);
+      }
+      campaignType = existingCampaign.type;
     }
 
     if (campaign.reward) {
@@ -43,8 +59,14 @@ export class UpdateCampaign implements UpdateCampaignInterface {
     }
 
     // Handle contest rewards if they exist in the update
+    let contestRewardsWithUSD: Array<{
+      place: number;
+      reward: number;
+      rewardInUSD: number;
+    }> = [];
+
     if (campaign.contestRewards && campaign.contestRewards.length > 0) {
-      const contestRewardsWithUSD = await Promise.all(
+      contestRewardsWithUSD = await Promise.all(
         campaign.contestRewards.map(async (reward) => ({
           ...reward,
           rewardInUSD: await this.campaignHelper.getCurrencyInUSD(
@@ -54,6 +76,19 @@ export class UpdateCampaign implements UpdateCampaignInterface {
         })),
       );
       campaign.contestRewards = contestRewardsWithUSD;
+    }
+
+    // Validate minimum reward based on campaign type and environment
+    if (needsTypeForValidation) {
+      const rewardValidation = this.campaignHelper.validateMinReward({
+        type: campaignType,
+        rewardInUSD: campaign.rewardInUSD ?? 0,
+        contestRewards: contestRewardsWithUSD,
+      });
+
+      if (!rewardValidation.isValid) {
+        throw new HttpException(rewardValidation.errorMessage, 422);
+      }
     }
 
     const updatedCampaign = await this.campaignRepository.updateCampaign({

@@ -23,6 +23,8 @@ import { RedisClientInterface } from '../../services/redis/clients/interface';
 import {
   CampaignHelperInterface,
   IncrReviewCommentInterface,
+  ValidateMinRewardParams,
+  ValidateMinRewardResult,
 } from './interface';
 import {
   AggregateSameUserReservationType,
@@ -431,5 +433,52 @@ export class CampaignHelper implements CampaignHelperInterface {
     }
 
     return campaign.rewardInUSD;
+  }
+
+  validateMinReward(params: ValidateMinRewardParams): ValidateMinRewardResult {
+    const { type, rewardInUSD, contestRewards } = params;
+    // const isStaging = process.env.NODE_ENV === 'staging';
+    const isStaging = false;
+
+    // Staging environment: $0.5 minimum for all types
+    const STAGING_MIN_REWARD_USD = 0.5;
+
+    // Production minimums
+    const PRODUCTION_MIN_REWARD_USD = 1;
+    const PRODUCTION_MIN_CONTEST_TOTAL_USD = 5;
+
+    if (type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
+      const totalRewardInUSD =
+        contestRewards?.reduce(
+          (sum, reward) => sum + (reward.rewardInUSD || 0),
+          0,
+        ) || 0;
+
+      const minContestTotal = isStaging
+        ? STAGING_MIN_REWARD_USD
+        : PRODUCTION_MIN_CONTEST_TOTAL_USD;
+
+      if (totalRewardInUSD < minContestTotal) {
+        return {
+          isValid: false,
+          errorMessage: `The total reward amount should be at least $${minContestTotal}.`,
+        };
+      }
+      return { isValid: true };
+    }
+
+    // Reviews, Mentions, Giveaways, Giveaways_Object
+    const minReward = isStaging
+      ? STAGING_MIN_REWARD_USD
+      : PRODUCTION_MIN_REWARD_USD;
+
+    if (rewardInUSD < minReward) {
+      return {
+        isValid: false,
+        errorMessage: `Campaign is not created. Reward should be at least $${minReward}.`,
+      };
+    }
+
+    return { isValid: true };
   }
 }

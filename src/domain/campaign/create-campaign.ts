@@ -15,8 +15,6 @@ import {
 import { BlacklistHelperInterface } from '../blacklist/interface';
 import { castToUTC } from '../../common/helpers';
 
-const MIN_CAMPAIGN_REWARD_USD = 0.5;
-
 @Injectable()
 export class CreateCampaign implements CreateCampaignInterface {
   constructor(
@@ -47,26 +45,15 @@ export class CreateCampaign implements CreateCampaignInterface {
       campaign.reward,
     );
 
-    const campaignWithOneReward: string[] = [
-      CAMPAIGN_TYPE.REVIEWS,
-      CAMPAIGN_TYPE.MENTIONS,
-      CAMPAIGN_TYPE.GIVEAWAYS,
-      CAMPAIGN_TYPE.GIVEAWAYS_OBJECT,
-    ];
-
-    if (
-      rewardInUSD < MIN_CAMPAIGN_REWARD_USD &&
-      campaignWithOneReward.includes(campaign.type)
-    ) {
-      throw new HttpException(
-        `Campaign is not created. Reward should be more than $${MIN_CAMPAIGN_REWARD_USD}.`,
-        422,
-      );
-    }
+    // For contests, calculate rewardInUSD for each contest reward
+    let contestRewardsWithUSD: Array<{
+      place: number;
+      reward: number;
+      rewardInUSD: number;
+    }> = [];
 
     if (campaign.type === CAMPAIGN_TYPE.CONTESTS_OBJECT) {
-      // For contests, calculate rewardInUSD for each contest reward and validate total
-      const contestRewardsWithUSD = await Promise.all(
+      contestRewardsWithUSD = await Promise.all(
         campaign.contestRewards?.map(async (reward) => ({
           ...reward,
           rewardInUSD: await this.campaignHelper.getCurrencyInUSD(
@@ -91,6 +78,17 @@ export class CreateCampaign implements CreateCampaignInterface {
 
       // Update campaign with calculated rewardInUSD values
       campaign.contestRewards = contestRewardsWithUSD;
+    }
+
+    // Validate minimum reward based on campaign type and environment
+    const rewardValidation = this.campaignHelper.validateMinReward({
+      type: campaign.type,
+      rewardInUSD,
+      contestRewards: contestRewardsWithUSD,
+    });
+
+    if (!rewardValidation.isValid) {
+      throw new HttpException(rewardValidation.errorMessage, 422);
     }
 
     const { blacklist, whitelist } = await this.blacklistHelper.getBlacklist(

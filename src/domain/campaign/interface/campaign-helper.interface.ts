@@ -7,6 +7,17 @@ import {
 } from '../types';
 import { CampaignDocumentType } from '../../../persistance/campaign/types';
 
+export interface ValidateMinRewardParams {
+  type: string;
+  rewardInUSD: number;
+  contestRewards?: Array<{ rewardInUSD: number }>;
+}
+
+export interface ValidateMinRewardResult {
+  isValid: boolean;
+  errorMessage?: string;
+}
+
 export interface CampaignHelperInterface {
   setExpireTTLCampaign(expiredAt: Date, _id: ObjectId | string): Promise<void>;
   deleteCampaignKey(key: string): Promise<void>;
@@ -46,7 +57,8 @@ export interface CampaignHelperInterface {
     recurrentKey: string,
   ): Promise<void>;
   getCampaignRewardInUsd(campaign: CampaignDocumentType): number;
-  validateSponsorUrl(url: string): Promise<boolean>
+  validateSponsorUrl(url: string): Promise<boolean>;
+  validateMinReward(params: ValidateMinRewardParams): ValidateMinRewardResult;
 }
 
 export interface IncrReviewCommentInterface {
