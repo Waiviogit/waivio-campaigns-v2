@@ -28,6 +28,7 @@ import {
   CAMPAIGN_CUSTOM_JSON_ID,
   BENEFICIARY_BOT_UPVOTE_PROVIDE,
   NOTIFICATIONS_PROVIDE,
+  HIVE_PROVIDE,
 } from '../../../common/constants';
 import { CampaignRepositoryInterface } from '../../../persistance/campaign/interface';
 import * as _ from 'lodash';
@@ -91,6 +92,8 @@ import { PostDocumentType } from '../../../persistance/post/types';
 import { getNextEventDate } from '../../../common/helpers/rruleHelper';
 import { BeneficiaryBotUpvoteRepositoryInterface } from '../../../persistance/beneficiary-bot-upvote/interface/beneficiary-bot-upvote.repository.interface';
 import { NotificationsInterface } from '../../notifications/interface';
+import { HiveClientInterface } from '../../../services/hive-api/interface';
+import { configService } from '../../../common/config';
 
 @Injectable()
 export class CreateReview implements CreateReviewInterface {
@@ -127,6 +130,8 @@ export class CreateReview implements CreateReviewInterface {
     private readonly beneficiaryBotUpvoteRepository: BeneficiaryBotUpvoteRepositoryInterface,
     @Inject(NOTIFICATIONS_PROVIDE.SERVICE)
     private readonly notifications: NotificationsInterface,
+    @Inject(HIVE_PROVIDE.CLIENT)
+    private readonly hiveClient: HiveClientInterface,
   ) {}
 
   //redis key HOSTS_TO_PARSE_OBJECTS is set on hive parser
@@ -238,6 +243,16 @@ export class CreateReview implements CreateReviewInterface {
     return true;
   }
 
+  async hasPostEligibleComment(
+    author: string,
+    permlink: string,
+  ): Promise<boolean> {
+    const response = await this.hiveClient.getState(author, permlink);
+    return !!Object.values(response?.content || []).find(
+      (c) => c.author === configService.getMentionsAccount(),
+    );
+  }
+
   async validateForGiveaways(
     author: string,
     botName: string,
@@ -248,6 +263,8 @@ export class CreateReview implements CreateReviewInterface {
       (objects ?? []).includes(el),
     );
     if (!qualified) return;
+    const hasComment = await this.hasPostEligibleComment(author, permlink);
+    if (hasComment) return;
 
     const campaigns = await this.campaignRepository.find({
       filter: {
