@@ -182,7 +182,7 @@ export class Notifications implements NotificationsInterface {
     const campaign = await this.campaignRepository.findCampaignById(_id);
     if (!campaign) return;
     await this.sendNotification({
-      id: NOTIFICATION_ID.DEACTIVATION_CAMPAIGN,
+      id: NOTIFICATION_ID.PAYABLE_NOTIFICATION,
       data: {
         guideName: campaign.guideName,
         userName,
