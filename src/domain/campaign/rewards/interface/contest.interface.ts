@@ -2,7 +2,6 @@ import { CampaignDocumentType } from '../../../../persistance/campaign/types';
 import { PostDocumentType } from '../../../../persistance/post/types';
 
 export interface ContestInterface {
-  getContestParticipants(campaign: CampaignDocumentType): Promise<string[]>;
   getContestPosts(campaign: CampaignDocumentType): Promise<PostDocumentType[]>;
   getJudgeVotes(
     campaign: CampaignDocumentType,

@@ -49,9 +49,9 @@ export class ContestObject implements ContestInterface {
     private readonly campaignPostsRepository: CampaignPostsRepositoryInterface,
   ) {}
 
-  async getContestParticipants(
+  async getContestPosts(
     campaign: CampaignDocumentType,
-  ): Promise<string[]> {
+  ): Promise<PostDocumentType[]> {
     // Get posts within campaign duration and objects
     const dateFrom = moment().subtract(campaign.durationDays, 'd').toDate();
     const objectsCondition = campaign.qualifiedPayoutToken
@@ -69,10 +69,16 @@ export class ContestObject implements ContestInterface {
       filter: {
         createdAt: { $gte: dateFrom },
         ...objectsCondition,
+        author: { $nin: [...campaign.blacklistUsers, campaign.guideName] },
       },
       projection: {
         author: 1,
         permlink: 1,
+        title: 1,
+        json_metadata: 1,
+        beneficiaries: 1,
+        active_votes: 1,
+        root_author: 1,
       },
     });
 
@@ -146,32 +152,8 @@ export class ContestObject implements ContestInterface {
       }
       eligible.push(author);
     }
-    return eligible;
-  }
 
-  async getContestPosts(
-    campaign: CampaignDocumentType,
-  ): Promise<PostDocumentType[]> {
-    // Get posts within campaign duration and objects
-    const dateFrom = moment().subtract(campaign.durationDays, 'd').toDate();
-    const posts = await this.postRepository.find({
-      filter: {
-        createdAt: { $gte: dateFrom },
-        'wobjects.author_permlink': { $in: campaign.objects },
-        author: { $nin: [...campaign.blacklistUsers, campaign.guideName] },
-      },
-      projection: {
-        author: 1,
-        permlink: 1,
-        title: 1,
-        json_metadata: 1,
-        beneficiaries: 1,
-        active_votes: 1,
-        root_author: 1,
-      },
-    });
-
-    return posts;
+    return posts.filter((post) => eligible.includes(post.author));
   }
 
   async getJudgeVotes(
