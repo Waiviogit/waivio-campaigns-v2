@@ -70,6 +70,7 @@ export class ContestObject implements ContestInterface {
         createdAt: { $gte: dateFrom },
         ...objectsCondition,
         author: { $nin: [...campaign.blacklistUsers, campaign.guideName] },
+        reblog_to: null,
       },
       projection: {
         author: 1,

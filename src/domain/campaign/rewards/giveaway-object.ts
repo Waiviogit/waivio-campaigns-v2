@@ -69,6 +69,7 @@ export class GiveawayObject implements GiveawayObjectInterface {
         createdAt: { $gte: dateFrom },
         ...objectsCondition,
         author: { $nin: [...campaign.blacklistUsers, campaign.guideName] },
+        reblog_to: null,
       },
       projection: {
         author: 1,
@@ -202,6 +203,7 @@ export class GiveawayObject implements GiveawayObjectInterface {
         filter: {
           author: winner,
           'wobjects.author_permlink': { $in: campaign.objects },
+          reblog_to: null,
         },
         options: {
           sort: {
