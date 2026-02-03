@@ -9,7 +9,7 @@ export interface GetGiveawayMessageInterface {
   rewardInToken: number;
   participants: string[];
   winners: string[];
-  mainSiteLink: string;
+  linkToDiscover: string;
 }
 
 export interface GetGiveawayPersonalMessageInterface
