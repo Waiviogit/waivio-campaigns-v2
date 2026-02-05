@@ -6,6 +6,7 @@ import { CampaignPaymentRepositoryInterface } from '../../persistance/campaign-p
 import {
   CAMPAIGN_PAYMENT,
   CAMPAIGN_PAYMENT_PROVIDE,
+  PAYMENT_SELF_POSTFIX,
   USER_PROVIDE,
   WOBJECT_PROVIDE,
 } from '../../common/constants';
@@ -169,7 +170,12 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
                   },
                 },
                 {
-                  type: CAMPAIGN_PAYMENT.REVIEW,
+                  type: {
+                    $in: [
+                      CAMPAIGN_PAYMENT.REVIEW,
+                      `${CAMPAIGN_PAYMENT.REVIEW}${PAYMENT_SELF_POSTFIX}`,
+                    ],
+                  },
                 },
               ],
             },
@@ -193,7 +199,7 @@ export class GuidePaymentsQuery implements GuidePaymentsQueryInterface {
           payment.reservationPermlink === history.reservationPermlink,
       );
       history.currentUser = history.userName;
-      history.userName = _.get(reviewPayment, 'userName', null);
+      history.userName = _.get(reviewPayment, 'userName', history.guideName);
 
       const reviewObject = this.findUserOrObject(
         history.reviewObject,

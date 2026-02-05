@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
-import { CAMPAIGN_PAYMENT, PAYOUT_TOKEN } from '../../common/constants';
+import { PAYOUT_TOKEN } from '../../common/constants';
 import { CampaignPaymentBeneficiariesType } from './types';
 import BigNumber from 'bignumber.js';
 
@@ -26,7 +26,7 @@ export class CampaignPayment {
   @Prop({ type: String, index: true })
   guideName: string;
 
-  @Prop({ type: String, enum: Object.values(CAMPAIGN_PAYMENT), required: true })
+  @Prop({ type: String, required: true })
   type: string;
 
   @Prop({ type: mongoose.Schema.Types.Decimal128, required: true })
