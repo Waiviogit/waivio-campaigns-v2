@@ -36,21 +36,37 @@ export abstract class AbstractProcessor implements AbstractProcessorInterface {
   }
 
   private async loadNextBlock(): Promise<void> {
-    this.currentBlock = await this.getBlockNumber();
+    try {
+      this.currentBlock = await this.getBlockNumber();
 
-    const start = process.hrtime();
-    const processed = await this.processBlock(this.currentBlock);
-    const end = process.hrtime(start);
+      const start = process.hrtime();
+      const processed = await this.processBlock(this.currentBlock);
+      const end = process.hrtime(start);
 
-    if (processed) {
-      this.logger.log(`${this.currentBlock}: ${end[1] / 1000000}ms`);
-      await this.redisBlockClient.set(
-        this.redisBlockKey,
-        `${this.currentBlock + 1}`,
+      if (processed) {
+        this.logger.log(`${this.currentBlock}: ${end[1] / 1000000}ms`);
+        await this.redisBlockClient.set(
+          this.redisBlockKey,
+          `${this.currentBlock + 1}`,
+        );
+        await this.loadNextBlock();
+      } else {
+        await setTimeout(2000);
+        await this.loadNextBlock();
+      }
+    } catch (error) {
+      this.logger.error(
+        `Block ${this.currentBlock ?? 'unknown'} processing failed, skipping: ${
+          error?.message ?? error
+        }`,
+        error?.stack,
       );
-      await this.loadNextBlock();
-    } else {
-      await setTimeout(2000);
+      if (this.currentBlock != null) {
+        await this.redisBlockClient.set(
+          this.redisBlockKey,
+          `${this.currentBlock + 1}`,
+        );
+      }
       await this.loadNextBlock();
     }
   }
