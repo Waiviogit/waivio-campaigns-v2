@@ -41,11 +41,11 @@ export class CreateCampaignPipe implements PipeTransform {
 
     switch (type) {
       case CAMPAIGN_TYPE.REVIEWS:
+      case CAMPAIGN_TYPE.AUTHORITIES:
+      case CAMPAIGN_TYPE.MENTIONS:
         return this.transformToCreateReviewDto(value);
       case CAMPAIGN_TYPE.CONTESTS_OBJECT:
         return this.transformToCreateContestObjectDto(value);
-      case CAMPAIGN_TYPE.MENTIONS:
-        return this.transformToMentionsDto(value);
       case CAMPAIGN_TYPE.GIVEAWAYS:
         return this.transformToGiveawaysDto(value);
       case CAMPAIGN_TYPE.GIVEAWAYS_OBJECT:
@@ -60,9 +60,7 @@ export class CreateCampaignPipe implements PipeTransform {
     value: CreateCampaignRequest,
     dtoClass: new () => T,
   ): T {
-    const dto = plainToInstance(dtoClass, value, {
-      // enableImplicitConversion: true,
-    });
+    const dto = plainToInstance(dtoClass, value);
 
     const errors = validateSync(dto, {
       whitelist: true,
@@ -98,11 +96,5 @@ export class CreateCampaignPipe implements PipeTransform {
     value: CreateCampaignRequest,
   ): CreateGiveawayObjectDto {
     return this.transformToDto(value, CreateGiveawayObjectDto);
-  }
-
-  private transformToMentionsDto(
-    value: CreateCampaignRequest,
-  ): CreateReviewCampaignDto {
-    return this.transformToDto(value, CreateReviewCampaignDto);
   }
 }

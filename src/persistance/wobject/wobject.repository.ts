@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import * as _ from 'lodash';
 
 import { Wobject } from './wobject.schema';
-import { WobjectDocumentType } from './types';
+import { WobjectDocumentType, WobjectFieldsDocumentType } from './types';
 import { WobjectRepositoryInterface } from './interface';
 import { CAMPAIGN_STATUS, WOBJECT_STATUS } from '../../common/constants';
 import { MongoRepository } from '../mongo.repository';
@@ -74,5 +74,28 @@ export class WobjectRepository
         author_permlink,
       },
     });
+  }
+
+  async getField(
+    authorPermlink: string,
+    author: string,
+    permlink: string,
+  ): Promise<WobjectFieldsDocumentType | null> {
+    try {
+      const fieldMatch = { author: author || /.*?/, permlink };
+      const wobject = await this.findOne({
+        filter: {
+          author_permlink: authorPermlink || /.*?/,
+          fields: { $elemMatch: fieldMatch },
+        },
+        projection: {
+          'fields.$': 1,
+        },
+      });
+
+      return wobject?.fields?.[0];
+    } catch (error) {
+      return null;
+    }
   }
 }
